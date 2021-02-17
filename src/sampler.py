@@ -1,18 +1,37 @@
 import random
+from typing import List, Tuple
 
 import torch
-from torch.utils.data import Sampler
+from torch.utils.data import Sampler, Dataset
 
 
 class TaskSampler(Sampler):
-    def __init__(self, dataset, n_way, n_shot, n_query, n_tasks):
+    """
+    Samples batches in the shape of few-shot classification tasks. At each iteration, it will sample n_way classes,
+    and then sample support and query images from these classes.
+    """
+
+    def __init__(
+        self, dataset: Dataset, n_way: int, n_shot: int, n_query: int, n_tasks: int
+    ):
+        """
+        Args:
+            dataset: dataset from which to sample classification tasks.
+                Must have a field 'label': a list of length len(dataset) containing containing the labels of all images.
+            n_way: number of classes in one task
+            n_shot: number of support images for each class in one task
+            n_query: number of query images for each class in one task
+            n_tasks: number of tasks to sample
+        """
         self.n_way = n_way
         self.n_shot = n_shot
         self.n_query = n_query
         self.n_tasks = n_tasks
 
         self.items_per_label = {}
-
+        assert hasattr(
+            dataset, "labels"
+        ), "TaskSampler needs a dataset with a field 'label' containing the labels of all images."
         for item, label in enumerate(dataset.labels):
             if label in self.items_per_label.keys():
                 self.items_per_label[label].append(item)
@@ -35,11 +54,13 @@ class TaskSampler(Sampler):
                 ]
             )
 
-    def episodic_collate_fn(self, input_data):
+    def episodic_collate_fn(
+        self, input_data: List[Tuple[torch.Tensor, int]]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic data loaders.
         Args:
-            input_data (list[tuple(Tensor, int)]): each element is a tuple containing:
+            input_data: each element is a tuple containing:
                 - an image as a torch Tensor
                 - the label of this image
         Returns:

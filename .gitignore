@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # data
-data/images
+data/CUB/images
+data/omniglot-py
 *.tgz
 *.tar

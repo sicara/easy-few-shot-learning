@@ -10,8 +10,30 @@ NORMALIZE_DEFAULT = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
 class EasySet(Dataset):
-    def __init__(self, split_file: str, image_size=224, training=False):
-        specs = json.load(open(split_file, "r"))
+    """
+    A ready-to-use dataset. Will work for any dataset where the images are grouped in directories by class.
+    It expects a JSON file defining the classes and where to find them. It must have the following shape:
+        {
+            "class_names": [
+                "class_1",
+                "class_2"
+            ],
+            "class_roots": [
+                "path/to/class_1_folder",
+                "path/to/class_2_folder"
+            ]
+        }
+    """
+
+    def __init__(self, specs_file: Path, image_size=224, training=False):
+        """
+        Args:
+            specs_file: path to the JSON file
+            image_size: images returned by the dataset will be square images of the given size
+            training: preprocessing is slightly different for a training set, adding a random cropping and a random
+                horizontal flip.
+        """
+        specs = json.load(open(specs_file, "r"))
 
         self.images = []
         self.labels = []
