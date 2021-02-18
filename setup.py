@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 
 setup(
-    name="easy-fsl",
+    name="easyfsl",
     version="0.1.0",
     description="Ready-to-use PyTorch code to boost your way into few-shot image classification",
     long_description=long_description,
