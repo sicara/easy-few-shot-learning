@@ -27,15 +27,17 @@ You want to learn few-shot learning and don't know where to start? Start with ou
 
 **Helpers:**
 
-- [EasySet](easyfsl/data_tools/dataset.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
-- [TaskSampler](easyfsl/data_tools/sampler.py): samples batches in the shape of few-shot classification tasks
+- [EasySet](easyfsl/data_tools/easy_set.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
+- [TaskSampler](easyfsl/data_tools/tasl_sampler.py): samples batches in the shape of few-shot classification tasks
 
 ### Datasets to test your model
 
 - [CU-Birds](http://www.vision.caltech.edu/visipedia/CUB-200.html): we provide [a script](scripts/download_CUB.sh) to download
 and extract the dataset, along with [a meta-train/meta-val/meta-test split](data/CUB) along classes. The dataset is
-  ready-to-use with [EasySet](easyfsl/data_tools/dataset.py).
+  ready-to-use with [EasySet](easyfsl/data_tools/easy_set.py).
 
+## 3mn QuickStart
+Work in progress
 
 ## Roadmap
 
