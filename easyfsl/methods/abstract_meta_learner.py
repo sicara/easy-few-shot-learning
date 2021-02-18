@@ -4,7 +4,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from src.utils import sliding_average
+from easyfsl.utils import sliding_average
 
 
 class AbstractMetaLearner(nn.Module):

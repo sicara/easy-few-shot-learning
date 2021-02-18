@@ -1,6 +1,6 @@
 import torch
 
-from src.abstract_meta_learner import AbstractMetaLearner
+from easyfsl.methods import AbstractMetaLearner
 
 
 class PrototypicalNetworks(AbstractMetaLearner):
