@@ -11,7 +11,7 @@ setup(
     description="Ready-to-use PyTorch code to boost your way into few-shot image classification",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/sicara/tuto-fsl",
+    url="https://github.com/sicara/easy-few-shot-learning",
     license="MIT",
     install_requires=["click>=6.7", "numpy>=1.10", "tensorflow-addons>=0.9.1"],
     extras_require={"publish": ["bumpversion>=0.5.3", "twine>=1.13.0"]},

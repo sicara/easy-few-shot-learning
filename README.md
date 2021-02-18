@@ -1,4 +1,4 @@
-# tuto-fsl
+# Easy Few-Shot Learning
 Ready-to-use code and tutorial notebooks to boost your way into few-shot image classification. 
 This repository is made for you if:
 
@@ -14,7 +14,7 @@ You want to learn few-shot learning and don't know where to start? Start with ou
 
 - **[First steps into few-shot image classification](notebooks/my_first_few_shot_classifier.ipynb)** 
   
-    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/tuto-fsl/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
+    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
 
 ### Code that you can use and understand
 
