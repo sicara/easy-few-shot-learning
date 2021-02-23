@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Set python 3.7
           command: |
-            pyenv global 3.7
+            pyenv global 3.7.0
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       - restore_cache:
@@ -57,7 +57,7 @@ workflows:
       - install:
           matrix:
             parameters:
-              python-version: ["3.6", "3.7", "3.8"]
+              python-version: ["3.6.0", "3.7.0", "3.8.0"]
       - lint:
           requires:
             - install
