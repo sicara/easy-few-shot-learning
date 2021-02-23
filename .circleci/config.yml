@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   install:
     parameters:
@@ -29,7 +29,7 @@ jobs:
           paths:
             - ./venv
           key: machine-<< parameters.python-version >>-{{ checksum "dev_requirements.txt" }}
-  lint-3.7:
+  lint:
     working_directory: ~/project
     machine:
       image: ubuntu-1604:201903-01
@@ -52,13 +52,12 @@ jobs:
           destination: lint-project-reports
 
 workflows:
-  version: 2
   main:
     jobs:
       - install:
           matrix:
             parameters:
-              python-version: [3.6, 3.7, 3.8]
-      - lint-3.7:
+              python-version: ["3.6", "3.7", "3.8"]
+      - lint:
           requires:
             - install
