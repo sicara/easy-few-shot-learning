@@ -1,2 +1,2 @@
 from .easy_set import EasySet
-from .tasl_sampler import TaskSampler
+from .task_sampler import TaskSampler
