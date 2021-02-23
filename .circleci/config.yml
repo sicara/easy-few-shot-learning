@@ -6,7 +6,7 @@ jobs:
         type: string
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202010-01
+      image: cimg/python:<< parameters.python-version >>
     steps:
       - run:
           name: Set python << parameters.python-version >>
@@ -33,16 +33,16 @@ jobs:
   lint:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202010-01
+      image: cimg/python:3.7
     steps:
       - run:
-          name: Set python 3.7
+          name: Set python 3.7.10
           command: |
-            pyenv global 3.7.0
+            pyenv global 3.7.10
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       - restore_cache:
-          key: machine-3.7-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+          key: machine-3.7.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
       - run:
           name: run pylint
           command: |
@@ -58,7 +58,7 @@ workflows:
       - install:
           matrix:
             parameters:
-              python-version: ["3.6.5", "3.7.0", "3.8.5"]
+              python-version: ["3.6.13", "3.7.10", "3.8.8"]
       - lint:
           requires:
             - install
