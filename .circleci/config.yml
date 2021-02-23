@@ -5,8 +5,8 @@ jobs:
       python-version:
         type: string
     working_directory: ~/project
-    machine:
-      image: cimg/python:<< parameters.python-version >>
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
     steps:
       - run:
           name: Set python << parameters.python-version >>
@@ -18,7 +18,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - machine-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+            - docker-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
       - run:
           name: Install dependencies
           command: |
@@ -29,11 +29,11 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: machine-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+          key: docker-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
   lint:
     working_directory: ~/project
-    machine:
-      image: cimg/python:3.7
+    docker:
+      - image: cimg/python:3.7
     steps:
       - run:
           name: Set python 3.7.10
@@ -42,7 +42,7 @@ jobs:
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       - restore_cache:
-          key: machine-3.7.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+          key: docker-3.7.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
       - run:
           name: run pylint
           command: |
