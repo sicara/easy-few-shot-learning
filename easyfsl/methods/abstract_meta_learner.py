@@ -12,10 +12,9 @@ class AbstractMetaLearner(nn.Module):
     Abstract class providing methods usable by all few-shot classification algorithms
     """
 
-    def __init__(self, backbone: nn.Module, optimizer: optim.Optimizer):
+    def __init__(self, backbone: nn.Module):
         super(AbstractMetaLearner, self).__init__()
         self.backbone = backbone
-        self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
 
     def forward(
@@ -64,6 +63,7 @@ class AbstractMetaLearner(nn.Module):
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
         # no_grad() tells torch not to keep in memory the whole computational graph (it's more lightweight this way)
         self.eval()
+        logger.info("Starting model evaluation...")
         with torch.no_grad():
             for episode_index, (
                 support_images,
@@ -89,19 +89,20 @@ class AbstractMetaLearner(nn.Module):
         support_labels: torch.Tensor,
         query_images: torch.Tensor,
         query_labels: torch.Tensor,
+        optimizer: optim.Optimizer,
     ) -> float:
-        self.optimizer.zero_grad()
+        optimizer.zero_grad()
         classification_scores = self(
             support_images.cuda(), support_labels.cuda(), query_images.cuda()
         )
 
         loss = self.criterion(classification_scores, query_labels.cuda())
         loss.backward()
-        self.optimizer.step()
+        optimizer.step()
 
         return loss.item()
 
-    def fit(self, data_loader: DataLoader):
+    def fit(self, data_loader: DataLoader, optimizer: optim.Optimizer):
         log_update_frequency = 10
 
         all_loss = []
@@ -116,7 +117,11 @@ class AbstractMetaLearner(nn.Module):
                 _,
             ) in tqdm_train:
                 loss_value = self.fit_on_task(
-                    support_images, support_labels, query_images, query_labels
+                    support_images,
+                    support_labels,
+                    query_images,
+                    query_labels,
+                    optimizer,
                 )
                 all_loss.append(loss_value)
 
