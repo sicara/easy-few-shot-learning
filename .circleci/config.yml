@@ -11,6 +11,7 @@ jobs:
       - run:
           name: Set python << parameters.python-version >>
           command: |
+            pyenv versions
             pyenv global << parameters.python-version >>
             python -m pip install --upgrade pip setuptools wheel
       - checkout
