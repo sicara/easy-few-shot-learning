@@ -55,10 +55,10 @@ workflows:
   version: 2
   main:
     jobs:
-      - install
-        matrix:
-          parameters:
-            python-version: [3.6, 3.7, 3.8]
+      - install:
+          matrix:
+            parameters:
+              python-version: [3.6, 3.7, 3.8]
       - lint-3.7:
           requires:
             - install
