@@ -25,7 +25,7 @@ You want to learn few-shot learning and don't know where to start? Start with ou
   
 - [Prototypical Networks](easyfsl/methods/prototypical_networks.py)
 
-**Helpers:**
+**Tools for data loading:**
 
 - [EasySet](easyfsl/data_tools/easy_set.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
 - [TaskSampler](easyfsl/data_tools/tasl_sampler.py): samples batches in the shape of few-shot classification tasks

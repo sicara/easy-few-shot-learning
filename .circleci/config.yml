@@ -61,7 +61,7 @@ jobs:
           name: run pylint
           command: |
             . venv/bin/activate
-            make lint
+            pylint easyfsl
       - store_artifacts:
           path: lint-project-reports
           destination: lint-project-reports
