@@ -6,7 +6,7 @@ jobs:
         type: string
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202010-01
     steps:
       - run:
           name: Set python << parameters.python-version >>
@@ -32,7 +32,7 @@ jobs:
   lint:
     working_directory: ~/project
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202010-01
     steps:
       - run:
           name: Set python 3.7
