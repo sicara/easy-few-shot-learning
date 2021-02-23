@@ -1,20 +1,23 @@
 version: 2
 jobs:
-  install-3.7:
+  install:
+    parameters:
+      python-version:
+        type: string
     working_directory: ~/project
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - run:
-          name: Set python 3.7.0
+          name: Set python << parameters.python-version >>
           command: |
-            pyenv global 3.7.0
+            pyenv global << parameters.python-version >>
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - machine-3.7-{{ checksum "dev_requirements.txt" }}
+            - machine-<< parameters.python-version >>-{{ checksum "dev_requirements.txt" }}
       - run:
           name: Install dependencies
           command: |
@@ -25,34 +28,16 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: machine-3.7-{{ checksum "dev_requirements.txt" }}
-  tests-3.7:
-    working_directory: ~/project
-    machine:
-      image: ubuntu-1604:201903-01
-    steps:
-      - run:
-          name: Set python 3.7.0
-          command: |
-            pyenv global 3.7.0
-            python -m pip install --upgrade pip setuptools wheel
-      - checkout
-      - restore_cache:
-          key: machine-3.7-{{ checksum "dev_requirements.txt" }}
-      - run:
-          name: run pytest
-          command: |
-            . venv/bin/activate
-            make test
+          key: machine-<< parameters.python-version >>-{{ checksum "dev_requirements.txt" }}
   lint-3.7:
     working_directory: ~/project
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - run:
-          name: Set python 3.7.0
+          name: Set python 3.7
           command: |
-            pyenv global 3.7.0
+            pyenv global 3.7
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       - restore_cache:
@@ -70,10 +55,10 @@ workflows:
   version: 2
   main:
     jobs:
-      - install-3.7
-      # - tests-3.7:
-      #     requires:
-      #       - install-3.7
+      - install
+        matrix:
+          parameters:
+            python-version: [3.6, 3.7, 3.8]
       - lint-3.7:
           requires:
-            - install-3.7
+            - install
