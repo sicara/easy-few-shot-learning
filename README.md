@@ -1,4 +1,9 @@
 # Easy Few-Shot Learning
+![Python Versions](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8-%23EBBD68.svg)
+![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
+
 Ready-to-use code and tutorial notebooks to boost your way into few-shot image classification. 
 This repository is made for you if:
 
@@ -25,10 +30,10 @@ You want to learn few-shot learning and don't know where to start? Start with ou
   
 - [Prototypical Networks](easyfsl/methods/prototypical_networks.py)
 
-**Helpers:**
+**Tools for data loading:**
 
 - [EasySet](easyfsl/data_tools/easy_set.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
-- [TaskSampler](easyfsl/data_tools/tasl_sampler.py): samples batches in the shape of few-shot classification tasks
+- [TaskSampler](easyfsl/data_tools/task_sampler.py): samples batches in the shape of few-shot classification tasks
 
 ### Datasets to test your model
 

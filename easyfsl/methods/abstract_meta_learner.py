@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 from loguru import logger
 import torch
 from torch import nn, optim
@@ -13,10 +15,12 @@ class AbstractMetaLearner(nn.Module):
     """
 
     def __init__(self, backbone: nn.Module):
-        super(AbstractMetaLearner, self).__init__()
+        super().__init__()
         self.backbone = backbone
         self.criterion = nn.CrossEntropyLoss()
 
+    # pylint: disable=all
+    @abstractmethod
     def forward(
         self,
         support_images: torch.Tensor,
@@ -31,9 +35,8 @@ class AbstractMetaLearner(nn.Module):
         Returns:
             a prediction of classification scores for query images
         """
-        raise NotImplementedError(
-            "All few-shot algorithms must implement a forward method."
-        )
+
+    # pylint: enable=all
 
     def evaluate_on_one_task(
         self,
@@ -43,7 +46,8 @@ class AbstractMetaLearner(nn.Module):
         query_labels: torch.Tensor,
     ) -> [int, int]:
         """
-        Returns the number of correct predictions of query labels, and the total number of predictions.
+        Returns the number of correct predictions of query labels, and the total number of
+        predictions.
         """
         return (
             torch.max(
@@ -56,21 +60,26 @@ class AbstractMetaLearner(nn.Module):
         ).sum().item(), len(query_labels)
 
     def evaluate(self, data_loader: DataLoader):
+        """
+        Evaluate the model on few-shot classification tasks
+        Args:
+            data_loader: loads data in the shape of few-shot classification tasks
+        """
         # We'll count everything and compute the ratio at the end
         total_predictions = 0
         correct_predictions = 0
 
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
-        # no_grad() tells torch not to keep in memory the whole computational graph (it's more lightweight this way)
+        # no_grad() tells torch not to keep in memory the whole computational graph
         self.eval()
         logger.info("Starting model evaluation...")
         with torch.no_grad():
-            for episode_index, (
+            for _, (
                 support_images,
                 support_labels,
                 query_images,
                 query_labels,
-                class_ids,
+                _,
             ) in tqdm(enumerate(data_loader), total=len(data_loader)):
                 correct, total = self.evaluate_on_one_task(
                     support_images, support_labels, query_images, query_labels
@@ -80,7 +89,8 @@ class AbstractMetaLearner(nn.Module):
                 correct_predictions += correct
 
         logger.info(
-            f"Model tested on {len(data_loader)} tasks. Accuracy: {(100 * correct_predictions / total_predictions):.2f}%"
+            f"Model tested on {len(data_loader)} tasks. "
+            "Accuracy: {(100 * correct_predictions / total_predictions):.2f}%"
         )
 
     def fit_on_task(
@@ -91,6 +101,18 @@ class AbstractMetaLearner(nn.Module):
         query_labels: torch.Tensor,
         optimizer: optim.Optimizer,
     ) -> float:
+        """
+        Predict query set labels and updates model's parameters using classification loss
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images (used in the forward pass)
+            query_images: query set images
+            query_labels: labels of query set images (only used for loss computation)
+            optimizer: optimizer to train the model
+
+        Returns:
+            the value of the classification loss (for reporting purposes)
+        """
         optimizer.zero_grad()
         classification_scores = self(
             support_images.cuda(), support_labels.cuda(), query_images.cuda()
@@ -103,6 +125,12 @@ class AbstractMetaLearner(nn.Module):
         return loss.item()
 
     def fit(self, data_loader: DataLoader, optimizer: optim.Optimizer):
+        """
+        Train the model on few-shot classification tasks.
+        Args:
+            data_loader: loads data in the shape of few-shot classification tasks
+            optimizer: optimizer to train the model
+        """
         log_update_frequency = 10
 
         all_loss = []

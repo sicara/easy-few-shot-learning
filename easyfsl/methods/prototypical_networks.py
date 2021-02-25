@@ -1,3 +1,8 @@
+"""
+See original implementation (quite far from this one)
+at https://github.com/jakesnell/prototypical-networks
+"""
+
 import torch
 
 from easyfsl.methods import AbstractMetaLearner
@@ -8,9 +13,9 @@ class PrototypicalNetworks(AbstractMetaLearner):
     Snell, Jake, Kevin Swersky, and Richard S. Zemel. "Prototypical networks for few-shot learning."
     https://arxiv.org/abs/1703.05175
 
-    Prototypical networks extract feature vectors for both support and query images. Then it computes the mean
-    of support features for each class (called prototypes), and predict classification scores for query images
-    based on their distance to the prototypes.
+    Prototypical networks extract feature vectors for both support and query images. Then it
+    computes the mean of support features for each class (called prototypes), and predict
+    classification scores for query images based on their distance to the prototypes.
     """
 
     def forward(
@@ -38,6 +43,6 @@ class PrototypicalNetworks(AbstractMetaLearner):
         # Compute the euclidean distance from queries to prototypes
         dists = torch.cdist(z_query, z_proto)
 
-        # And here is the super complicated operation to transform those distances into classification scores!
+        # Use it to compute classification scores
         scores = -dists
         return scores

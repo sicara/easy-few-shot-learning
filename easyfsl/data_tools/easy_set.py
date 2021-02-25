@@ -6,13 +6,15 @@ from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset
 
+
 NORMALIZE_DEFAULT = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
 class EasySet(Dataset):
     """
-    A ready-to-use dataset. Will work for any dataset where the images are grouped in directories by class.
-    It expects a JSON file defining the classes and where to find them. It must have the following shape:
+    A ready-to-use dataset. Will work for any dataset where the images are
+    grouped in directories by class. It expects a JSON file defining the
+    classes and where to find them. It must have the following shape:
         {
             "class_names": [
                 "class_1",
@@ -30,8 +32,8 @@ class EasySet(Dataset):
         Args:
             specs_file: path to the JSON file
             image_size: images returned by the dataset will be square images of the given size
-            training: preprocessing is slightly different for a training set, adding a random cropping and a random
-                horizontal flip.
+            training: preprocessing is slightly different for a training set, adding a random
+                cropping and a random horizontal flip.
         """
         specs = json.load(open(specs_file, "r"))
 
