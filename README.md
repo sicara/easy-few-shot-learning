@@ -2,6 +2,7 @@
 ![Python Versions](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8-%23EBBD68.svg)
 ![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
 
 Ready-to-use code and tutorial notebooks to boost your way into few-shot image classification. 
@@ -45,6 +46,8 @@ and extract the dataset, along with [a meta-train/meta-val/meta-test split](data
 1. Install the package with pip: 
    
 ```pip install git+https://github.com/sicara/easy-few-shot-learning.git```
+
+Note: alternatively, you can clone the repository so that you can modify the code as you wish.
    
 2. Download [CU-Birds](http://www.vision.caltech.edu/visipedia/CUB-200.html) and the few-shot train/val/test split:
 
