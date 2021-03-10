@@ -51,6 +51,24 @@ jobs:
       - store_artifacts:
           path: lint-project-reports
           destination: lint-project-reports
+  test:
+    working_directory: ~/project
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    steps:
+      - run:
+          name: Set python << parameters.python-version >>
+          command: |
+            pyenv global << parameters.python-version >>
+            python -m pip install --upgrade pip setuptools wheel
+      - checkout
+      - restore_cache:
+          key: docker-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+      - run:
+          name: run pytest
+          command: |
+            . venv/bin/activate
+            make test
 
 workflows:
   main:
@@ -60,5 +78,11 @@ workflows:
             parameters:
               python-version: ["3.6.13", "3.7.10", "3.8.8"]
       - lint:
+          requires:
+            - install
+      - test:
+          matrix:
+            parameters:
+              python-version: ["3.6.13", "3.7.10", "3.8.8"]
           requires:
             - install
