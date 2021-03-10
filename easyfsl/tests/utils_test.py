@@ -8,7 +8,6 @@ TO_PIL_IMAGE = transforms.ToPILImage()
 
 
 class TestPlotImages:
-
     @staticmethod
     @pytest.mark.parametrize(
         "images,title,images_per_row",
@@ -22,7 +21,6 @@ class TestPlotImages:
 
 
 class TestSlidingAverage:
-
     @staticmethod
     @pytest.mark.parametrize(
         "value_list,window,expected_mean",
@@ -36,8 +34,7 @@ class TestSlidingAverage:
         ],
     )
     def test_returns_correct_mean(value_list, window, expected_mean):
-        assert sliding_average(value_list, window) == expected_mean\
-
+        assert sliding_average(value_list, window) == expected_mean
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -50,4 +47,3 @@ class TestSlidingAverage:
     def test_refuses_illegal_values(value_list, window):
         with pytest.raises(ValueError):
             sliding_average(value_list, window)
-

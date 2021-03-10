@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 from PIL import Image
@@ -37,37 +38,25 @@ class EasySet(Dataset):
         """
         specs = json.load(open(specs_file, "r"))
 
-        self.images = []
-        self.labels = []
-        for class_id, class_root in enumerate(specs["class_roots"]):
-            class_images = [
-                str(image_path)
-                for image_path in Path(class_root).glob("*")
-                if image_path.is_file()
-            ]
-            self.images += class_images
-            self.labels += len(class_images) * [class_id]
-
-        self.data = pd.concat(
-            [
-                pd.DataFrame(
-                    {
-                        "images": [
-                            str(image_path)
-                            for image_path in Path(class_root).glob("*")
-                            if image_path.is_file()
-                        ],
-                        "labels": class_id,
-                    }
-                )
-                for class_id, class_root in enumerate(specs["class_roots"])
-            ],
-            ignore_index=True,
-        )
+        self.images, self.labels = self.list_data_instances(specs["class_roots"])
 
         self.class_names = specs["class_names"]
 
-        self.transform = (
+        self.transform = self.compose_transforms(image_size, training)
+
+    @staticmethod
+    def compose_transforms(image_size: int, training: bool) -> transforms.Compose:
+        """
+        Create a composition of torchvision transformations, with some randomization if we are
+            building a training set.
+        Args:
+            image_size: size of dataset images
+            training: whether this is a training set or not
+
+        Returns:
+            compositions of torchvision transformations
+        """
+        return (
             transforms.Compose(
                 [
                     transforms.RandomResizedCrop(image_size),
@@ -86,6 +75,31 @@ class EasySet(Dataset):
                 ]
             )
         )
+
+    @staticmethod
+    def list_data_instances(class_roots: List[str]) -> (List[str], List[int]):
+        """
+        Explore the directories specified in class_roots to find all data instances.
+        Args:
+            class_roots: each element is the path to the directory containing the elements
+                of one class
+
+        Returns:
+            list of paths to the images, and a list of same length containing the integer label
+                of each image
+        """
+        images = []
+        labels = []
+        for class_id, class_root in enumerate(class_roots):
+            class_images = [
+                str(image_path)
+                for image_path in Path(class_root).glob("*")
+                if image_path.is_file()
+            ]
+            images += class_images
+            labels += len(class_images) * [class_id]
+
+        return images, labels
 
     def __getitem__(self, item):
         img = self.transform(Image.open(self.images[item]))
