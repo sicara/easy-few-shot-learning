@@ -52,6 +52,9 @@ jobs:
           path: lint-project-reports
           destination: lint-project-reports
   test:
+    parameters:
+      python-version:
+        type: string
     working_directory: ~/project
     docker:
       - image: cimg/python:<< parameters.python-version >>
