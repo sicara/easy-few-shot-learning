@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from typing import List
 
-import pandas as pd
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset
@@ -36,13 +35,41 @@ class EasySet(Dataset):
             training: preprocessing is slightly different for a training set, adding a random
                 cropping and a random horizontal flip.
         """
-        specs = json.load(open(specs_file, "r"))
+        specs = self.load_specs(specs_file)
 
         self.images, self.labels = self.list_data_instances(specs["class_roots"])
 
         self.class_names = specs["class_names"]
 
         self.transform = self.compose_transforms(image_size, training)
+
+    @staticmethod
+    def load_specs(specs_file: Path) -> dict:
+        """
+        Load specs from a JSON file.
+        Args:
+            specs_file: path to the JSON file
+
+        Returns:
+            dictionary contained in the JSON file
+        """
+
+        if specs_file.suffix != ".json":
+            raise ValueError("EasySet requires specs in a JSON file.")
+
+        specs = json.load(open(specs_file, "r"))
+
+        if "class_names" not in specs.keys() or "class_roots" not in specs.keys():
+            raise ValueError(
+                "EasySet requires specs in a JSON file with the keys class_names and class_roots."
+            )
+
+        if len(specs["class_names"]) != len(specs["class_roots"]):
+            raise ValueError(
+                "Number of class names does not match the number of class root directories."
+            )
+
+        return specs
 
     @staticmethod
     def compose_transforms(image_size: int, training: bool) -> transforms.Compose:
