@@ -27,7 +27,7 @@ class EasySet(Dataset):
         }
     """
 
-    def __init__(self, specs_file: Path, image_size=224, training=False):
+    def __init__(self, specs_file: Path or str, image_size=224, training=False):
         """
         Args:
             specs_file: path to the JSON file
@@ -35,7 +35,7 @@ class EasySet(Dataset):
             training: preprocessing is slightly different for a training set, adding a random
                 cropping and a random horizontal flip.
         """
-        specs = self.load_specs(specs_file)
+        specs = self.load_specs(Path(specs_file))
 
         self.images, self.labels = self.list_data_instances(specs["class_roots"])
 
