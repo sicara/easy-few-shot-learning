@@ -8,6 +8,20 @@ from torchvision.models import resnet18
 from easyfsl.methods import AbstractMetaLearner
 
 
+class TestAMLInit:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "backbone",
+        [
+            nn.Conv2d(3, 4, 4),
+        ],
+    )
+    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
+        with pytest.raises(ValueError):
+            AbstractMetaLearner(backbone)
+
+
+# pylint: disable=not-callable
 class TestAMLEvaluateOnOneTask:
     @staticmethod
     @pytest.mark.parametrize(
@@ -33,7 +47,7 @@ class TestAMLEvaluateOnOneTask:
     ):
         with patch("easyfsl.methods.AbstractMetaLearner.forward") as mock_forward:
             mock_forward.return_value = torch.tensor(5 * [[0.25, 0.75]]).cuda()
-            model = AbstractMetaLearner(nn.Conv2d(1, 1, 1))
+            model = AbstractMetaLearner(resnet18())
             assert (
                 model.evaluate_on_one_task(
                     support_images,
@@ -43,3 +57,6 @@ class TestAMLEvaluateOnOneTask:
                 )
                 == (expected_correct, expected_total)
             )
+
+
+# pylint: enable=not-callable

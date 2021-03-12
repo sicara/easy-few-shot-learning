@@ -6,7 +6,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from easyfsl.utils import sliding_average
+from easyfsl.utils import sliding_average, is_a_feature_extractor
 
 
 class AbstractMetaLearner(nn.Module):
@@ -16,6 +16,13 @@ class AbstractMetaLearner(nn.Module):
 
     def __init__(self, backbone: nn.Module):
         super().__init__()
+
+        if not is_a_feature_extractor(backbone):
+            raise ValueError(
+                "Illegal backbone for a few-shot algorithm."
+                "Expected output for an image is a 1-dim tensor."
+            )
+
         self.backbone = backbone
         self.criterion = nn.CrossEntropyLoss()
 

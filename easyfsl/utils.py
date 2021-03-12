@@ -8,6 +8,7 @@ import torchvision
 from matplotlib import pyplot as plt
 import numpy as np
 import torch
+from torch import nn
 
 
 def plot_images(images: torch.Tensor, title: str, images_per_row: int):
@@ -39,3 +40,18 @@ def sliding_average(value_list: List[float], window: int) -> float:
     if len(value_list) == 0:
         raise ValueError("Cannot perform sliding average on an empty list.")
     return np.asarray(value_list[-window:]).mean()
+
+
+def is_a_feature_extractor(model: nn.Module) -> bool:
+    """
+    Assert that a given module is a feature extractor,
+        i.e. that its output for a given image is a 1-dim tensor.
+    Args:
+        model: module to test
+
+    Returns:
+        whether the module is a feature extractor
+    """
+    input_images = torch.ones((4, 3, 32, 32))
+    output = model(input_images)
+    return len(output.shape) == 2 and output.shape[0] == 4
