@@ -117,7 +117,7 @@ test_loader = DataLoader(
     collate_fn=test_sampler.episodic_collate_fn,
 )
 
-model.evaluate(test_loader)
+accuracy = model.evaluate(test_loader)
 ```
 
 ## Roadmap
