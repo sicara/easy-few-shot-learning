@@ -118,6 +118,7 @@ test_loader = DataLoader(
 )
 
 accuracy = model.evaluate(test_loader)
+print(f"Average accuracy : {(100 * accuracy):.2f}")
 ```
 
 ## Roadmap
