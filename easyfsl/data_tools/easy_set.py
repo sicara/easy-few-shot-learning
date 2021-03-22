@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from PIL import Image
 from torchvision import transforms
@@ -27,7 +27,7 @@ class EasySet(Dataset):
         }
     """
 
-    def __init__(self, specs_file: Path or str, image_size=224, training=False):
+    def __init__(self, specs_file: Union[Path, str], image_size=224, training=False):
         """
         Args:
             specs_file: path to the JSON file
