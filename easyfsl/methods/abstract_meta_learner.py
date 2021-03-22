@@ -6,7 +6,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from easyfsl.utils import sliding_average
+from easyfsl.utils import sliding_average, is_a_feature_extractor
 
 
 class AbstractMetaLearner(nn.Module):
@@ -16,6 +16,13 @@ class AbstractMetaLearner(nn.Module):
 
     def __init__(self, backbone: nn.Module):
         super().__init__()
+
+        if not is_a_feature_extractor(backbone):
+            raise ValueError(
+                "Illegal backbone for a few-shot algorithm."
+                "Expected output for an image is a 1-dim tensor."
+            )
+
         self.backbone = backbone
         self.criterion = nn.CrossEntropyLoss()
 
@@ -59,11 +66,13 @@ class AbstractMetaLearner(nn.Module):
             == query_labels.cuda()
         ).sum().item(), len(query_labels)
 
-    def evaluate(self, data_loader: DataLoader):
+    def evaluate(self, data_loader: DataLoader) -> float:
         """
         Evaluate the model on few-shot classification tasks
         Args:
             data_loader: loads data in the shape of few-shot classification tasks
+        Returns:
+            average classification accuracy
         """
         # We'll count everything and compute the ratio at the end
         total_predictions = 0
@@ -72,26 +81,30 @@ class AbstractMetaLearner(nn.Module):
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
         # no_grad() tells torch not to keep in memory the whole computational graph
         self.eval()
-        logger.info("Starting model evaluation...")
         with torch.no_grad():
-            for _, (
-                support_images,
-                support_labels,
-                query_images,
-                query_labels,
-                _,
-            ) in tqdm(enumerate(data_loader), total=len(data_loader)):
-                correct, total = self.evaluate_on_one_task(
-                    support_images, support_labels, query_images, query_labels
-                )
+            with tqdm(
+                enumerate(data_loader), total=len(data_loader), desc="Evaluation"
+            ) as tqdm_eval:
+                for _, (
+                    support_images,
+                    support_labels,
+                    query_images,
+                    query_labels,
+                    _,
+                ) in tqdm_eval:
+                    correct, total = self.evaluate_on_one_task(
+                        support_images, support_labels, query_images, query_labels
+                    )
 
-                total_predictions += total
-                correct_predictions += correct
+                    total_predictions += total
+                    correct_predictions += correct
 
-        logger.info(
-            f"Model tested on {len(data_loader)} tasks. "
-            "Accuracy: {(100 * correct_predictions / total_predictions):.2f}%"
-        )
+                    # Log accuracy in real time
+                    tqdm_eval.set_postfix(
+                        accuracy=correct_predictions / total_predictions
+                    )
+
+        return correct_predictions / total_predictions
 
     def fit_on_task(
         self,
@@ -135,8 +148,9 @@ class AbstractMetaLearner(nn.Module):
 
         all_loss = []
         self.train()
-        logger.info("Starting meta-training ...")
-        with tqdm(enumerate(data_loader), total=len(data_loader)) as tqdm_train:
+        with tqdm(
+            enumerate(data_loader), total=len(data_loader), desc="Meta-Training"
+        ) as tqdm_train:
             for episode_index, (
                 support_images,
                 support_labels,
@@ -153,6 +167,7 @@ class AbstractMetaLearner(nn.Module):
                 )
                 all_loss.append(loss_value)
 
+                # Log training loss in real time
                 if episode_index % log_update_frequency == 0:
                     tqdm_train.set_postfix(
                         loss=sliding_average(all_loss, log_update_frequency)
