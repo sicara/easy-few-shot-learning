@@ -45,7 +45,7 @@ and extract the dataset, along with [a meta-train/meta-val/meta-test split](data
 ## QuickStart
 1. Install the package with pip: 
    
-```pip install git+https://github.com/sicara/easy-few-shot-learning.git```
+```pip install easyfsl```
 
 Note: alternatively, you can clone the repository so that you can modify the code as you wish.
    
