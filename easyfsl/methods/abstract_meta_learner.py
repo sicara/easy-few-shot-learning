@@ -1,6 +1,7 @@
 from abc import abstractmethod
+from pathlib import Path
+from typing import Union
 
-from loguru import logger
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
@@ -25,6 +26,9 @@ class AbstractMetaLearner(nn.Module):
 
         self.backbone = backbone
         self.criterion = nn.CrossEntropyLoss()
+
+        self.best_validation_accuracy = 0.0
+        self.best_model_state = None
 
     # pylint: disable=all
     @abstractmethod
@@ -137,19 +141,28 @@ class AbstractMetaLearner(nn.Module):
 
         return loss.item()
 
-    def fit(self, data_loader: DataLoader, optimizer: optim.Optimizer):
+    def fit(
+        self,
+        train_loader: DataLoader,
+        optimizer: optim.Optimizer,
+        val_loader: DataLoader = None,
+        validation_frequency: int = 1000,
+    ):
         """
         Train the model on few-shot classification tasks.
         Args:
-            data_loader: loads data in the shape of few-shot classification tasks
+            train_loader: loads training data in the shape of few-shot classification tasks
             optimizer: optimizer to train the model
+            val_loader: loads data from the validation set in the shape of few-shot classification
+                tasks
+            validation_frequency: number of training episodes between two validations
         """
         log_update_frequency = 10
 
         all_loss = []
         self.train()
         with tqdm(
-            enumerate(data_loader), total=len(data_loader), desc="Meta-Training"
+            enumerate(train_loader), total=len(train_loader), desc="Meta-Training"
         ) as tqdm_train:
             for episode_index, (
                 support_images,
@@ -172,3 +185,58 @@ class AbstractMetaLearner(nn.Module):
                     tqdm_train.set_postfix(
                         loss=sliding_average(all_loss, log_update_frequency)
                     )
+
+                # Validation
+                if val_loader:
+                    if episode_index + 1 % validation_frequency == 0:
+                        self.validate(val_loader)
+
+    def validate(self, val_loader: DataLoader) -> float:
+        """
+        Validate the model on the validation set.
+        Args:
+            val_loader: loads data from the validation set in the shape of few-shot classification
+                tasks
+        Returns:
+            average classification accuracy on the validation set
+        """
+        validation_accuracy = self.evaluate(val_loader)
+        print(f"Validation accuracy: {(100 * validation_accuracy):.2f}")
+        # If this was the best validation performance, we save the model state
+        if validation_accuracy > self.best_validation_accuracy:
+            print("Best validation accuracy so far!")
+            self.best_model_state = (
+                self.state_dict()
+            )  # TODO: does this work or do we have to copy?
+
+        return validation_accuracy
+
+    def _check_that_best_state_is_defined(self):
+        """
+        Will raise an error if self.best_model_state is None, i.e. if no best sate has been
+        defined yet.
+        """
+        if not self.best_model_state:
+            raise AttributeError(
+                "There is not best state defined for this model."
+                "You need to train the model using validation to define a best state."
+            )
+
+    def restore_best_state(self):
+        """
+        Retrieves the state (i.e. a dictionary of model parameters) of the model at the time it
+        obtained its best performance on the validation set.
+        """
+        self._check_that_best_state_is_defined()
+        self.load_state_dict(self.best_model_state)
+
+    def dump_best_state(self, output_path: Union[Path, str]):
+        """
+        Retrieves the state (i.e. a dictionary of model parameters) of the model at the time it
+        obtained its best performance on the validation set.
+        Args:
+            output_path: path to the output file. Common practice in PyTorch is to save models
+                using either a .pt or .pth file extension.
+        """
+        self._check_that_best_state_is_defined()
+        torch.save(self.best_model_state, output_path)
