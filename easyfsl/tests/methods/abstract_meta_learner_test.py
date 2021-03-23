@@ -61,3 +61,39 @@ class TestAMLEvaluateOnOneTask:
 
 
 # pylint: enable=not-callable
+
+
+class TestAMLValidate:
+    @staticmethod
+    def test_validate_returns_accuracy():
+        with patch("easyfsl.methods.AbstractMetaLearner.evaluate") as mock_evaluate:
+            mock_evaluate.return_value = 0.0
+            meta_learner = AbstractMetaLearner(resnet18())
+            assert meta_learner.validate(None) == 0.0
+
+    @staticmethod
+    def test_validate_updates_best_model_state_if_it_has_best_validation_accuracy():
+        with patch("easyfsl.methods.AbstractMetaLearner.evaluate") as mock_evaluate:
+            mock_evaluate.return_value = 0.5
+            meta_learner = AbstractMetaLearner(resnet18())
+            meta_learner.best_validation_accuracy = 0.1
+            meta_learner.validate(None)
+            assert meta_learner.best_model_state is not None
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "accuracy",
+        [
+            0.05,
+            0.1,
+        ],
+    )
+    def test_validate_leaves_best_model_state_if_it_has_worse_validation_accuracy(
+        accuracy,
+    ):
+        with patch("easyfsl.methods.AbstractMetaLearner.evaluate") as mock_evaluate:
+            mock_evaluate.return_value = accuracy
+            meta_learner = AbstractMetaLearner(resnet18())
+            meta_learner.best_validation_accuracy = 0.1
+            meta_learner.validate(None)
+            assert meta_learner.best_model_state is None
