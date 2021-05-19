@@ -98,6 +98,8 @@ optimizer = Adam(params=model.parameters())
 
 model.fit(train_loader, optimizer)
 ```
+   **Note:** you can also define a validation data loader and use as an additional argument to `fit`
+in order to use validation during your training.
 
    **Troubleshooting:** a ResNet18 with a batch size of (5 * (5+10)) = 75 whould use about 4.2GB on your GPU.
 If you don't have it, switch to CPU, choose a smaller model or reduce the batch size (in `TaskSampler` above).
