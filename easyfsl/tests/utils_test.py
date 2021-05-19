@@ -2,7 +2,7 @@ import pytest
 import torch
 from torchvision import transforms
 
-from easyfsl.utils import plot_images, sliding_average
+from easyfsl.utils import plot_images, sliding_average, compute_prototypes
 
 TO_PIL_IMAGE = transforms.ToPILImage()
 
@@ -47,3 +47,35 @@ class TestSlidingAverage:
     def test_refuses_illegal_values(value_list, window):
         with pytest.raises(ValueError):
             sliding_average(value_list, window)
+
+
+# pylint: disable=not-callable
+class TestComputePrototypes:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "features, labels, expected_prototypes",
+        [
+            (
+                torch.tensor([[0.0, 0.0], [1.0, 1.0]]),
+                torch.tensor([0, 0]),
+                torch.tensor([[0.5, 0.5]]),
+            ),
+            (
+                torch.tensor([[0.0, 0.0], [1.0, 1.0]]),
+                torch.tensor([0, 1]),
+                torch.tensor([[0.0, 0.0], [1.0, 1.0]]),
+            ),
+            (
+                torch.tensor([[0.0, 0.0], [1.0, 1.0]]),
+                torch.tensor([1, 0]),
+                torch.tensor([[1.0, 1.0], [0.0, 0.0]]),
+            ),
+        ],
+    )
+    def test_compute_prototypes_returns_correct_prototypes(
+        features, labels, expected_prototypes
+    ):
+        assert torch.equal(compute_prototypes(features, labels), expected_prototypes)
+
+
+# pylint: enable=not-callable
