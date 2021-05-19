@@ -61,3 +61,17 @@ class TestAMLEvaluateOnOneTask:
 
 
 # pylint: enable=not-callable
+
+
+class TestAMLAbstractMethods:
+    @staticmethod
+    def test_forward_raises_error_when_not_implemented():
+        with pytest.raises(NotImplementedError):
+            model = AbstractMetaLearner(resnet18())
+            model(None)
+
+    @staticmethod
+    def test_process_support_set_raises_error_when_not_implemented():
+        with pytest.raises(NotImplementedError):
+            model = AbstractMetaLearner(resnet18())
+            model.process_support_set(None, None)
