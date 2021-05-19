@@ -6,6 +6,7 @@ at https://github.com/jakesnell/prototypical-networks
 import torch
 
 from easyfsl.methods import AbstractMetaLearner
+from easyfsl.utils import compute_prototypes
 
 
 class PrototypicalNetworks(AbstractMetaLearner):
@@ -18,30 +19,40 @@ class PrototypicalNetworks(AbstractMetaLearner):
     classification scores for query images based on their distance to the prototypes.
     """
 
-    def forward(
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self.prototypes = None
+
+    def process_support_set(
         self,
         support_images: torch.Tensor,
         support_labels: torch.Tensor,
+    ):
+        """
+        Overwrites process_support_set of AbstractMetaLearner. Extract features from the support set
+        and store class prototypes
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
+        """
+
+        support_features = self.backbone.forward(support_images)
+        self.prototypes = compute_prototypes(support_features, support_labels)
+
+    def forward(
+        self,
         query_images: torch.Tensor,
     ) -> torch.Tensor:
         """
-        Overwrites forward method of AbstractFewShotAlgorithm.
+        Overwrites forward method of AbstractMetaLearner. Predict query labels based on their
+        distance to class prototypes in the feature space.
         """
         # Extract the features of support and query images
-        z_support = self.backbone.forward(support_images)
         z_query = self.backbone.forward(query_images)
 
-        n_way = len(torch.unique(support_labels))
-        # Prototype i is the mean of all instances of features corresponding to labels == i
-        z_proto = torch.cat(
-            [
-                z_support[torch.nonzero(support_labels == label)].mean(0)
-                for label in range(n_way)
-            ]
-        )
-
         # Compute the euclidean distance from queries to prototypes
-        dists = torch.cdist(z_query, z_proto)
+        dists = torch.cdist(z_query, self.prototypes)
 
         # Use it to compute classification scores
         scores = -dists
