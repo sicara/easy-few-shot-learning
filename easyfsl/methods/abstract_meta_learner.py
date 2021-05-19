@@ -201,13 +201,11 @@ class AbstractMetaLearner(nn.Module):
             average classification accuracy on the validation set
         """
         validation_accuracy = self.evaluate(val_loader)
-        print(f"Validation accuracy: {(100 * validation_accuracy):.2f}")
+        print(f"Validation accuracy: {(100 * validation_accuracy):.2f}%")
         # If this was the best validation performance, we save the model state
         if validation_accuracy > self.best_validation_accuracy:
             print("Best validation accuracy so far!")
-            self.best_model_state = (
-                self.state_dict()
-            )  # TODO: does this work or do we have to copy?
+            self.best_model_state = self.state_dict()
 
         return validation_accuracy
 
@@ -218,7 +216,7 @@ class AbstractMetaLearner(nn.Module):
         """
         if not self.best_model_state:
             raise AttributeError(
-                "There is not best state defined for this model."
+                "There is not best state defined for this model. "
                 "You need to train the model using validation to define a best state."
             )
 
