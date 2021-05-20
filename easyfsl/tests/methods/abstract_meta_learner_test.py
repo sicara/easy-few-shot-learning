@@ -76,7 +76,7 @@ class TestAMLAbstractMethods:
             model = AbstractMetaLearner(resnet18())
             model.process_support_set(None, None)
 
-            
+
 class TestAMLValidate:
     @staticmethod
     def test_validate_returns_accuracy():
