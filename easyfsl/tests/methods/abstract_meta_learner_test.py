@@ -47,20 +47,34 @@ class TestAMLEvaluateOnOneTask:
     ):
         with patch("torch.Tensor.cuda", new=torch.Tensor.cpu):
             with patch("easyfsl.methods.AbstractMetaLearner.forward") as mock_forward:
-                mock_forward.return_value = torch.tensor(5 * [[0.25, 0.75]]).cuda()
-                model = AbstractMetaLearner(resnet18())
-                assert (
-                    model.evaluate_on_one_task(
-                        support_images,
-                        support_labels,
-                        query_images,
-                        query_labels,
+                with patch("easyfsl.methods.AbstractMetaLearner.process_support_set"):
+                    mock_forward.return_value = torch.tensor(5 * [[0.25, 0.75]]).cuda()
+                    model = AbstractMetaLearner(resnet18())
+                    assert (
+                        model.evaluate_on_one_task(
+                            support_images,
+                            support_labels,
+                            query_images,
+                            query_labels,
+                        )
+                        == (expected_correct, expected_total)
                     )
-                    == (expected_correct, expected_total)
-                )
-
 
 # pylint: enable=not-callable
+
+
+class TestAMLAbstractMethods:
+    @staticmethod
+    def test_forward_raises_error_when_not_implemented():
+        with pytest.raises(NotImplementedError):
+            model = AbstractMetaLearner(resnet18())
+            model(None)
+
+    @staticmethod
+    def test_process_support_set_raises_error_when_not_implemented():
+        with pytest.raises(NotImplementedError):
+            model = AbstractMetaLearner(resnet18())
+            model.process_support_set(None, None)
 
 
 class TestAMLValidate:

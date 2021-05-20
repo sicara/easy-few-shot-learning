@@ -55,3 +55,26 @@ def is_a_feature_extractor(model: nn.Module) -> bool:
     input_images = torch.ones((4, 3, 32, 32))
     output = model(input_images)
     return len(output.shape) == 2 and output.shape[0] == 4
+
+
+def compute_prototypes(
+    support_features: torch.Tensor, support_labels: torch.Tensor
+) -> torch.Tensor:
+    """
+    Compute class prototypes from support features and labels
+    Args:
+        support_features: for each instance in the support set, its feature vector
+        support_labels: for each instance in the support set, its label
+
+    Returns:
+        for each label of the support set, the average feature vector of instances with this label
+    """
+
+    n_way = len(torch.unique(support_labels))
+    # Prototype i is the mean of all instances of features corresponding to labels == i
+    return torch.cat(
+        [
+            support_features[torch.nonzero(support_labels == label)].mean(0)
+            for label in range(n_way)
+        ]
+    )

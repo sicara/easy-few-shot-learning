@@ -34,18 +34,35 @@ class AbstractMetaLearner(nn.Module):
     @abstractmethod
     def forward(
         self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
         query_images: torch.Tensor,
     ) -> torch.Tensor:
         """
+        Predict classification labels.
         Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
             query_images: images of the query set
         Returns:
             a prediction of classification scores for query images
         """
+        raise NotImplementedError(
+            "All few-shot algorithms must implement a forward method."
+        )
+
+    @abstractmethod
+    def process_support_set(
+        self,
+        support_images: torch.Tensor,
+        support_labels: torch.Tensor,
+    ):
+        """
+        Harness information from the support set, so that query labels can later be predicted using
+        a forward call
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
+        """
+        raise NotImplementedError(
+            "All few-shot algorithms must implement a process_support_set method."
+        )
 
     # pylint: enable=all
 
@@ -60,11 +77,10 @@ class AbstractMetaLearner(nn.Module):
         Returns the number of correct predictions of query labels, and the total number of
         predictions.
         """
+        self.process_support_set(support_images.cuda(), support_labels.cuda())
         return (
             torch.max(
-                self(support_images.cuda(), support_labels.cuda(), query_images.cuda())
-                .detach()
-                .data,
+                self(query_images.cuda()).detach().data,
                 1,
             )[1]
             == query_labels.cuda()
@@ -131,9 +147,8 @@ class AbstractMetaLearner(nn.Module):
             the value of the classification loss (for reporting purposes)
         """
         optimizer.zero_grad()
-        classification_scores = self(
-            support_images.cuda(), support_labels.cuda(), query_images.cuda()
-        )
+        self.process_support_set(support_images.cuda(), support_labels.cuda())
+        classification_scores = self(query_images.cuda())
 
         loss = self.criterion(classification_scores, query_labels.cuda())
         loss.backward()
