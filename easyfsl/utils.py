@@ -36,25 +36,36 @@ def sliding_average(value_list: List[float], window: int) -> float:
 
     Returns:
         average of the last window instances in value_list
+
+    Raises:
+        ValueError: if the input list is empty
     """
     if len(value_list) == 0:
         raise ValueError("Cannot perform sliding average on an empty list.")
     return np.asarray(value_list[-window:]).mean()
 
 
-def is_a_feature_extractor(model: nn.Module) -> bool:
+def compute_feature_dimension(backbone: nn.Module) -> int:
     """
-    Assert that a given module is a feature extractor,
-        i.e. that its output for a given image is a 1-dim tensor.
+    Compute the dimension of the feature space defined by a feature extractor.
     Args:
-        model: module to test
+        backbone: feature extractor
 
     Returns:
-        whether the module is a feature extractor
+        size of the feature vector computed by the feature extractor for an instance
+
+    Raises:
+        ValueError: if the backbone is not a feature extractor,
+        i.e. if its output for a given image is not a 1-dim tensor.
     """
     input_images = torch.ones((4, 3, 32, 32))
-    output = model(input_images)
-    return len(output.shape) == 2 and output.shape[0] == 4
+    output = backbone(input_images)
+    if len(output.shape) != 2 or output.shape[0] != 4:
+        raise ValueError(
+            "Illegal backbone for a few-shot algorithm."
+            "Expected output for an image is a 1-dim tensor."
+        )
+    return output.shape[1]
 
 
 def compute_prototypes(

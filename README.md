@@ -30,6 +30,8 @@ You want to learn few-shot learning and don't know where to start? Start with ou
   any meta-trainable algorithm
   
 - [Prototypical Networks](easyfsl/methods/prototypical_networks.py)
+  
+- [Matching Networks](easyfsl/methods/matching_networks.py)
 
 **Tools for data loading:**
 
@@ -125,10 +127,10 @@ print(f"Average accuracy : {(100 * accuracy):.2f}")
 
 ## Roadmap
 
-- [ ] Implement unit tests
-- [ ] Add validation to `AbstractMetaLearner.fit()`
+- [X] Implement unit tests
+- [X] Add validation to `AbstractMetaLearner.fit()`
 - [ ] Integrate more methods: 
-  - [ ] Matching Networks
+  - [X] Matching Networks
   - [ ] Relation Networks
   - [ ] MAML
   - [ ] Transductive Propagation Network

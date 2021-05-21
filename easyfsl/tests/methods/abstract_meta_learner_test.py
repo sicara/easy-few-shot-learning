@@ -60,6 +60,7 @@ class TestAMLEvaluateOnOneTask:
                         == (expected_correct, expected_total)
                     )
 
+
 # pylint: enable=not-callable
 
 
