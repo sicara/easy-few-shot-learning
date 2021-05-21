@@ -1,2 +1,3 @@
 from .abstract_meta_learner import AbstractMetaLearner
+from .matching_networks import MatchingNetworks
 from .prototypical_networks import PrototypicalNetworks
