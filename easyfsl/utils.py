@@ -36,6 +36,9 @@ def sliding_average(value_list: List[float], window: int) -> float:
 
     Returns:
         average of the last window instances in value_list
+
+    Raises:
+        ValueError: if the input list is empty
     """
     if len(value_list) == 0:
         raise ValueError("Cannot perform sliding average on an empty list.")
@@ -45,13 +48,15 @@ def sliding_average(value_list: List[float], window: int) -> float:
 def compute_feature_dimension(backbone: nn.Module) -> int:
     """
     Compute the dimension of the feature space defined by a feature extractor.
-        Raises a ValueError if the backbone is not a feature extractor,
-        i.e. if its output for a given image is not a 1-dim tensor.
     Args:
         backbone: feature extractor
 
     Returns:
         size of the feature vector computed by the feature extractor for an instance
+
+    Raises:
+        ValueError: if the backbone is not a feature extractor,
+        i.e. if its output for a given image is not a 1-dim tensor.
     """
     input_images = torch.ones((4, 3, 32, 32))
     output = backbone(input_images)

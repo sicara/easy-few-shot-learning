@@ -221,8 +221,9 @@ class AbstractMetaLearner(nn.Module):
 
     def _check_that_best_state_is_defined(self):
         """
-        Will raise an error if self.best_model_state is None, i.e. if no best sate has been
-        defined yet.
+        Raises:
+            AttributeError: if self.best_model_state is None, i.e. if no best sate has been
+                defined yet.
         """
         if not self.best_model_state:
             raise AttributeError(

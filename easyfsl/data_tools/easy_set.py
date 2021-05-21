@@ -52,6 +52,10 @@ class EasySet(Dataset):
 
         Returns:
             dictionary contained in the JSON file
+
+        Raises:
+            ValueError: if specs_file is not a JSON, or if it is a JSON and the content is not
+                of the expected shape.
         """
 
         if specs_file.suffix != ".json":
