@@ -1,5 +1,5 @@
 import torch
-from torchvision.models import mobilenet_v2
+from torch import nn
 
 from easyfsl.methods import PrototypicalNetworks
 
@@ -16,7 +16,9 @@ class TestPrototypicalNetworksPipeline:
         ) = example_few_shot_classification_task
 
         torch.manual_seed(1)
-        model = PrototypicalNetworks(mobilenet_v2())
+        torch.set_num_threads(1)
+
+        model = PrototypicalNetworks(nn.Flatten())
 
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
@@ -26,7 +28,7 @@ class TestPrototypicalNetworksPipeline:
             torch.isclose(
                 predictions,
                 torch.tensor(
-                    [[-7.8325, -9.6273], [-8.1752, -10.2638]],
+                    [[-15.5485, -22.0652], [-21.3081, -18.0292]],
                 ),
             )
         )

@@ -1,5 +1,5 @@
 import torch
-from torchvision.models import mobilenet_v2
+from torch import nn
 
 from easyfsl.methods import MatchingNetworks
 
@@ -16,7 +16,9 @@ class TestMatchingNetworksPipeline:
         ) = example_few_shot_classification_task
 
         torch.manual_seed(1)
-        model = MatchingNetworks(mobilenet_v2())
+        torch.set_num_threads(1)
+
+        model = MatchingNetworks(nn.Flatten())
 
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
@@ -25,7 +27,7 @@ class TestMatchingNetworksPipeline:
         assert torch.all(
             torch.isclose(
                 predictions,
-                torch.tensor([[-0.3475, -1.2256], [-0.1823, -1.7919]]),
+                torch.tensor([[-1.3137, -0.3131], [-1.0779, -0.4160]]),
                 rtol=1e-03,
             )
         )

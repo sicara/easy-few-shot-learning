@@ -18,7 +18,7 @@ def example_few_shot_classification_task():
         "Black_footed_Albatross_0004_2731401028.jpg",
         "Least_Auklet_0004_2685272855.jpg",
     ]
-    support_labels = torch.tensor([0, 0, 1])    # pylint: disable=not-callable
+    support_labels = torch.tensor([0, 0, 1])  # pylint: disable=not-callable
 
     to_tensor = transforms.ToTensor()
     support_images = torch.stack(
