@@ -30,7 +30,20 @@ class RelationNetworks(AbstractMetaLearner):
     """
 
     def __init__(self, *args, inner_relation_module_channels: int = 8):
+        """
+        Build Relation Networks by calling the constructor of AbstractMetaLearner.
+
+        Raises:
+            ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
+            given image is not a tensor of shape (n_channels, width, height)
+        """
         super().__init__(*args)
+
+        if len(self.backbone_output_shape) != 3:
+            raise ValueError(
+                "Illegal backbone for Relation Networks. Expected output for an image is a 3-dim "
+                "tensor of shape (n_channels, width, height)."
+            )
 
         # Relation Networks use Mean Square Error.
         # This is odd because this is a classification problem.
