@@ -21,7 +21,20 @@ class PrototypicalNetworks(AbstractMetaLearner):
     """
 
     def __init__(self, *args):
+        """
+        Build Prototypical Networks by calling the constructor of AbstractMetaLearner.
+
+        Raises:
+            ValueError: if the backbone is not a feature extractor,
+            i.e. if its output for a given image is not a 1-dim tensor.
+        """
         super().__init__(*args)
+
+        if len(self.backbone_output_shape) != 1:
+            raise ValueError(
+                "Illegal backbone for Prototypical Networks. "
+                "Expected output for an image is a 1-dim tensor."
+            )
 
         # Here we create the field so that the model can store the prototypes for a support set
         self.prototypes = None
@@ -33,7 +46,7 @@ class PrototypicalNetworks(AbstractMetaLearner):
     ):
         """
         Overwrites process_support_set of AbstractMetaLearner.
-        Extract features from the support set and store class prototypes
+        Extract feature vectors from the support set and store class prototypes.
         """
 
         support_features = self.backbone.forward(support_images)

@@ -20,7 +20,20 @@ class MatchingNetworks(AbstractMetaLearner):
     """
 
     def __init__(self, *args):
+        """
+        Build Matching Networks by calling the constructor of AbstractMetaLearner.
+
+        Raises:
+            ValueError: if the backbone is not a feature extractor,
+            i.e. if its output for a given image is not a 1-dim tensor.
+        """
         super().__init__(*args)
+
+        if len(self.backbone_output_shape) != 1:
+            raise ValueError(
+                "Illegal backbone for Matching Networks. "
+                "Expected output for an image is a 1-dim tensor."
+            )
 
         # The model outputs log-probabilities, so we use the negative log-likelihood loss
         self.criterion = nn.NLLLoss()

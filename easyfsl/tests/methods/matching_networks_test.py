@@ -1,7 +1,21 @@
+import pytest
 import torch
 from torch import nn
 
 from easyfsl.methods import MatchingNetworks
+
+
+class TestMatchingNetworksInit:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "backbone",
+        [
+            nn.Conv2d(3, 4, 4),
+        ],
+    )
+    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
+        with pytest.raises(ValueError):
+            MatchingNetworks(backbone)
 
 
 class TestMatchingNetworksPipeline:

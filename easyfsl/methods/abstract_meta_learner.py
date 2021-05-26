@@ -7,7 +7,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from easyfsl.utils import sliding_average, compute_feature_dimension
+from easyfsl.utils import sliding_average, compute_backbone_output_shape
 
 
 class AbstractMetaLearner(nn.Module):
@@ -19,7 +19,8 @@ class AbstractMetaLearner(nn.Module):
         super().__init__()
 
         self.backbone = backbone
-        self.feature_dimension = compute_feature_dimension(backbone)
+        self.backbone_output_shape = compute_backbone_output_shape(backbone)
+        self.feature_dimension = self.backbone_output_shape[0]
         self.criterion = nn.CrossEntropyLoss()
 
         self.best_validation_accuracy = 0.0

@@ -2,7 +2,7 @@
 General utilities
 """
 
-from typing import List
+from typing import List, Tuple
 
 import torchvision
 from matplotlib import pyplot as plt
@@ -45,27 +45,20 @@ def sliding_average(value_list: List[float], window: int) -> float:
     return np.asarray(value_list[-window:]).mean()
 
 
-def compute_feature_dimension(backbone: nn.Module) -> int:
+def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
     """
     Compute the dimension of the feature space defined by a feature extractor.
     Args:
         backbone: feature extractor
 
     Returns:
-        size of the feature vector computed by the feature extractor for an instance
+        shape of the feature vector computed by the feature extractor for an instance
 
-    Raises:
-        ValueError: if the backbone is not a feature extractor,
-        i.e. if its output for a given image is not a 1-dim tensor.
     """
     input_images = torch.ones((4, 3, 32, 32))
     output = backbone(input_images)
-    if len(output.shape) != 2 or output.shape[0] != 4:
-        raise ValueError(
-            "Illegal backbone for a few-shot algorithm."
-            "Expected output for an image is a 1-dim tensor."
-        )
-    return output.shape[1]
+
+    return tuple(output.shape[1:])
 
 
 def compute_prototypes(
