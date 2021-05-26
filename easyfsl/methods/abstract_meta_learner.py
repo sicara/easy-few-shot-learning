@@ -122,6 +122,21 @@ class AbstractMetaLearner(nn.Module):
 
         return correct_predictions / total_predictions
 
+    def compute_loss(
+        self, classification_scores: torch.Tensor, query_labels: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Apply the method's criterion to compute the loss between predicted classification scores,
+        and query labels.
+        Args:
+            classification_scores: predicted classification scores of shape (n_query, n_classes)
+            query_labels: ground truth labels. 1-dim tensor of length n_query
+
+        Returns:
+            loss
+        """
+        return self.criterion(classification_scores, query_labels)
+
     def fit_on_task(
         self,
         support_images: torch.Tensor,
@@ -146,7 +161,7 @@ class AbstractMetaLearner(nn.Module):
         self.process_support_set(support_images.cuda(), support_labels.cuda())
         classification_scores = self(query_images.cuda())
 
-        loss = self.criterion(classification_scores, query_labels.cuda())
+        loss = self.compute_loss(classification_scores, query_labels.cuda())
         loss.backward()
         optimizer.step()
 
