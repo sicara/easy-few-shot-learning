@@ -51,12 +51,30 @@ class RelationNetworks(AbstractMetaLearner):
         # score, which makes it a regression problem. See the article for more details.
         self.criterion = nn.MSELoss()
 
-        # Here we define the relation module that takes as input the concatenation of two feature
-        # maps (in our case the feature map of a query and the feature map of a class prototype).
-        # In order to make the network robust to any change in the dimensions of the input images,
-        # we made some changes to the architecture defined in the original implementation (typically
-        # the use of adaptive pooling).
-        self.relation_module = nn.Sequential(
+        # Here we build the relation module that will output re relation score for each
+        # (query, prototype) pair. See the function docstring for more details.
+        self.relation_module = self.build_relation_module(
+            inner_relation_module_channels
+        )
+
+        # Here we create the field so that the model can store the prototypes for a support set
+        self.prototypes = None
+
+    def build_relation_module(self, inner_relation_module_channels: int) -> nn.Module:
+        """
+        Build the relation module that takes as input the concatenation of two feature
+        maps (in our case the feature map of a query and the feature map of a class prototype).
+        In order to make the network robust to any change in the dimensions of the input images,
+        we made some changes to the architecture defined in the original implementation (typically
+        the use of adaptive pooling).
+        Args:
+            inner_relation_module_channels: number of hidden channels between the linear layers of
+                the relaiton module
+
+        Returns:
+            the constructed relation module
+        """
+        return nn.Sequential(
             nn.Sequential(
                 nn.Conv2d(
                     self.feature_dimension * 2,
@@ -86,9 +104,6 @@ class RelationNetworks(AbstractMetaLearner):
             nn.Sigmoid(),
         )
 
-        # Here we create the field so that the model can store the prototypes for a support set
-        self.prototypes = None
-
     def process_support_set(
         self,
         support_images: torch.Tensor,
@@ -102,7 +117,7 @@ class RelationNetworks(AbstractMetaLearner):
         support_features = self.backbone(support_images)
         self.prototypes = compute_prototypes(support_features, support_labels)
 
-    def forward(self, query_images):
+    def forward(self, query_images: torch.Tensor) -> torch.Tensor:
         """
         Overwrites method forward in AbstractMetaLearner.
         Predict the label of a query image by concatenating its feature map with each class
@@ -135,7 +150,9 @@ class RelationNetworks(AbstractMetaLearner):
 
         return relation_scores
 
-    def compute_loss(self, classification_scores, query_labels):
+    def compute_loss(
+        self, classification_scores: torch.Tensor, query_labels: torch.Tensor
+    ) -> torch.Tensor:
         """
         Overwrite the method compute_loss of AbstractMetaLearner because Relation Networks
         use the Mean Square Error (MSE) loss. MSE is a regression loss, so it requires the ground
@@ -150,7 +167,7 @@ class RelationNetworks(AbstractMetaLearner):
             query_labels: one hot ground truth labels of shape (n_query, n_classes)
 
         Returns:
-            loss
+            MSE loss between the prediction and the ground truth
         """
         return self.criterion(
             classification_scores,

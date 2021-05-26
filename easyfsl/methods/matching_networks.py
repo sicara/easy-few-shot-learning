@@ -75,7 +75,7 @@ class MatchingNetworks(AbstractMetaLearner):
 
         self.one_hot_support_labels = nn.functional.one_hot(support_labels).float()
 
-    def forward(self, query_images):
+    def forward(self, query_images: torch.Tensor) -> torch.Tensor:
         """
         Overwrites method forward in AbstractMetaLearner.
         Predict query labels based on their cosine similarity to support set features.
