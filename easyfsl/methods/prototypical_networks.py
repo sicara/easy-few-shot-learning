@@ -45,8 +45,12 @@ class PrototypicalNetworks(AbstractMetaLearner):
         support_labels: torch.Tensor,
     ):
         """
-        Overwrites process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of AbstractMetaLearner.
         Extract feature vectors from the support set and store class prototypes.
+
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
         """
 
         support_features = self.backbone.forward(support_images)
@@ -57,9 +61,14 @@ class PrototypicalNetworks(AbstractMetaLearner):
         query_images: torch.Tensor,
     ) -> torch.Tensor:
         """
-        Overwrites forward method of AbstractMetaLearner.
+        Overrides forward method of AbstractMetaLearner.
         Predict query labels based on their distance to class prototypes in the feature space.
         Classification scores are the negative of euclidean distances.
+
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
         """
         # Extract the features of support and query images
         z_query = self.backbone.forward(query_images)

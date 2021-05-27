@@ -36,7 +36,7 @@ class MatchingNetworks(AbstractMetaLearner):
             )
 
         # The model outputs log-probabilities, so we use the negative log-likelihood loss
-        self.criterion = nn.NLLLoss()
+        self.loss_function = nn.NLLLoss()
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
@@ -64,9 +64,13 @@ class MatchingNetworks(AbstractMetaLearner):
         support_labels: torch.Tensor,
     ):
         """
-        Overwrites process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of AbstractMetaLearner.
         Extract features from the support set with full context embedding.
         Store contextualized feature vectors, as well as support labels in the one hot format.
+
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
         """
         support_features = self.backbone(support_images)
         self.contextualized_support_features = self.encode_support_features(
@@ -77,9 +81,14 @@ class MatchingNetworks(AbstractMetaLearner):
 
     def forward(self, query_images: torch.Tensor) -> torch.Tensor:
         """
-        Overwrites method forward in AbstractMetaLearner.
+        Overrides method forward in AbstractMetaLearner.
         Predict query labels based on their cosine similarity to support set features.
         Classification scores are log-probabilities.
+
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
         """
 
         # Refine query features using the context of the whole support set

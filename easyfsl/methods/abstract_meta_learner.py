@@ -21,7 +21,7 @@ class AbstractMetaLearner(nn.Module):
         self.backbone = backbone
         self.backbone_output_shape = compute_backbone_output_shape(backbone)
         self.feature_dimension = self.backbone_output_shape[0]
-        self.criterion = nn.CrossEntropyLoss()
+        self.loss_function = nn.CrossEntropyLoss()
 
         self.best_validation_accuracy = 0.0
         self.best_model_state = None
@@ -34,6 +34,7 @@ class AbstractMetaLearner(nn.Module):
     ) -> torch.Tensor:
         """
         Predict classification labels.
+
         Args:
             query_images: images of the query set
         Returns:
@@ -52,6 +53,7 @@ class AbstractMetaLearner(nn.Module):
         """
         Harness information from the support set, so that query labels can later be predicted using
         a forward call
+
         Args:
             support_images: images of the support set
             support_labels: labels of support set images
@@ -128,6 +130,9 @@ class AbstractMetaLearner(nn.Module):
         """
         Apply the method's criterion to compute the loss between predicted classification scores,
         and query labels.
+        We do this in a separate function because some few-shot learning algorithms don't apply
+        the loss function directly to classification scores and query labels. For instance, Relation
+        Networks use Mean Square Error, so query labels need to be put in the one hot encoding.
         Args:
             classification_scores: predicted classification scores of shape (n_query, n_classes)
             query_labels: ground truth labels. 1-dim tensor of length n_query
@@ -135,7 +140,7 @@ class AbstractMetaLearner(nn.Module):
         Returns:
             loss
         """
-        return self.criterion(classification_scores, query_labels)
+        return self.loss_function(classification_scores, query_labels)
 
     def fit_on_task(
         self,

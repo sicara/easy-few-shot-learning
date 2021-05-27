@@ -32,6 +32,10 @@ class RelationNetworks(AbstractMetaLearner):
     def __init__(self, *args, inner_relation_module_channels: int = 8):
         """
         Build Relation Networks by calling the constructor of AbstractMetaLearner.
+        Args:
+            *args: all arguments of the init method of AbstractMetaLearner
+            inner_relation_module_channels: number of hidden channels between the linear layers of
+                the relaiton module. Defaults to 8.
 
         Raises:
             ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
@@ -46,12 +50,12 @@ class RelationNetworks(AbstractMetaLearner):
             )
 
         # Relation Networks use Mean Square Error.
-        # This is odd because this is a classification problem.
+        # This is unusual because this is a classification problem.
         # The authors justify this choice by the fact that the output of the model is a relation
         # score, which makes it a regression problem. See the article for more details.
-        self.criterion = nn.MSELoss()
+        self.loss_function = nn.MSELoss()
 
-        # Here we build the relation module that will output re relation score for each
+        # Here we build the relation module that will output the relation score for each
         # (query, prototype) pair. See the function docstring for more details.
         self.relation_module = self.build_relation_module(
             inner_relation_module_channels
@@ -110,8 +114,12 @@ class RelationNetworks(AbstractMetaLearner):
         support_labels: torch.Tensor,
     ):
         """
-        Overwrites process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of AbstractMetaLearner.
         Extract feature maps from the support set and store class prototypes.
+
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
         """
 
         support_features = self.backbone(support_images)
@@ -119,17 +127,23 @@ class RelationNetworks(AbstractMetaLearner):
 
     def forward(self, query_images: torch.Tensor) -> torch.Tensor:
         """
-        Overwrites method forward in AbstractMetaLearner.
+        Overrides method forward in AbstractMetaLearner.
         Predict the label of a query image by concatenating its feature map with each class
         prototype and feeding the result into a relation module, i.e. a CNN that outputs a relation
         score. Finally, the classification vector of the query is its relation score to each class
         prototype.
+
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
         """
         query_features = self.backbone(query_images)
 
         # For each pair (query, prototype), we compute the concatenation of their feature maps
         # Given that query_features is of shape (n_queries, n_channels, width, height), the
         # constructed tensor is of shape (n_queries * n_prototypes, 2 * n_channels, width, height)
+        # (2 * n_channels because prototypes and queries are concatenated)
         query_prototype_feature_pairs = torch.cat(
             (
                 self.prototypes.unsqueeze(dim=0).expand(
@@ -154,7 +168,7 @@ class RelationNetworks(AbstractMetaLearner):
         self, classification_scores: torch.Tensor, query_labels: torch.Tensor
     ) -> torch.Tensor:
         """
-        Overwrite the method compute_loss of AbstractMetaLearner because Relation Networks
+        Overrides the method compute_loss of AbstractMetaLearner because Relation Networks
         use the Mean Square Error (MSE) loss. MSE is a regression loss, so it requires the ground
         truth to be of the same shape as the predictions. In our case, this means that labels
         must be provided in a one hot fashion.
@@ -169,7 +183,7 @@ class RelationNetworks(AbstractMetaLearner):
         Returns:
             MSE loss between the prediction and the ground truth
         """
-        return self.criterion(
+        return self.loss_function(
             classification_scores,
             nn.functional.one_hot(
                 query_labels, num_classes=self.prototypes.shape[0]
