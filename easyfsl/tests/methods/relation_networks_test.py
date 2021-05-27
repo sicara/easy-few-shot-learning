@@ -2,25 +2,25 @@ import pytest
 import torch
 from torch import nn
 
-from easyfsl.methods import MatchingNetworks
+from easyfsl.methods import RelationNetworks
 
 
-class TestMatchingNetworksInit:
+class TestPrototypicalNetworksInit:
     @staticmethod
     @pytest.mark.parametrize(
         "backbone",
         [
-            nn.Conv2d(3, 4, 4),
+            nn.Flatten(),
         ],
     )
-    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
+    def test_constructor_raises_error_when_arg_doesnt_output_3d_feature_maps(backbone):
         with pytest.raises(ValueError):
-            MatchingNetworks(backbone)
+            RelationNetworks(backbone)
 
 
-class TestMatchingNetworksPipeline:
+class TestRelationNetworksPipeline:
     @staticmethod
-    def test_matching_networks_returns_expected_output_for_example_images(
+    def test_prototypical_networks_returns_expected_output_for_example_images(
         example_few_shot_classification_task,
     ):
         (
@@ -32,7 +32,11 @@ class TestMatchingNetworksPipeline:
         torch.manual_seed(1)
         torch.set_num_threads(1)
 
-        model = MatchingNetworks(nn.Flatten())
+        model = RelationNetworks(nn.Identity())
+
+        model.relation_module = nn.Sequential(
+            nn.AdaptiveAvgPool3d((1, 1, 1)), nn.Flatten()
+        )
 
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
@@ -41,8 +45,10 @@ class TestMatchingNetworksPipeline:
         assert torch.all(
             torch.isclose(
                 predictions,
-                torch.tensor([[-1.3137, -0.3131], [-1.0779, -0.4160]]),
-                rtol=1e-03,
-            )
+                torch.tensor(
+                    [[0.4148, 0.4866], [0.6354, 0.7073]],
+                ),
+                rtol=1e-3,
+            ),
         )
         # pylint: enable=not-callable

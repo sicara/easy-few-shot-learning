@@ -7,7 +7,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from easyfsl.utils import sliding_average, compute_feature_dimension
+from easyfsl.utils import sliding_average, compute_backbone_output_shape
 
 
 class AbstractMetaLearner(nn.Module):
@@ -19,8 +19,9 @@ class AbstractMetaLearner(nn.Module):
         super().__init__()
 
         self.backbone = backbone
-        self.feature_dimension = compute_feature_dimension(backbone)
-        self.criterion = nn.CrossEntropyLoss()
+        self.backbone_output_shape = compute_backbone_output_shape(backbone)
+        self.feature_dimension = self.backbone_output_shape[0]
+        self.loss_function = nn.CrossEntropyLoss()
 
         self.best_validation_accuracy = 0.0
         self.best_model_state = None
@@ -33,6 +34,7 @@ class AbstractMetaLearner(nn.Module):
     ) -> torch.Tensor:
         """
         Predict classification labels.
+
         Args:
             query_images: images of the query set
         Returns:
@@ -51,6 +53,7 @@ class AbstractMetaLearner(nn.Module):
         """
         Harness information from the support set, so that query labels can later be predicted using
         a forward call
+
         Args:
             support_images: images of the support set
             support_labels: labels of support set images
@@ -121,6 +124,24 @@ class AbstractMetaLearner(nn.Module):
 
         return correct_predictions / total_predictions
 
+    def compute_loss(
+        self, classification_scores: torch.Tensor, query_labels: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Apply the method's criterion to compute the loss between predicted classification scores,
+        and query labels.
+        We do this in a separate function because some few-shot learning algorithms don't apply
+        the loss function directly to classification scores and query labels. For instance, Relation
+        Networks use Mean Square Error, so query labels need to be put in the one hot encoding.
+        Args:
+            classification_scores: predicted classification scores of shape (n_query, n_classes)
+            query_labels: ground truth labels. 1-dim tensor of length n_query
+
+        Returns:
+            loss
+        """
+        return self.loss_function(classification_scores, query_labels)
+
     def fit_on_task(
         self,
         support_images: torch.Tensor,
@@ -145,7 +166,7 @@ class AbstractMetaLearner(nn.Module):
         self.process_support_set(support_images.cuda(), support_labels.cuda())
         classification_scores = self(query_images.cuda())
 
-        loss = self.criterion(classification_scores, query_labels.cuda())
+        loss = self.compute_loss(classification_scores, query_labels.cuda())
         loss.backward()
         optimizer.step()
 

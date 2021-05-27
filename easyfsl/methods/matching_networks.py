@@ -20,10 +20,23 @@ class MatchingNetworks(AbstractMetaLearner):
     """
 
     def __init__(self, *args):
+        """
+        Build Matching Networks by calling the constructor of AbstractMetaLearner.
+
+        Raises:
+            ValueError: if the backbone is not a feature extractor,
+            i.e. if its output for a given image is not a 1-dim tensor.
+        """
         super().__init__(*args)
 
+        if len(self.backbone_output_shape) != 1:
+            raise ValueError(
+                "Illegal backbone for Matching Networks. "
+                "Expected output for an image is a 1-dim tensor."
+            )
+
         # The model outputs log-probabilities, so we use the negative log-likelihood loss
-        self.criterion = nn.NLLLoss()
+        self.loss_function = nn.NLLLoss()
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
@@ -51,9 +64,13 @@ class MatchingNetworks(AbstractMetaLearner):
         support_labels: torch.Tensor,
     ):
         """
-        Overwrites process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of AbstractMetaLearner.
         Extract features from the support set with full context embedding.
         Store contextualized feature vectors, as well as support labels in the one hot format.
+
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
         """
         support_features = self.backbone(support_images)
         self.contextualized_support_features = self.encode_support_features(
@@ -62,11 +79,16 @@ class MatchingNetworks(AbstractMetaLearner):
 
         self.one_hot_support_labels = nn.functional.one_hot(support_labels).float()
 
-    def forward(self, query_images):
+    def forward(self, query_images: torch.Tensor) -> torch.Tensor:
         """
-        Overwrites method forward in AbstractMetaLearner.
+        Overrides method forward in AbstractMetaLearner.
         Predict query labels based on their cosine similarity to support set features.
         Classification scores are log-probabilities.
+
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
         """
 
         # Refine query features using the context of the whole support set

@@ -2,23 +2,9 @@ from unittest.mock import patch
 
 import pytest
 import torch
-from torch import nn
 from torchvision.models import resnet18
 
 from easyfsl.methods import AbstractMetaLearner
-
-
-class TestAMLInit:
-    @staticmethod
-    @pytest.mark.parametrize(
-        "backbone",
-        [
-            nn.Conv2d(3, 4, 4),
-        ],
-    )
-    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
-        with pytest.raises(ValueError):
-            AbstractMetaLearner(backbone)
 
 
 # pylint: disable=not-callable
