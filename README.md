@@ -131,17 +131,16 @@ print(f"Average accuracy : {(100 * accuracy):.2f}")
 
 ## Roadmap
 
-- [X] Implement unit tests
-- [X] Add validation to `AbstractMetaLearner.fit()`
 - [ ] Integrate more methods: 
   - [X] Matching Networks
-  - [ ] Relation Networks
+  - [X] Relation Networks
   - [ ] MAML
   - [ ] Transductive Propagation Network
+  - [ ] TADAM
 - [ ] Integrate non-episodic training
 - [ ] Integrate more benchmarks:
+  - [X] tieredImageNet
   - [ ] miniImageNet
-  - [ ] tieredImageNet
   - [ ] Meta-Dataset
 
 ## Contribute
