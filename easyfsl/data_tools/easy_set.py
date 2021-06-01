@@ -132,11 +132,26 @@ class EasySet(Dataset):
 
         return images, labels
 
-    def __getitem__(self, item):
-        img = self.transform(Image.open(self.images[item]))
+    def __getitem__(self, item: int):
+        """
+        Get a data sample from its integer id.
+        Args:
+            item: sample's integer id
+
+        Returns:
+            data sample in the form of a tuple (image, label), where label is an integer.
+            The type of the image object depends of the output type of self.transform. By default
+            it's a torch.Tensor, however you are free to define any function as self.transform, and
+            therefore any type for the output image. For instance, if self.transform = lambda x: x,
+            then the output image will be of type PIL.Image.Image.
+        """
+        # Some images of ILSVRC2015 are grayscale, so we convert everything to RGB for consistence.
+        # If you want to work on grayscale images, use torch.transforms.Grayscale in your
+        # transformation pipeline.
+        img = self.transform(Image.open(self.images[item]).convert("RGB"))
         label = self.labels[item]
 
         return img, label
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.labels)

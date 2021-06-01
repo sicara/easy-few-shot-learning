@@ -28,10 +28,9 @@ You want to learn few-shot learning and don't know where to start? Start with ou
 
 - [AbstractMetaLearner](easyfsl/methods/abstract_meta_learner.py): an abstract class with methods that can be used for 
   any meta-trainable algorithm
-  
 - [Prototypical Networks](easyfsl/methods/prototypical_networks.py)
-  
 - [Matching Networks](easyfsl/methods/matching_networks.py)
+- [Relation Networks](easyfsl/methods/relation_networks.py)
 
 **Tools for data loading:**
 
@@ -41,8 +40,13 @@ You want to learn few-shot learning and don't know where to start? Start with ou
 ### Datasets to test your model
 
 - [CU-Birds](http://www.vision.caltech.edu/visipedia/CUB-200.html): we provide [a script](scripts/download_CUB.sh) to download
-and extract the dataset, along with [a meta-train/meta-val/meta-test split](data/CUB) along classes. The dataset is
+and extract the dataset, along with [(train / val / test) split](data/CUB) along classes. The dataset is
   ready-to-use with [EasySet](easyfsl/data_tools/easy_set.py).
+- [tieredImageNet](https://paperswithcode.com/dataset/tieredimagenet): we provide the 
+  [train, val and test specification files](data/tiered_imagenet) to be used by [EasySet](easyfsl/data_tools/easy_set.py).
+  To use it, you need the [ILSVRC2015](https://image-net.org/challenges/LSVRC/index.php) dataset. Once you have 
+  downloaded and extracted the dataset, ensure that its localisation on disk is consistent with the class paths
+  specified in the specification files.
 
 ## QuickStart
 1. Install the package with pip: 
@@ -103,7 +107,7 @@ model.fit(train_loader, optimizer)
    **Note:** you can also define a validation data loader and use as an additional argument to `fit`
 in order to use validation during your training.
 
-   **Troubleshooting:** a ResNet18 with a batch size of (5 * (5+10)) = 75 whould use about 4.2GB on your GPU.
+   **Troubleshooting:** a ResNet18 with a batch size of (5 * (5+10)) = 75 would use about 4.2GB on your GPU.
 If you don't have it, switch to CPU, choose a smaller model or reduce the batch size (in `TaskSampler` above).
 
 6. Evaluate your model on the test set
