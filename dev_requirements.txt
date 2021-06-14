@@ -4,6 +4,7 @@ matplotlib>=3.3.4
 pandas>=1.1.0
 pylint>=2.7.0
 pytest>=6.2.2
+pytest-mock>=3.6.1
 torch>=1.7.1
 torchvision>=0.8.2
 tqdm>=4.56.0
