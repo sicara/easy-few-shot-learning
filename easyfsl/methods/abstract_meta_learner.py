@@ -219,7 +219,7 @@ class AbstractMetaLearner(nn.Module):
 
                 # Validation
                 if val_loader:
-                    if episode_index + 1 % validation_frequency == 0:
+                    if (episode_index + 1) % validation_frequency == 0:
                         self.validate(val_loader)
 
     def validate(self, val_loader: DataLoader) -> float:
