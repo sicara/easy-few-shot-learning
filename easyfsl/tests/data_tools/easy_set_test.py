@@ -92,9 +92,10 @@ class TestEasySetListDataInstances:
             )
         ],
     )
-    def test_list_data_instances_returns_expected_values(class_roots, images, labels):
-        with patch("pathlib.Path.glob") as mock_glob:
-            mock_glob.return_value = [Path("a.png"), Path("b.png")]
-            with patch("pathlib.Path.is_file") as mock_is_file:
-                mock_is_file.return_value = True
-                assert (images, labels) == EasySet.list_data_instances(class_roots)
+    def test_list_data_instances_returns_expected_values(
+        class_roots, images, labels, mocker
+    ):
+        mocker.patch("pathlib.Path.glob", return_value=[Path("a.png"), Path("b.png")])
+        mocker.patch("pathlib.Path.is_file", return_value=True)
+
+        assert (images, labels) == EasySet.list_data_instances(class_roots)
