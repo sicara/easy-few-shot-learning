@@ -237,6 +237,7 @@ class AbstractMetaLearner(nn.Module):
         if validation_accuracy > self.best_validation_accuracy:
             print("Best validation accuracy so far!")
             self.best_model_state = self.state_dict()
+            self.best_validation_accuracy = validation_accuracy
 
         return validation_accuracy
 

@@ -83,6 +83,16 @@ class TestAMLValidate:
         assert meta_learner.best_model_state is not None
 
     @staticmethod
+    def test_validate_updates_best_accuracy_if_it_has_best_validation_accuracy(
+        mocker,
+    ):
+        mocker.patch("easyfsl.methods.AbstractMetaLearner.evaluate", return_value=0.5)
+        meta_learner = AbstractMetaLearner(resnet18())
+        meta_learner.best_validation_accuracy = 0.1
+        meta_learner.validate(None)
+        assert meta_learner.best_validation_accuracy == 0.5
+
+    @staticmethod
     @pytest.mark.parametrize(
         "accuracy",
         [
