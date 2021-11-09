@@ -124,7 +124,7 @@ class EasySet(Dataset):
         for class_id, class_root in enumerate(class_roots):
             class_images = [
                 str(image_path)
-                for image_path in Path(class_root).glob("*")
+                for image_path in sorted(Path(class_root).glob("*"))
                 if image_path.is_file()
             ]
             images += class_images
