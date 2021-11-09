@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from pathlib import Path
+from statistics import mean
 from typing import Union
 
 import torch
@@ -179,7 +180,7 @@ class AbstractMetaLearner(nn.Module):
         optimizer: optim.Optimizer,
         val_loader: DataLoader = None,
         validation_frequency: int = 1000,
-    ):
+    ) -> float:
         """
         Train the model on few-shot classification tasks.
         Args:
@@ -188,6 +189,8 @@ class AbstractMetaLearner(nn.Module):
             val_loader: loads data from the validation set in the shape of few-shot classification
                 tasks
             validation_frequency: number of training episodes between two validations
+        Returns:
+            average loss
         """
         log_update_frequency = 10
 
@@ -221,6 +224,8 @@ class AbstractMetaLearner(nn.Module):
                 if val_loader:
                     if (episode_index + 1) % validation_frequency == 0:
                         self.validate(val_loader)
+
+        return mean(all_loss)
 
     def validate(self, val_loader: DataLoader) -> float:
         """
