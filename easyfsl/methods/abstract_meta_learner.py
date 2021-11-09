@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from pathlib import Path
+from statistics import mean
 from typing import Union
 
 import torch
@@ -162,6 +163,7 @@ class AbstractMetaLearner(nn.Module):
         Returns:
             the value of the classification loss (for reporting purposes)
         """
+        self.train()
         optimizer.zero_grad()
         self.process_support_set(support_images.cuda(), support_labels.cuda())
         classification_scores = self(query_images.cuda())
@@ -178,7 +180,7 @@ class AbstractMetaLearner(nn.Module):
         optimizer: optim.Optimizer,
         val_loader: DataLoader = None,
         validation_frequency: int = 1000,
-    ):
+    ) -> float:
         """
         Train the model on few-shot classification tasks.
         Args:
@@ -187,11 +189,12 @@ class AbstractMetaLearner(nn.Module):
             val_loader: loads data from the validation set in the shape of few-shot classification
                 tasks
             validation_frequency: number of training episodes between two validations
+        Returns:
+            average loss
         """
         log_update_frequency = 10
 
         all_loss = []
-        self.train()
         with tqdm(
             enumerate(train_loader), total=len(train_loader), desc="Meta-Training"
         ) as tqdm_train:
@@ -222,6 +225,8 @@ class AbstractMetaLearner(nn.Module):
                     if (episode_index + 1) % validation_frequency == 0:
                         self.validate(val_loader)
 
+        return mean(all_loss)
+
     def validate(self, val_loader: DataLoader) -> float:
         """
         Validate the model on the validation set.
@@ -237,6 +242,7 @@ class AbstractMetaLearner(nn.Module):
         if validation_accuracy > self.best_validation_accuracy:
             print("Best validation accuracy so far!")
             self.best_model_state = self.state_dict()
+            self.best_validation_accuracy = validation_accuracy
 
         return validation_accuracy
 

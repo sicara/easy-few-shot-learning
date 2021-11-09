@@ -4,7 +4,7 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 """
 
 import torch
-import torch.nn as nn
+from torch import nn
 from easyfsl.methods import AbstractMetaLearner
 
 

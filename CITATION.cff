@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: easyfsl
+message: >-
+  If you use easyfsl in your research, please cite it
+  using these metadata.
+type: software
+authors:
+  - given-names: Etienne
+    family-names: Bennequin
+    email: etienneb@sicara.com
+    affiliation: Université Paris-Saclay
+repository-code: 'https://github.com/sicara/easy-few-shot-learning'
+abstract: >-
+  Ready-to-use code and tutorial notebooks to boost
+  your way into few-shot image classification. 
+license: MIT

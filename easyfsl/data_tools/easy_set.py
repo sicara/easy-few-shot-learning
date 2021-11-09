@@ -61,7 +61,8 @@ class EasySet(Dataset):
         if specs_file.suffix != ".json":
             raise ValueError("EasySet requires specs in a JSON file.")
 
-        specs = json.load(open(specs_file, "r"))
+        with open(specs_file, "r") as file:
+            specs = json.load(file)
 
         if "class_names" not in specs.keys() or "class_roots" not in specs.keys():
             raise ValueError(
@@ -124,7 +125,7 @@ class EasySet(Dataset):
         for class_id, class_root in enumerate(class_roots):
             class_images = [
                 str(image_path)
-                for image_path in Path(class_root).glob("*")
+                for image_path in sorted(Path(class_root).glob("*"))
                 if image_path.is_file()
             ]
             images += class_images
@@ -155,3 +156,6 @@ class EasySet(Dataset):
 
     def __len__(self) -> int:
         return len(self.labels)
+
+    def number_of_classes(self):
+        return len(self.class_names)
