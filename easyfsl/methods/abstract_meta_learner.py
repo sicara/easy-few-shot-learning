@@ -162,6 +162,7 @@ class AbstractMetaLearner(nn.Module):
         Returns:
             the value of the classification loss (for reporting purposes)
         """
+        self.train()
         optimizer.zero_grad()
         self.process_support_set(support_images.cuda(), support_labels.cuda())
         classification_scores = self(query_images.cuda())
@@ -191,7 +192,6 @@ class AbstractMetaLearner(nn.Module):
         log_update_frequency = 10
 
         all_loss = []
-        self.train()
         with tqdm(
             enumerate(train_loader), total=len(train_loader), desc="Meta-Training"
         ) as tqdm_train:
