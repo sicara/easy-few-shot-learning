@@ -5,11 +5,11 @@ at https://github.com/jakesnell/prototypical-networks
 
 import torch
 
-from easyfsl.methods import AbstractMetaLearner
+from easyfsl.methods import FewShotClassifier
 from easyfsl.utils import compute_prototypes
 
 
-class PrototypicalNetworks(AbstractMetaLearner):
+class PrototypicalNetworks(FewShotClassifier):
     """
     Jake Snell, Kevin Swersky, and Richard S. Zemel.
     "Prototypical networks for few-shot learning." (2017)

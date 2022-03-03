@@ -11,7 +11,7 @@ from tqdm import tqdm
 from easyfsl.utils import sliding_average, compute_backbone_output_shape
 
 
-class AbstractMetaLearner(nn.Module):
+class FewShotClassifier(nn.Module):
     """
     Abstract class providing methods usable by all few-shot classification algorithms
     """

@@ -5,10 +5,10 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 
 import torch
 from torch import nn
-from easyfsl.methods import AbstractMetaLearner
+from easyfsl.methods import FewShotClassifier
 
 
-class MatchingNetworks(AbstractMetaLearner):
+class MatchingNetworks(FewShotClassifier):
     """
     Oriol Vinyals, Charles Blundell, Timothy Lillicrap, Koray Kavukcuoglu, and Daan Wierstra.
     "Matching networks for one shot learning." (2016)
