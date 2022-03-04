@@ -4,7 +4,7 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 """
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 from easyfsl.methods import FewShotClassifier
 
 
@@ -17,6 +17,9 @@ class MatchingNetworks(FewShotClassifier):
     Matching networks extract feature vectors for both support and query images. Then they refine
     these feature by using the context of the whole support set, using LSTMs. Finally they compute
     query labels using their cosine similarity to support images.
+
+    Be careful: while some methods use Cross Entropy Loss for episodic training, Matching Networks
+    output log-probabilities, so you'll want to use Negative Log Likelihood Loss.
     """
 
     def __init__(self, *args):
@@ -34,9 +37,6 @@ class MatchingNetworks(FewShotClassifier):
                 "Illegal backbone for Matching Networks. "
                 "Expected output for an image is a 1-dim tensor."
             )
-
-        # The model outputs log-probabilities, so we use the negative log-likelihood loss
-        self.loss_function = nn.NLLLoss()
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
@@ -60,8 +60,8 @@ class MatchingNetworks(FewShotClassifier):
 
     def process_support_set(
         self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
+        support_images: Tensor,
+        support_labels: Tensor,
     ):
         """
         Overrides process_support_set of AbstractMetaLearner.
@@ -79,7 +79,7 @@ class MatchingNetworks(FewShotClassifier):
 
         self.one_hot_support_labels = nn.functional.one_hot(support_labels).float()
 
-    def forward(self, query_images: torch.Tensor) -> torch.Tensor:
+    def forward(self, query_images: Tensor) -> Tensor:
         """
         Overrides method forward in AbstractMetaLearner.
         Predict query labels based on their cosine similarity to support set features.
@@ -115,8 +115,8 @@ class MatchingNetworks(FewShotClassifier):
 
     def encode_support_features(
         self,
-        support_features: torch.Tensor,
-    ) -> torch.Tensor:
+        support_features: Tensor,
+    ) -> Tensor:
         """
         Refine support set features by putting them in the context of the whole support set,
         using a bidirectional LSTM.
@@ -143,7 +143,7 @@ class MatchingNetworks(FewShotClassifier):
 
         return contextualized_support_features
 
-    def encode_query_features(self, query_features: torch.Tensor) -> torch.Tensor:
+    def encode_query_features(self, query_features: Tensor) -> Tensor:
         """
         Refine query set features by putting them in the context of the whole support set,
         using attention over support set features.

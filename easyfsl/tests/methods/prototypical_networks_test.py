@@ -44,6 +44,7 @@ class TestPrototypicalNetworksPipeline:
                 torch.tensor(
                     [[-15.5485, -22.0652], [-21.3081, -18.0292]],
                 ),
+                atol=1e-01,
             )
         )
         # pylint: enable=not-callable
