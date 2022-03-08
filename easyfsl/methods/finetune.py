@@ -1,12 +1,8 @@
-from typing import Tuple
-
 import torch
-import torch.nn.functional as F
 from torch import Tensor, nn
 
 
 from easyfsl.methods import FewShotClassifier
-from easyfsl.utils import compute_prototypes
 
 
 class Finetune(FewShotClassifier):
@@ -23,7 +19,7 @@ class Finetune(FewShotClassifier):
     ):
         super().__init__(**kwargs)
         self.fine_tuning_steps = fine_tuning_steps
-        self.lr = fine_tuning_lr
+        self.fine_tuning_lr = fine_tuning_lr
 
         self.prototypes = None
         self.support_features = None
@@ -51,15 +47,15 @@ class Finetune(FewShotClassifier):
 
         # Run adaptation
         self.prototypes.requires_grad_()
-        optimizer = torch.optim.Adam([self.prototypes], lr=self.lr)
-        for i in range(self.fine_tuning_steps):
+        optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
+        for _ in range(self.fine_tuning_steps):
 
-            logits_s = self.get_logits_from_cosine_distances_to_prototypes(
+            support_logits = self.get_logits_from_cosine_distances_to_prototypes(
                 self.support_features
             )
-            ce = nn.functional.cross_entropy(logits_s, self.support_labels)
+            loss = nn.functional.cross_entropy(support_logits, self.support_labels)
             optimizer.zero_grad()
-            ce.backward()
+            loss.backward()
             optimizer.step()
 
         return self.softmax_if_specified(

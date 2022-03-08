@@ -26,6 +26,10 @@ class FewShotClassifier(nn.Module):
 
         self.use_softmax = use_softmax
 
+        self.prototypes = None
+        self.support_features = None
+        self.support_labels = None
+
     @abstractmethod
     def forward(
         self,
@@ -59,6 +63,12 @@ class FewShotClassifier(nn.Module):
         """
         raise NotImplementedError(
             "All few-shot algorithms must implement a process_support_set method."
+        )
+
+    @staticmethod
+    def is_transductive():
+        raise NotImplementedError(
+            "All few-shot algorithms must implement a is_transductive method."
         )
 
     def softmax_if_specified(self, output: Tensor) -> Tensor:

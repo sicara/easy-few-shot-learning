@@ -1,11 +1,7 @@
-from typing import Tuple, List
-
 import torch
-import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, nn
 
 from easyfsl.methods import FewShotClassifier
-from easyfsl.utils import compute_prototypes
 
 
 class TIM(FewShotClassifier):
@@ -19,13 +15,17 @@ class TIM(FewShotClassifier):
         self,
         fine_tuning_steps: int = 100,
         fine_tuning_lr: float = 1e-3,
-        loss_weights: List[float] = None,
+        cross_entropy_weight: float = 1.0,
+        marginal_entropy_weight: float = 1.0,
+        conditional_entropy_weight: float = 0.1,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.loss_weights = [1.0, 1.0, 0.1] if loss_weights is None else loss_weights
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
+        self.cross_entropy_weight = cross_entropy_weight
+        self.marginal_entropy_weight = marginal_entropy_weight
+        self.conditional_entropy_weight = conditional_entropy_weight
 
         self.prototypes = None
         self.support_features = None
@@ -52,36 +52,47 @@ class TIM(FewShotClassifier):
 
         # Metric dic
         num_classes = self.support_labels.unique().size(0)
-        support_labels_one_hot = F.one_hot(self.support_labels, num_classes)
+        support_labels_one_hot = nn.functional.one_hot(self.support_labels, num_classes)
 
         # Run adaptation
         self.prototypes.requires_grad_()
         optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
 
-        for i in range(self.fine_tuning_steps):
-            logits_s = self.get_logits_from_euclidean_distances_to_prototypes(
+        for _ in range(self.fine_tuning_steps):
+            support_logits = self.get_logits_from_euclidean_distances_to_prototypes(
                 self.support_features
             )
-            logits_q = self.get_logits_from_euclidean_distances_to_prototypes(
+            query_logits = self.get_logits_from_euclidean_distances_to_prototypes(
                 query_features
             )
 
-            ce = -(support_labels_one_hot * logits_s.log_softmax(1)).sum(1).mean(0)
-            q_probs = logits_q.softmax(1)
-            q_cond_ent = -(q_probs * torch.log(q_probs + 1e-12)).sum(1).mean(0)
-            marginal_y = q_probs.mean(0)
-            q_ent = -(marginal_y * torch.log(marginal_y)).sum(0)
+            support_cross_entropy = (
+                -(support_labels_one_hot * support_logits.log_softmax(1)).sum(1).mean(0)
+            )
 
-            loss = self.loss_weights[0] * ce - (
-                self.loss_weights[1] * q_ent - self.loss_weights[2] * q_cond_ent
+            query_soft_probs = query_logits.softmax(1)
+            query_conditional_entropy = (
+                -(query_soft_probs * torch.log(query_soft_probs + 1e-12)).sum(1).mean(0)
+            )
+
+            marginal_prediction = query_soft_probs.mean(0)
+            marginal_entropy = -(
+                marginal_prediction * torch.log(marginal_prediction)
+            ).sum(0)
+
+            loss = self.cross_entropy_weight * support_cross_entropy - (
+                self.marginal_entropy_weight * marginal_entropy
+                - self.conditional_entropy_weight * query_conditional_entropy
             )
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-        return self.softmax_if_specified(logits_q).detach()
+        return self.softmax_if_specified(
+            self.get_logits_from_euclidean_distances_to_prototypes(query_features)
+        ).detach()
 
     @staticmethod
     def is_transductive():
-        return False
+        return True

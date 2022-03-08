@@ -161,3 +161,7 @@ class RelationNetworks(FewShotClassifier):
         )
 
         return self.softmax_if_specified(relation_scores)
+
+    @staticmethod
+    def is_transductive():
+        return False

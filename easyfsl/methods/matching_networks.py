@@ -172,3 +172,7 @@ class MatchingNetworks(FewShotClassifier):
             hidden_state = hidden_state + query_features
 
         return hidden_state
+
+    @staticmethod
+    def is_transductive():
+        return False

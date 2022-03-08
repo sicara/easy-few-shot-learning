@@ -1,12 +1,9 @@
-from typing import Tuple
-
 import torch
-import torch.nn.functional as F
 from torch import Tensor, nn
 
 
 from easyfsl.methods import FewShotClassifier
-from easyfsl.utils import compute_prototypes, entropy
+from easyfsl.utils import entropy
 
 
 class TransductiveFinetuning(FewShotClassifier):
@@ -23,7 +20,7 @@ class TransductiveFinetuning(FewShotClassifier):
     ):
         super().__init__(**kwargs)
         self.fine_tuning_steps = fine_tuning_steps
-        self.lr = fine_tuning_lr
+        self.fine_tuning_lr = fine_tuning_lr
 
         self.prototypes = None
         self.support_features = None
@@ -49,19 +46,19 @@ class TransductiveFinetuning(FewShotClassifier):
         query_features = self.backbone.forward(query_images)
         # Run adaptation
         self.prototypes.requires_grad_()
-        optimizer = torch.optim.Adam([self.prototypes], lr=self.lr)
-        for i in range(self.fine_tuning_steps):
+        optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
+        for _ in range(self.fine_tuning_steps):
 
-            ce_loss = nn.functional.cross_entropy(
+            support_cross_entropy = nn.functional.cross_entropy(
                 self.get_logits_from_euclidean_distances_to_prototypes(
                     self.support_features
                 ),
                 self.support_labels,
             )
-            entropy_loss = entropy(
+            query_conditional_entropy = entropy(
                 self.get_logits_from_euclidean_distances_to_prototypes(query_features)
             )
-            loss = ce_loss + entropy_loss
+            loss = support_cross_entropy + query_conditional_entropy
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -72,4 +69,4 @@ class TransductiveFinetuning(FewShotClassifier):
 
     @staticmethod
     def is_transductive():
-        return False
+        return True

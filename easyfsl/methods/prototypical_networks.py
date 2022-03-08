@@ -81,3 +81,7 @@ class PrototypicalNetworks(FewShotClassifier):
         scores = -dists
 
         return self.softmax_if_specified(scores)
+
+    @staticmethod
+    def is_transductive():
+        return False

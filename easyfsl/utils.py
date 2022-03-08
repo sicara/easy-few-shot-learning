@@ -82,3 +82,16 @@ def compute_prototypes(
             for label in range(n_way)
         ]
     )
+
+
+def entropy(logits: torch.Tensor) -> torch.Tensor:
+    """
+    Compute entropy of prediction.
+    WARNING: takes logit as input, not probability.
+    Args:
+        logits: shape (, n_way)
+    Returns:
+        torch.Tensor: shape(), Mean entropy.
+    """
+    probabilities = logits.softmax(dim=1)
+    return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
