@@ -22,15 +22,15 @@ class MatchingNetworks(FewShotClassifier):
     output log-probabilities, so you'll want to use Negative Log Likelihood Loss.
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
-        Build Matching Networks by calling the constructor of AbstractMetaLearner.
+        Build Matching Networks by calling the constructor of FewShotClassifier.
 
         Raises:
             ValueError: if the backbone is not a feature extractor,
             i.e. if its output for a given image is not a 1-dim tensor.
         """
-        super().__init__(*args)
+        super().__init__(*args, **kwargs)
 
         if len(self.backbone_output_shape) != 1:
             raise ValueError(
@@ -64,7 +64,7 @@ class MatchingNetworks(FewShotClassifier):
         support_labels: Tensor,
     ):
         """
-        Overrides process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of FewShotClassifier.
         Extract features from the support set with full context embedding.
         Store contextualized feature vectors, as well as support labels in the one hot format.
 
@@ -81,7 +81,7 @@ class MatchingNetworks(FewShotClassifier):
 
     def forward(self, query_images: Tensor) -> Tensor:
         """
-        Overrides method forward in AbstractMetaLearner.
+        Overrides method forward in FewShotClassifier.
         Predict query labels based on their cosine similarity to support set features.
         Classification scores are log-probabilities.
 
@@ -174,5 +174,5 @@ class MatchingNetworks(FewShotClassifier):
         return hidden_state
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return False

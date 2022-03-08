@@ -6,13 +6,20 @@ from easyfsl.methods import FewShotClassifier
 
 class TIM(FewShotClassifier):
     """
-    Implementation of the Transductive Information Maximization method (NeurIPS 2020)
+    Malik Boudiaf, Ziko Imtiaz Masud, Jérôme Rony, José Dolz, Pablo Piantanida, Ismail Ben Ayed.
+    "Transductive Information Maximization For Few-Shot Learning" (NeurIPS 2020)
     https://arxiv.org/abs/2008.11297
+
+    Fine-tune prototypes based on
+        1) classification error on support images
+        2) mutual information between query features and their label predictions
+    Classify w.r.t. to euclidean distance to updated prototypes.
     TIM is a transductive method.
     """
 
     def __init__(
         self,
+        *args,
         fine_tuning_steps: int = 100,
         fine_tuning_lr: float = 1e-3,
         cross_entropy_weight: float = 1.0,
@@ -20,16 +27,20 @@ class TIM(FewShotClassifier):
         conditional_entropy_weight: float = 0.1,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        """
+        Args:
+            fine_tuning_steps: number of fine-tuning steps
+            fine_tuning_lr: learning rate for fine-tuning
+            cross_entropy_weight: weight given to the cross-entropy term of the loss
+            marginal_entropy_weight: weight given to the marginal entropy term of the loss
+            conditional_entropy_weight: weight given to the conditional entropy term of the loss
+        """
+        super().__init__(*args, **kwargs)
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
         self.cross_entropy_weight = cross_entropy_weight
         self.marginal_entropy_weight = marginal_entropy_weight
         self.conditional_entropy_weight = conditional_entropy_weight
-
-        self.prototypes = None
-        self.support_features = None
-        self.support_labels = None
 
     def process_support_set(
         self,
@@ -48,13 +59,21 @@ class TIM(FewShotClassifier):
         self,
         query_images: Tensor,
     ) -> Tensor:
+        """
+        Overrides forward method of FewShotClassifier.
+        Fine-tune prototypes based on support classification error and mutual information between
+        query features and their label predictions.
+        Then classify w.r.t. to euclidean distance to prototypes.
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
+        """
         query_features = self.backbone.forward(query_images)
 
-        # Metric dic
         num_classes = self.support_labels.unique().size(0)
         support_labels_one_hot = nn.functional.one_hot(self.support_labels, num_classes)
 
-        # Run adaptation
         self.prototypes.requires_grad_()
         optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
 
@@ -94,5 +113,5 @@ class TIM(FewShotClassifier):
         ).detach()
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return True

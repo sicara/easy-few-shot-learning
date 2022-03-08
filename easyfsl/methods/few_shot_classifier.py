@@ -66,7 +66,7 @@ class FewShotClassifier(nn.Module):
         )
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         raise NotImplementedError(
             "All few-shot algorithms must implement a is_transductive method."
         )

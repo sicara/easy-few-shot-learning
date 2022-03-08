@@ -7,7 +7,12 @@ from easyfsl.methods import FewShotClassifier
 class BDCSPN(FewShotClassifier):
 
     """
-    Implementation of BD-CSPN (ECCV 2020) https://arxiv.org/abs/1911.10713
+    Jinlu Liu, Liang Song, Yongqiang Qin
+    "Prototype Rectification for Few-Shot Learning" (ECCV 2020)
+    https://arxiv.org/abs/1911.10713
+
+    Rectify prototypes with label propagation and feature shifting.
+    Classify queries based on their cosine distance to prototypes.
     This is a transductive method.
     """
 
@@ -24,7 +29,12 @@ class BDCSPN(FewShotClassifier):
         """
         self.store_features_labels_and_prototypes(support_images, support_labels)
 
-    def rectify_prototypes(self, query_features: Tensor) -> None:
+    def rectify_prototypes(self, query_features: Tensor):
+        """
+        Updates prototypes with label propagation and feature shifting.
+        Args:
+            query_features: query features
+        """
         n_classes = self.support_labels.unique().size(0)
         one_hot_support_labels = F.one_hot(self.support_labels, n_classes)
 
@@ -63,6 +73,15 @@ class BDCSPN(FewShotClassifier):
         self,
         query_images: Tensor,
     ) -> Tensor:
+        """
+        Overrides forward method of FewShotClassifier.
+        Updates prototypes using query images, then classify query images based
+        on their cosine distance to updated prototypes.
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
+        """
         query_features = self.backbone.forward(query_images)
 
         self.rectify_prototypes(
@@ -73,5 +92,5 @@ class BDCSPN(FewShotClassifier):
         )
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return True

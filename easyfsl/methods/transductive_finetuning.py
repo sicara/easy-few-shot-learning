@@ -8,17 +8,33 @@ from easyfsl.utils import entropy
 
 class TransductiveFinetuning(FewShotClassifier):
     """
-    Implementation of Transductive Finetuning (ICLR 2020) https://arxiv.org/abs/1909.02729
+    Guneet S. Dhillon, Pratik Chaudhari, Avinash Ravichandran, Stefano Soatto.
+    "A Baseline for Few-Shot Image Classification" (ICLR 2020)
+    https://arxiv.org/abs/1909.02729
+
+    Fine-tune the parameters of the pre-trained model based on
+        1) classification error on support images
+        2) classification entropy for query images
+    Classify queries based on their euclidean distance to prototypes.
     This is a transductive method.
+    WARNING: this implementation only updates prototypes, not the whole set of model's
+    parameters. Updating the model's parameters raises performance issues that we didn't
+    have time to solve yet.
     """
 
     def __init__(
         self,
+        *args,
         fine_tuning_steps: int = 25,
         fine_tuning_lr: float = 5e-5,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        """
+        Args:
+            fine_tuning_steps: number of fine-tuning steps
+            fine_tuning_lr: learning rate for fine-tuning
+        """
+        super().__init__(*args, **kwargs)
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
 
@@ -43,8 +59,17 @@ class TransductiveFinetuning(FewShotClassifier):
         self,
         query_images: Tensor,
     ) -> Tensor:
+        """
+        Overrides forward method of FewShotClassifier.
+        Fine-tune model's parameters based on support classification error and
+        query classification entropy.
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
+        """
         query_features = self.backbone.forward(query_images)
-        # Run adaptation
+
         self.prototypes.requires_grad_()
         optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
         for _ in range(self.fine_tuning_steps):
@@ -68,5 +93,5 @@ class TransductiveFinetuning(FewShotClassifier):
         ).detach()
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return True

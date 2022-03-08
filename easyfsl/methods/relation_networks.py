@@ -33,11 +33,10 @@ class RelationNetworks(FewShotClassifier):
     score, which makes it a regression problem. See the article for more details.
     """
 
-    def __init__(self, *args, inner_relation_module_channels: int = 8):
+    def __init__(self, *args, inner_relation_module_channels: int = 8, **kwargs):
         """
-        Build Relation Networks by calling the constructor of AbstractMetaLearner.
+        Build Relation Networks by calling the constructor of FewShotClassifier.
         Args:
-            *args: all arguments of the init method of AbstractMetaLearner
             inner_relation_module_channels: number of hidden channels between the linear layers of
                 the relation module. Defaults to 8.
 
@@ -45,7 +44,7 @@ class RelationNetworks(FewShotClassifier):
             ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
             given image is not a tensor of shape (n_channels, width, height)
         """
-        super().__init__(*args)
+        super().__init__(*args, **kwargs)
 
         if len(self.backbone_output_shape) != 3:
             raise ValueError(
@@ -112,7 +111,7 @@ class RelationNetworks(FewShotClassifier):
         support_labels: Tensor,
     ):
         """
-        Overrides process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of FewShotClassifier.
         Extract feature maps from the support set and store class prototypes.
 
         Args:
@@ -125,7 +124,7 @@ class RelationNetworks(FewShotClassifier):
 
     def forward(self, query_images: Tensor) -> Tensor:
         """
-        Overrides method forward in AbstractMetaLearner.
+        Overrides method forward in FewShotClassifier.
         Predict the label of a query image by concatenating its feature map with each class
         prototype and feeding the result into a relation module, i.e. a CNN that outputs a relation
         score. Finally, the classification vector of the query is its relation score to each class
@@ -163,5 +162,5 @@ class RelationNetworks(FewShotClassifier):
         return self.softmax_if_specified(relation_scores)
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return False

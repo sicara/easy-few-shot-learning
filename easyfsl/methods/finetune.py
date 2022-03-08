@@ -7,23 +7,30 @@ from easyfsl.methods import FewShotClassifier
 
 class Finetune(FewShotClassifier):
     """
-    Implementation of Finetune (or Baseline method) (ICLR 2019) https://arxiv.org/abs/1904.04232
+    Wei-Yu Chen, Yen-Cheng Liu, Zsolt Kira, Yu-Chiang Frank Wang, Jia-Bin Huang
+    A Closer Look at Few-shot Classification (ICLR 2019)
+    https://arxiv.org/abs/1904.04232
+
+    Fine-tune prototypes based on classification error on support images.
+    Classify queries based on their cosine distances to updated prototypes.
     This is an inductive method.
     """
 
     def __init__(
         self,
+        *args,
         fine_tuning_steps: int = 10,
         fine_tuning_lr: float = 1e-3,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        """
+        Args:
+            fine_tuning_steps: number of fine-tuning steps
+            fine_tuning_lr: learning rate for fine-tuning
+        """
+        super().__init__(*args, **kwargs)
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
-
-        self.prototypes = None
-        self.support_features = None
-        self.support_labels = None
 
     def process_support_set(
         self,
@@ -42,7 +49,15 @@ class Finetune(FewShotClassifier):
         self,
         query_images: Tensor,
     ) -> Tensor:
-
+        """
+        Overrides forward method of FewShotClassifier.
+        Fine-tune prototypes based on support classification error.
+        Then classify w.r.t. to cosine distance to prototypes.
+        Args:
+            query_images: images of the query set
+        Returns:
+            a prediction of classification scores for query images
+        """
         query_features = self.backbone.forward(query_images)
 
         # Run adaptation
@@ -63,5 +78,5 @@ class Finetune(FewShotClassifier):
         ).detach()
 
     @staticmethod
-    def is_transductive():
+    def is_transductive() -> bool:
         return False
