@@ -17,7 +17,6 @@ class FewShotClassifier(nn.Module):
         self.backbone_output_shape = compute_backbone_output_shape(backbone)
         self.feature_dimension = self.backbone_output_shape[0]
 
-    # pylint: disable=all
     @abstractmethod
     def forward(
         self,
@@ -52,5 +51,3 @@ class FewShotClassifier(nn.Module):
         raise NotImplementedError(
             "All few-shot algorithms must implement a process_support_set method."
         )
-
-    # pylint: enable=all
