@@ -79,4 +79,5 @@ class PrototypicalNetworks(FewShotClassifier):
 
         # Use it to compute classification scores
         scores = -dists
-        return scores
+
+        return self.softmax_if_specified(scores)

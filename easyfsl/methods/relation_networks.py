@@ -160,4 +160,4 @@ class RelationNetworks(FewShotClassifier):
             -1, self.prototypes.shape[0]
         )
 
-        return relation_scores
+        return self.softmax_if_specified(relation_scores)

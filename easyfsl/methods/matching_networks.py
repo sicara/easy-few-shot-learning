@@ -111,7 +111,7 @@ class MatchingNetworks(FewShotClassifier):
         log_probabilities = (
             similarity_matrix.mm(self.one_hot_support_labels) + 1e-6
         ).log()
-        return log_probabilities
+        return self.softmax_if_specified(log_probabilities)
 
     def encode_support_features(
         self,
