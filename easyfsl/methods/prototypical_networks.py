@@ -4,12 +4,13 @@ at https://github.com/jakesnell/prototypical-networks
 """
 
 import torch
+from torch import Tensor
 
-from easyfsl.methods import AbstractMetaLearner
+from easyfsl.methods import FewShotClassifier
 from easyfsl.utils import compute_prototypes
 
 
-class PrototypicalNetworks(AbstractMetaLearner):
+class PrototypicalNetworks(FewShotClassifier):
     """
     Jake Snell, Kevin Swersky, and Richard S. Zemel.
     "Prototypical networks for few-shot learning." (2017)
@@ -41,8 +42,8 @@ class PrototypicalNetworks(AbstractMetaLearner):
 
     def process_support_set(
         self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
+        support_images: Tensor,
+        support_labels: Tensor,
     ):
         """
         Overrides process_support_set of AbstractMetaLearner.
@@ -58,8 +59,8 @@ class PrototypicalNetworks(AbstractMetaLearner):
 
     def forward(
         self,
-        query_images: torch.Tensor,
-    ) -> torch.Tensor:
+        query_images: Tensor,
+    ) -> Tensor:
         """
         Overrides forward method of AbstractMetaLearner.
         Predict query labels based on their distance to class prototypes in the feature space.

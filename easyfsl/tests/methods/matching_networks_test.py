@@ -42,7 +42,7 @@ class TestMatchingNetworksPipeline:
             torch.isclose(
                 predictions,
                 torch.tensor([[-1.3137, -0.3131], [-1.0779, -0.4160]]),
-                rtol=1e-03,
+                atol=1e-01,
             )
         )
         # pylint: enable=not-callable

@@ -4,12 +4,12 @@ https://github.com/floodsung/LearningToCompare_FSL
 """
 
 import torch
-from torch import nn
-from easyfsl.methods import AbstractMetaLearner
+from torch import nn, Tensor
+from easyfsl.methods import FewShotClassifier
 from easyfsl.utils import compute_prototypes
 
 
-class RelationNetworks(AbstractMetaLearner):
+class RelationNetworks(FewShotClassifier):
     """
     Sung, Flood, Yongxin Yang, Li Zhang, Tao Xiang, Philip HS Torr, and Timothy M. Hospedales.
     "Learning to compare: Relation network for few-shot learning." (2018)
@@ -27,6 +27,10 @@ class RelationNetworks(AbstractMetaLearner):
     (n_channels, width, height). This raises different constraints on the architecture of the
     backbone: while other algorithms require a "flatten" operation in the backbone, here "flatten"
     operations are forbidden.
+
+    Relation Networks use Mean Square Error. This is unusual because this is a classification
+    problem. The authors justify this choice by the fact that the output of the model is a relation
+    score, which makes it a regression problem. See the article for more details.
     """
 
     def __init__(self, *args, inner_relation_module_channels: int = 8):
@@ -35,7 +39,7 @@ class RelationNetworks(AbstractMetaLearner):
         Args:
             *args: all arguments of the init method of AbstractMetaLearner
             inner_relation_module_channels: number of hidden channels between the linear layers of
-                the relaiton module. Defaults to 8.
+                the relation module. Defaults to 8.
 
         Raises:
             ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
@@ -48,12 +52,6 @@ class RelationNetworks(AbstractMetaLearner):
                 "Illegal backbone for Relation Networks. Expected output for an image is a 3-dim "
                 "tensor of shape (n_channels, width, height)."
             )
-
-        # Relation Networks use Mean Square Error.
-        # This is unusual because this is a classification problem.
-        # The authors justify this choice by the fact that the output of the model is a relation
-        # score, which makes it a regression problem. See the article for more details.
-        self.loss_function = nn.MSELoss()
 
         # Here we build the relation module that will output the relation score for each
         # (query, prototype) pair. See the function docstring for more details.
@@ -110,8 +108,8 @@ class RelationNetworks(AbstractMetaLearner):
 
     def process_support_set(
         self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
+        support_images: Tensor,
+        support_labels: Tensor,
     ):
         """
         Overrides process_support_set of AbstractMetaLearner.
@@ -125,7 +123,7 @@ class RelationNetworks(AbstractMetaLearner):
         support_features = self.backbone(support_images)
         self.prototypes = compute_prototypes(support_features, support_labels)
 
-    def forward(self, query_images: torch.Tensor) -> torch.Tensor:
+    def forward(self, query_images: Tensor) -> Tensor:
         """
         Overrides method forward in AbstractMetaLearner.
         Predict the label of a query image by concatenating its feature map with each class
@@ -163,29 +161,3 @@ class RelationNetworks(AbstractMetaLearner):
         )
 
         return relation_scores
-
-    def compute_loss(
-        self, classification_scores: torch.Tensor, query_labels: torch.Tensor
-    ) -> torch.Tensor:
-        """
-        Overrides the method compute_loss of AbstractMetaLearner because Relation Networks
-        use the Mean Square Error (MSE) loss. MSE is a regression loss, so it requires the ground
-        truth to be of the same shape as the predictions. In our case, this means that labels
-        must be provided in a one hot fashion.
-
-        Note that we need to enforce the number of classes by using the last computed prototypes,
-        in case query_labels doesn't contain all possible labels.
-
-        Args:
-            classification_scores: predicted classification scores of shape (n_query, n_classes)
-            query_labels: one hot ground truth labels of shape (n_query, n_classes)
-
-        Returns:
-            MSE loss between the prediction and the ground truth
-        """
-        return self.loss_function(
-            classification_scores,
-            nn.functional.one_hot(
-                query_labels, num_classes=self.prototypes.shape[0]
-            ).float(),
-        )
