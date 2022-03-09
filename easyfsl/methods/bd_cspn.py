@@ -26,7 +26,7 @@ class BDCSPN(FewShotClassifier):
             support_images: images of the support set
             support_labels: labels of support set images
         """
-        self.store_features_labels_and_prototypes(support_images, support_labels)
+        self.store_support_set_data(support_images, support_labels)
 
     def rectify_prototypes(self, query_features: Tensor):
         """
@@ -42,14 +42,12 @@ class BDCSPN(FewShotClassifier):
         ) - query_features.mean(0, keepdim=True)
         query_features = query_features + average_support_query_shift
 
-        support_logits = self.get_logits_from_cosine_distances_to_prototypes(
-            self.support_features
-        ).exp()
-        query_logits = self.get_logits_from_cosine_distances_to_prototypes(
-            query_features
-        ).exp()
+        support_logits = self.cosine_distance_to_prototypes(self.support_features).exp()
+        query_logits = self.cosine_distance_to_prototypes(query_features).exp()
 
-        one_hot_query_prediction = nn.functional.one_hot(query_logits.argmax(-1), n_classes)
+        one_hot_query_prediction = nn.functional.one_hot(
+            query_logits.argmax(-1), n_classes
+        )
 
         normalization_vector = (
             (one_hot_support_labels * support_logits).sum(0)
@@ -87,7 +85,7 @@ class BDCSPN(FewShotClassifier):
             query_features=query_features,
         )
         return self.softmax_if_specified(
-            self.get_logits_from_cosine_distances_to_prototypes(query_features)
+            self.cosine_distance_to_prototypes(query_features)
         )
 
     @staticmethod

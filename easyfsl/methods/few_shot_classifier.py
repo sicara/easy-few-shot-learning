@@ -1,8 +1,9 @@
 from abc import abstractmethod
 
+import torch
 from torch import nn, Tensor
 
-from easyfsl.utils import compute_backbone_output_shape
+from easyfsl.utils import compute_backbone_output_shape, compute_prototypes
 
 
 class FewShotClassifier(nn.Module):
@@ -82,3 +83,44 @@ class FewShotClassifier(nn.Module):
             output as it was, or output as soft probabilities
         """
         return output.softmax(-1) if self.use_softmax else output
+
+    def l2_distance_to_prototypes(self, samples: Tensor) -> Tensor:
+        """
+        Compute prediction logits from their euclidean distance to support set prototypes.
+        Args:
+            samples: features of the items to classify
+
+        Returns:
+            prediction logits
+        """
+        return -torch.cdist(samples, self.prototypes)
+
+    def cosine_distance_to_prototypes(self, samples) -> Tensor:
+        """
+        Compute prediction logits from their cosine distance to support set prototypes.
+        Args:
+            samples: features of the items to classify
+
+        Returns:
+            prediction logits
+        """
+        return (
+            nn.functional.normalize(samples, dim=1)
+            @ nn.functional.normalize(self.prototypes, dim=1).T
+        )
+
+    def store_support_set_data(
+        self,
+        support_images: Tensor,
+        support_labels: Tensor,
+    ):
+        """
+        Extract support features, compute prototypes,
+            and store support labels, features, and prototypes
+        Args:
+            support_images: images of the support set
+            support_labels: labels of support set images
+        """
+        self.support_labels = support_labels
+        self.support_features = self.backbone(support_images)
+        self.prototypes = compute_prototypes(self.support_features, support_labels)

@@ -13,6 +13,9 @@ class Finetune(FewShotClassifier):
 
     Fine-tune prototypes based on classification error on support images.
     Classify queries based on their cosine distances to updated prototypes.
+    As is, it is incompatible with episodic training because we freeze the backbone to perform
+    fine-tuning.
+
     This is an inductive method.
     """
 
@@ -29,6 +32,11 @@ class Finetune(FewShotClassifier):
             fine_tuning_lr: learning rate for fine-tuning
         """
         super().__init__(*args, **kwargs)
+
+        # Since we fine-tune the prototypes we need to make them leaf variables
+        # i.e. we need to freeze the backbone.
+        self.backbone.requires_grad_(False)
+
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
 
@@ -43,7 +51,7 @@ class Finetune(FewShotClassifier):
             support_images: images of the support set
             support_labels: labels of support set images
         """
-        self.store_features_labels_and_prototypes(support_images, support_labels)
+        self.store_support_set_data(support_images, support_labels)
 
     def forward(
         self,
@@ -60,21 +68,21 @@ class Finetune(FewShotClassifier):
         """
         query_features = self.backbone.forward(query_images)
 
-        # Run adaptation
-        self.prototypes.requires_grad_()
-        optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
-        for _ in range(self.fine_tuning_steps):
+        with torch.enable_grad():
+            self.prototypes.requires_grad_()
+            optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
+            for _ in range(self.fine_tuning_steps):
 
-            support_logits = self.get_logits_from_cosine_distances_to_prototypes(
-                self.support_features
-            )
-            loss = nn.functional.cross_entropy(support_logits, self.support_labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                support_logits = self.cosine_distance_to_prototypes(
+                    self.support_features
+                )
+                loss = nn.functional.cross_entropy(support_logits, self.support_labels)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         return self.softmax_if_specified(
-            self.get_logits_from_cosine_distances_to_prototypes(query_features)
+            self.cosine_distance_to_prototypes(query_features)
         ).detach()
 
     @staticmethod

@@ -19,6 +19,9 @@ class TransductiveFinetuning(FewShotClassifier):
     This is a transductive method.
     WARNING: this implementation only updates prototypes, not the whole set of model's
     parameters. Updating the model's parameters raises performance issues that we didn't
+    As is, it is incompatible with episodic training because we freeze the backbone to perform
+    fine-tuning.
+
     have time to solve yet.
     """
 
@@ -35,6 +38,11 @@ class TransductiveFinetuning(FewShotClassifier):
             fine_tuning_lr: learning rate for fine-tuning
         """
         super().__init__(*args, **kwargs)
+
+        # Since we fine-tune the prototypes we need to make them leaf variables
+        # i.e. we need to freeze the backbone.
+        self.backbone.requires_grad_(False)
+
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
 
@@ -49,7 +57,7 @@ class TransductiveFinetuning(FewShotClassifier):
             support_images: images of the support set
             support_labels: labels of support set images
         """
-        self.store_features_labels_and_prototypes(support_images, support_labels)
+        self.store_support_set_data(support_images, support_labels)
 
     def forward(
         self,
@@ -66,26 +74,25 @@ class TransductiveFinetuning(FewShotClassifier):
         """
         query_features = self.backbone.forward(query_images)
 
-        self.prototypes.requires_grad_()
-        optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
-        for _ in range(self.fine_tuning_steps):
+        with torch.enable_grad():
+            self.prototypes.requires_grad_()
+            optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
+            for _ in range(self.fine_tuning_steps):
 
-            support_cross_entropy = nn.functional.cross_entropy(
-                self.get_logits_from_euclidean_distances_to_prototypes(
-                    self.support_features
-                ),
-                self.support_labels,
-            )
-            query_conditional_entropy = entropy(
-                self.get_logits_from_euclidean_distances_to_prototypes(query_features)
-            )
-            loss = support_cross_entropy + query_conditional_entropy
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                support_cross_entropy = nn.functional.cross_entropy(
+                    self.l2_distance_to_prototypes(self.support_features),
+                    self.support_labels,
+                )
+                query_conditional_entropy = entropy(
+                    self.l2_distance_to_prototypes(query_features)
+                )
+                loss = support_cross_entropy + query_conditional_entropy
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         return self.softmax_if_specified(
-            self.get_logits_from_euclidean_distances_to_prototypes(query_features)
+            self.l2_distance_to_prototypes(query_features)
         ).detach()
 
     @staticmethod
