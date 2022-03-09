@@ -38,10 +38,6 @@ class TransductiveFinetuning(FewShotClassifier):
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
 
-        self.prototypes = None
-        self.support_features = None
-        self.support_labels = None
-
     def process_support_set(
         self,
         support_images: torch.Tensor,

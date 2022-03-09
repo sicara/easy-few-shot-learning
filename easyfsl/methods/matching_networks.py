@@ -6,6 +6,10 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 import torch
 from torch import nn, Tensor
 from easyfsl.methods import FewShotClassifier
+from easyfsl.modules.predesigned_modules import (
+    default_matching_networks_support_encoder,
+    default_matching_networks_query_encoder,
+)
 
 
 class MatchingNetworks(FewShotClassifier):
@@ -22,9 +26,20 @@ class MatchingNetworks(FewShotClassifier):
     output log-probabilities, so you'll want to use Negative Log Likelihood Loss.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        support_encoder: nn.Module = None,
+        query_encoder: nn.Module = None,
+        **kwargs
+    ):
         """
         Build Matching Networks by calling the constructor of FewShotClassifier.
+        Args:
+            support_encoder: module encoding support features. If none is specific, we use
+                the default encoder from the original paper.
+            query_encoder: module encoding query features. If none is specific, we use
+                the default encoder from the original paper.
 
         Raises:
             ValueError: if the backbone is not a feature extractor,
@@ -40,15 +55,15 @@ class MatchingNetworks(FewShotClassifier):
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
-        self.support_features_encoder = nn.LSTM(
-            input_size=self.feature_dimension,
-            hidden_size=self.feature_dimension,
-            num_layers=1,
-            batch_first=True,
-            bidirectional=True,
+        self.support_features_encoder = (
+            support_encoder
+            if support_encoder
+            else default_matching_networks_support_encoder(self.feature_dimension)
         )
-        self.query_features_encoding_cell = nn.LSTMCell(
-            self.feature_dimension * 2, self.feature_dimension
+        self.query_features_encoding_cell = (
+            query_encoder
+            if query_encoder
+            else default_matching_networks_query_encoder(self.feature_dimension)
         )
 
         self.softmax = nn.Softmax(dim=1)
