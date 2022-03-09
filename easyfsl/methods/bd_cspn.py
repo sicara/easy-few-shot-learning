@@ -1,5 +1,4 @@
-import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, nn
 
 from easyfsl.methods import FewShotClassifier
 
@@ -36,7 +35,7 @@ class BDCSPN(FewShotClassifier):
             query_features: query features
         """
         n_classes = self.support_labels.unique().size(0)
-        one_hot_support_labels = F.one_hot(self.support_labels, n_classes)
+        one_hot_support_labels = nn.functional.one_hot(self.support_labels, n_classes)
 
         average_support_query_shift = self.support_features.mean(
             0, keepdim=True
@@ -50,7 +49,7 @@ class BDCSPN(FewShotClassifier):
             query_features
         ).exp()
 
-        one_hot_query_prediction = F.one_hot(query_logits.argmax(-1), n_classes)
+        one_hot_query_prediction = nn.functional.one_hot(query_logits.argmax(-1), n_classes)
 
         normalization_vector = (
             (one_hot_support_labels * support_logits).sum(0)
