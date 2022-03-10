@@ -3,11 +3,9 @@ from pathlib import Path
 from typing import List, Union
 
 from PIL import Image
-from torchvision import transforms
 
 from easyfsl.datasets import FewShotDataset
-
-NORMALIZE_DEFAULT = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+from easyfsl.datasets.default_configs import default_transforms
 
 
 class EasySet(FewShotDataset):
@@ -27,13 +25,22 @@ class EasySet(FewShotDataset):
         }
     """
 
-    def __init__(self, specs_file: Union[Path, str], image_size=224, training=False):
+    def __init__(
+        self,
+        specs_file: Union[Path, str],
+        image_size=84,
+        transforms=None,
+        training=False,
+    ):
         """
         Args:
             specs_file: path to the JSON file
             image_size: images returned by the dataset will be square images of the given size
+            transforms: torchvision transforms to be applied to images. If none is provided,
+                we use some standard transformations including ImageNet normalization.
+                These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
-                cropping and a random horizontal flip.
+                cropping and a random horizontal flip. Only used if transforms = None.
         """
         specs = self.load_specs(Path(specs_file))
 
@@ -41,7 +48,9 @@ class EasySet(FewShotDataset):
 
         self.class_names = specs["class_names"]
 
-        self.transform = self.compose_transforms(image_size, training)
+        self.transform = (
+            transforms if transforms else default_transforms(image_size, training)
+        )
 
     @staticmethod
     def load_specs(specs_file: Path) -> dict:
@@ -75,38 +84,6 @@ class EasySet(FewShotDataset):
             )
 
         return specs
-
-    @staticmethod
-    def compose_transforms(image_size: int, training: bool) -> transforms.Compose:
-        """
-        Create a composition of torchvision transformations, with some randomization if we are
-            building a training set.
-        Args:
-            image_size: size of dataset images
-            training: whether this is a training set or not
-
-        Returns:
-            compositions of torchvision transformations
-        """
-        return (
-            transforms.Compose(
-                [
-                    transforms.RandomResizedCrop(image_size),
-                    transforms.RandomHorizontalFlip(),
-                    transforms.ToTensor(),
-                    transforms.Normalize(**NORMALIZE_DEFAULT),
-                ]
-            )
-            if training
-            else transforms.Compose(
-                [
-                    transforms.Resize([int(image_size * 1.15), int(image_size * 1.15)]),
-                    transforms.CenterCrop(image_size),
-                    transforms.ToTensor(),
-                    transforms.Normalize(**NORMALIZE_DEFAULT),
-                ]
-            )
-        )
 
     @staticmethod
     def list_data_instances(class_roots: List[str]) -> (List[str], List[int]):
