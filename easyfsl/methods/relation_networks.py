@@ -6,6 +6,7 @@ https://github.com/floodsung/LearningToCompare_FSL
 import torch
 from torch import nn, Tensor
 from easyfsl.methods import FewShotClassifier
+from easyfsl.modules.predesigned_modules import default_relation_module
 from easyfsl.utils import compute_prototypes
 
 
@@ -33,19 +34,19 @@ class RelationNetworks(FewShotClassifier):
     score, which makes it a regression problem. See the article for more details.
     """
 
-    def __init__(self, *args, inner_relation_module_channels: int = 8):
+    def __init__(self, *args, relation_module: nn.Module = None, **kwargs):
         """
-        Build Relation Networks by calling the constructor of AbstractMetaLearner.
+        Build Relation Networks by calling the constructor of FewShotClassifier.
         Args:
-            *args: all arguments of the init method of AbstractMetaLearner
-            inner_relation_module_channels: number of hidden channels between the linear layers of
-                the relation module. Defaults to 8.
+            relation_module: module that will take the concatenation of a query features vector
+                and a prototype to output a relation score. If none is specific, we use the default
+                relation module from the original paper.
 
         Raises:
             ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
             given image is not a tensor of shape (n_channels, width, height)
         """
-        super().__init__(*args)
+        super().__init__(*args, **kwargs)
 
         if len(self.backbone_output_shape) != 3:
             raise ValueError(
@@ -55,55 +56,10 @@ class RelationNetworks(FewShotClassifier):
 
         # Here we build the relation module that will output the relation score for each
         # (query, prototype) pair. See the function docstring for more details.
-        self.relation_module = self.build_relation_module(
-            inner_relation_module_channels
-        )
-
-        # Here we create the field so that the model can store the prototypes for a support set
-        self.prototypes = None
-
-    def build_relation_module(self, inner_relation_module_channels: int) -> nn.Module:
-        """
-        Build the relation module that takes as input the concatenation of two feature
-        maps (in our case the feature map of a query and the feature map of a class prototype).
-        In order to make the network robust to any change in the dimensions of the input images,
-        we made some changes to the architecture defined in the original implementation (typically
-        the use of adaptive pooling).
-        Args:
-            inner_relation_module_channels: number of hidden channels between the linear layers of
-                the relaiton module
-
-        Returns:
-            the constructed relation module
-        """
-        return nn.Sequential(
-            nn.Sequential(
-                nn.Conv2d(
-                    self.feature_dimension * 2,
-                    self.feature_dimension,
-                    kernel_size=3,
-                    padding=1,
-                ),
-                nn.BatchNorm2d(self.feature_dimension, momentum=1, affine=True),
-                nn.ReLU(),
-                nn.AdaptiveMaxPool2d((5, 5)),
-            ),
-            nn.Sequential(
-                nn.Conv2d(
-                    self.feature_dimension,
-                    self.feature_dimension,
-                    kernel_size=3,
-                    padding=0,
-                ),
-                nn.BatchNorm2d(self.feature_dimension, momentum=1, affine=True),
-                nn.ReLU(),
-                nn.AdaptiveMaxPool2d((1, 1)),
-            ),
-            nn.Flatten(),
-            nn.Linear(self.feature_dimension, inner_relation_module_channels),
-            nn.ReLU(),
-            nn.Linear(inner_relation_module_channels, 1),
-            nn.Sigmoid(),
+        self.relation_module = (
+            relation_module
+            if relation_module
+            else default_relation_module(self.feature_dimension)
         )
 
     def process_support_set(
@@ -112,7 +68,7 @@ class RelationNetworks(FewShotClassifier):
         support_labels: Tensor,
     ):
         """
-        Overrides process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of FewShotClassifier.
         Extract feature maps from the support set and store class prototypes.
 
         Args:
@@ -125,7 +81,7 @@ class RelationNetworks(FewShotClassifier):
 
     def forward(self, query_images: Tensor) -> Tensor:
         """
-        Overrides method forward in AbstractMetaLearner.
+        Overrides method forward in FewShotClassifier.
         Predict the label of a query image by concatenating its feature map with each class
         prototype and feeding the result into a relation module, i.e. a CNN that outputs a relation
         score. Finally, the classification vector of the query is its relation score to each class
@@ -160,4 +116,8 @@ class RelationNetworks(FewShotClassifier):
             -1, self.prototypes.shape[0]
         )
 
-        return relation_scores
+        return self.softmax_if_specified(relation_scores)
+
+    @staticmethod
+    def is_transductive() -> bool:
+        return False

@@ -2,7 +2,7 @@ import pytest
 import torch
 from torchvision import transforms
 
-from easyfsl.utils import plot_images, sliding_average, compute_prototypes
+from easyfsl.utils import plot_images, sliding_average, compute_prototypes, entropy
 
 TO_PIL_IMAGE = transforms.ToPILImage()
 
@@ -79,3 +79,17 @@ class TestComputePrototypes:
 
 
 # pylint: enable=not-callable
+
+
+class TestEntropy:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "input_",
+        [
+            torch.ones((5, 4)),
+            torch.ones((5, 1)),
+            torch.ones((1, 5)),
+        ],
+    )
+    def test_entropy_returns_correctly_shaped_tensor(input_):
+        assert entropy(input_).shape == ()

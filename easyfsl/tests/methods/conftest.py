@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import torch
 from PIL import Image
+from torch import nn
 from torchvision import transforms
 
 
@@ -32,3 +33,12 @@ def example_few_shot_classification_task():
     )
 
     return support_images, support_labels, query_images
+
+
+@pytest.fixture()
+def dummy_network():
+    return nn.Sequential(
+        nn.Flatten(),
+        nn.AdaptiveAvgPool1d(output_size=10),
+        nn.Linear(10, 5),
+    )

@@ -6,6 +6,10 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 import torch
 from torch import nn, Tensor
 from easyfsl.methods import FewShotClassifier
+from easyfsl.modules.predesigned_modules import (
+    default_matching_networks_support_encoder,
+    default_matching_networks_query_encoder,
+)
 
 
 class MatchingNetworks(FewShotClassifier):
@@ -22,15 +26,26 @@ class MatchingNetworks(FewShotClassifier):
     output log-probabilities, so you'll want to use Negative Log Likelihood Loss.
     """
 
-    def __init__(self, *args):
+    def __init__(
+        self,
+        *args,
+        support_encoder: nn.Module = None,
+        query_encoder: nn.Module = None,
+        **kwargs
+    ):
         """
-        Build Matching Networks by calling the constructor of AbstractMetaLearner.
+        Build Matching Networks by calling the constructor of FewShotClassifier.
+        Args:
+            support_encoder: module encoding support features. If none is specific, we use
+                the default encoder from the original paper.
+            query_encoder: module encoding query features. If none is specific, we use
+                the default encoder from the original paper.
 
         Raises:
             ValueError: if the backbone is not a feature extractor,
             i.e. if its output for a given image is not a 1-dim tensor.
         """
-        super().__init__(*args)
+        super().__init__(*args, **kwargs)
 
         if len(self.backbone_output_shape) != 1:
             raise ValueError(
@@ -40,15 +55,15 @@ class MatchingNetworks(FewShotClassifier):
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
-        self.support_features_encoder = nn.LSTM(
-            input_size=self.feature_dimension,
-            hidden_size=self.feature_dimension,
-            num_layers=1,
-            batch_first=True,
-            bidirectional=True,
+        self.support_features_encoder = (
+            support_encoder
+            if support_encoder
+            else default_matching_networks_support_encoder(self.feature_dimension)
         )
-        self.query_features_encoding_cell = nn.LSTMCell(
-            self.feature_dimension * 2, self.feature_dimension
+        self.query_features_encoding_cell = (
+            query_encoder
+            if query_encoder
+            else default_matching_networks_query_encoder(self.feature_dimension)
         )
 
         self.softmax = nn.Softmax(dim=1)
@@ -64,7 +79,7 @@ class MatchingNetworks(FewShotClassifier):
         support_labels: Tensor,
     ):
         """
-        Overrides process_support_set of AbstractMetaLearner.
+        Overrides process_support_set of FewShotClassifier.
         Extract features from the support set with full context embedding.
         Store contextualized feature vectors, as well as support labels in the one hot format.
 
@@ -81,7 +96,7 @@ class MatchingNetworks(FewShotClassifier):
 
     def forward(self, query_images: Tensor) -> Tensor:
         """
-        Overrides method forward in AbstractMetaLearner.
+        Overrides method forward in FewShotClassifier.
         Predict query labels based on their cosine similarity to support set features.
         Classification scores are log-probabilities.
 
@@ -111,7 +126,7 @@ class MatchingNetworks(FewShotClassifier):
         log_probabilities = (
             similarity_matrix.mm(self.one_hot_support_labels) + 1e-6
         ).log()
-        return log_probabilities
+        return self.softmax_if_specified(log_probabilities)
 
     def encode_support_features(
         self,
@@ -172,3 +187,7 @@ class MatchingNetworks(FewShotClassifier):
             hidden_state = hidden_state + query_features
 
         return hidden_state
+
+    @staticmethod
+    def is_transductive() -> bool:
+        return False

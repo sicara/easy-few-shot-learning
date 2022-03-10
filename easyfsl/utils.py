@@ -8,10 +8,10 @@ import torchvision
 from matplotlib import pyplot as plt
 import numpy as np
 import torch
-from torch import nn
+from torch import nn, Tensor
 
 
-def plot_images(images: torch.Tensor, title: str, images_per_row: int):
+def plot_images(images: Tensor, title: str, images_per_row: int):
     """
     Plot images in a grid.
     Args:
@@ -61,9 +61,7 @@ def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
     return tuple(output.shape[1:])
 
 
-def compute_prototypes(
-    support_features: torch.Tensor, support_labels: torch.Tensor
-) -> torch.Tensor:
+def compute_prototypes(support_features: Tensor, support_labels: Tensor) -> Tensor:
     """
     Compute class prototypes from support features and labels
     Args:
@@ -82,3 +80,16 @@ def compute_prototypes(
             for label in range(n_way)
         ]
     )
+
+
+def entropy(logits: Tensor) -> Tensor:
+    """
+    Compute entropy of prediction.
+    WARNING: takes logit as input, not probability.
+    Args:
+        logits: shape (n_images, n_way)
+    Returns:
+        Tensor: shape(), Mean entropy.
+    """
+    probabilities = logits.softmax(dim=1)
+    return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
