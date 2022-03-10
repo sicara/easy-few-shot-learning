@@ -99,3 +99,35 @@ class TestEasySetListDataInstances:
         mocker.patch("pathlib.Path.is_file", return_value=True)
 
         assert (images, labels) == EasySet.list_data_instances(class_roots)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "images, all_files",
+        [
+            (
+                [
+                    # These must be sorted
+                    "a.bmp",
+                    "a.jpeg",
+                    "a.jpg",
+                    "a.png",
+                ],
+                [
+                    "a.png",
+                    "a.jpg",
+                    "a.txt",
+                    "a.bmp",
+                    "a.jpeg",
+                    "a.tmp",
+                ],
+            ),
+        ],
+    )
+    def test_list_data_instances_lists_only_images(images, all_files, mocker):
+        mocker.patch(
+            "pathlib.Path.glob",
+            return_value=[Path(file_name) for file_name in all_files],
+        )
+        mocker.patch("pathlib.Path.is_file", return_value=True)
+
+        assert images == EasySet.list_data_instances(["abc"])[0]
