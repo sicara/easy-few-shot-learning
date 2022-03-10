@@ -4,7 +4,7 @@ from unittest.mock import patch, mock_open
 
 import pytest
 
-from easyfsl.data_tools import EasySet
+from easyfsl.datasets import EasySet
 
 
 def init_easy_set(specs):
