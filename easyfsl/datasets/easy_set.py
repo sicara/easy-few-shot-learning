@@ -4,13 +4,13 @@ from typing import List, Union
 
 from PIL import Image
 from torchvision import transforms
-from torch.utils.data import Dataset
 
+from easyfsl.datasets import FewShotDataset
 
 NORMALIZE_DEFAULT = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 
-class EasySet(Dataset):
+class EasySet(FewShotDataset):
     """
     A ready-to-use dataset. Will work for any dataset where the images are
     grouped in directories by class. It expects a JSON file defining the
@@ -156,6 +156,9 @@ class EasySet(Dataset):
 
     def __len__(self) -> int:
         return len(self.labels)
+
+    def get_labels(self) -> List[int]:
+        return self.labels
 
     def number_of_classes(self):
         return len(self.class_names)
