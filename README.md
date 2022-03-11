@@ -34,16 +34,16 @@ You want to learn few-shot learning and don't know where to start? Start with ou
 
 **Tools for data loading:**
 
-- [EasySet](easyfsl/data_tools/easy_set.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
-- [TaskSampler](easyfsl/data_tools/task_sampler.py): samples batches in the shape of few-shot classification tasks
+- [EasySet](easyfsl/datasets/easy_set.py): a ready-to-use Dataset object to handle datasets of images with a class-wise directory split
+- [TaskSampler](easyfsl/samplers/task_sampler.py): samples batches in the shape of few-shot classification tasks
 
 ### Datasets to test your model
 
 - [CU-Birds](http://www.vision.caltech.edu/visipedia/CUB-200.html): we provide [a script](scripts/download_CUB.sh) to download
 and extract the dataset, along with [(train / val / test) split](data/CUB) along classes. The dataset is
-  ready-to-use with [EasySet](easyfsl/data_tools/easy_set.py).
+  ready-to-use with [EasySet](easyfsl/datasets/easy_set.py).
 - [tieredImageNet](https://paperswithcode.com/dataset/tieredimagenet): we provide the 
-  [train, val and test specification files](data/tiered_imagenet) to be used by [EasySet](easyfsl/data_tools/easy_set.py).
+  [train, val and test specification files](data/tiered_imagenet) to be used by [EasySet](easyfsl/datasets/easy_set.py).
   To use it, you need the [ILSVRC2015](https://image-net.org/challenges/LSVRC/index.php) dataset. Once you have 
   downloaded and extracted the dataset, ensure that its localisation on disk is consistent with the class paths
   specified in the specification files.
@@ -71,8 +71,10 @@ cd ...
 3. Check that you have a 680,9MB `images` folder in `./data/CUB` along with three JSON files.
 
 4. From the training subset of CUB, create a dataloader that yields few-shot classification tasks:
+
 ```python
-from easyfsl.data_tools import EasySet, TaskSampler
+from easyfsl.datasets import EasySet
+from easyfsl.samplers import TaskSampler
 from torch.utils.data import DataLoader
 
 train_set = EasySet(specs_file="./data/CUB/train.json", training=True)
