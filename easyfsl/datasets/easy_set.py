@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Union, Set
+from typing import List, Union, Set, Tuple
 
 from PIL import Image
 
@@ -94,7 +94,7 @@ class EasySet(FewShotDataset):
     @staticmethod
     def list_data_instances(
         class_roots: List[str], supported_formats: Set[str] = None
-    ) -> (List[str], List[int]):
+    ) -> Tuple[List[str], List[int]]:
         """
         Explore the directories specified in class_roots to find all data instances.
         Args:
