@@ -38,9 +38,7 @@ class DanishFungi(FewShotDataset):
         self.class_names = list(self.data.drop_duplicates("label").scientific_name)
 
         self.transform = (
-            transform
-            if transform
-            else default_transform(image_size, training=training)
+            transform if transform else default_transform(image_size, training=training)
         )
 
     @staticmethod
