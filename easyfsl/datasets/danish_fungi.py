@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Callable
 
 import pandas as pd
 from pandas import DataFrame
@@ -7,9 +7,9 @@ from PIL import Image
 from torch import Tensor
 
 from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import default_transforms
+from easyfsl.datasets.default_configs import default_transform
 
-WHOLE_DANISH_FUNGI_SPECS_FILE = Path("data/fungi/specs") / "DF20_metadata.csv"
+WHOLE_DANISH_FUNGI_SPECS_FILE = Path("data/fungi") / "DF20_metadata.csv"
 
 
 class DanishFungi(FewShotDataset):
@@ -18,7 +18,7 @@ class DanishFungi(FewShotDataset):
         root: Union[Path, str],
         specs_file: Union[Path, str] = WHOLE_DANISH_FUNGI_SPECS_FILE,
         image_size=84,
-        transforms=None,
+        transform: Callable = None,
         training=False,
     ):
         """
@@ -26,7 +26,7 @@ class DanishFungi(FewShotDataset):
             root: directory where all the images are
             specs_file: path to the CSV file
             image_size: images returned by the dataset will be square images of the given size
-            transforms: torchvision transforms to be applied to images. If none is provided,
+            transform: torchvision transforms to be applied to images. If none is provided,
                 we use some standard transformations including ImageNet normalization.
                 These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
@@ -35,12 +35,12 @@ class DanishFungi(FewShotDataset):
         self.root = Path(root)
         self.data = self.load_specs(specs_file)
 
-        self.class_names = list(self.data.scientific_name.unique())
+        self.class_names = list(self.data.drop_duplicates("label").scientific_name)
 
         self.transform = (
-            transforms
-            if transforms
-            else default_transforms(image_size, training=training)
+            transform
+            if transform
+            else default_transform(image_size, training=training)
         )
 
     @staticmethod
