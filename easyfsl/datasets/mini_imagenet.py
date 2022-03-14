@@ -6,6 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 from PIL import Image
 import torch
+from torch import Tensor
 from tqdm import tqdm
 
 from easyfsl.datasets import FewShotDataset
@@ -65,7 +66,7 @@ class MiniImageNet(FewShotDataset):
             self.loading_transform = (
                 loading_transform
                 if loading_transform
-                else default_mini_imagenet_loading_transform(image_size, training)
+                else default_mini_imagenet_loading_transform(image_size)
             )
 
             # Transformation to operate on the fly
@@ -109,7 +110,7 @@ class MiniImageNet(FewShotDataset):
 
         return img, self.labels[item]
 
-    def load_image_as_tensor(self, filename):
+    def load_image_as_tensor(self, filename) -> Tensor:
         return self.loading_transform(Image.open(filename).convert("RGB"))
 
     def load_specs(
@@ -117,6 +118,21 @@ class MiniImageNet(FewShotDataset):
         split: Optional[str] = None,
         specs_file: Optional[Union[Path, str]] = None,
     ) -> DataFrame:
+        """
+        Load the classes and paths of images from the CSV specs file.
+        Args:
+            split: if specs_file is not specified, will look for the CSV file corresponding
+                to this split in miniImageNet's specs directory. If both are unspecified,
+                raise an error.
+            specs_file: path to the specs CSV file. Mutually exclusive with split but one of them
+                must be specified.
+
+        Returns:
+            dataframe with 3 columns class_name, image_name and image_path
+
+        Raises:
+            ValueError: you need to specify a split or a specs_file, but not both.
+        """
         if (specs_file is None) & (split is None):
             raise ValueError("Please specify either a split or an explicit specs_file.")
         if (specs_file is not None) & (split is not None):
