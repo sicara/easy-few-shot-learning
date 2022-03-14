@@ -47,6 +47,7 @@ and extract the dataset, along with [(train / val / test) split](data/CUB) along
   To use it, you need the [ILSVRC2015](https://image-net.org/challenges/LSVRC/index.php) dataset. Once you have 
   downloaded and extracted the dataset, ensure that its localisation on disk is consistent with the class paths
   specified in the specification files.
+- Fungi: download specs from [here](https://public-sicara.s3.eu-central-1.amazonaws.com/easy-fsl/DF20_metadata.csv).
 
 ## QuickStart
 1. Install the package with pip: 

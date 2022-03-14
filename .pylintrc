@@ -38,6 +38,9 @@ suggestion-mode=yes
 # active Python interpreter and may run arbitrary code.
 unsafe-load-any-extension=no
 
+# As a temporary workaround for https://github.com/PyCQA/pylint/issues/4577
+init-hook = "import astroid; astroid.context.InferenceContext.max_inferred = 500"
+
 
 [MESSAGES CONTROL]
 
