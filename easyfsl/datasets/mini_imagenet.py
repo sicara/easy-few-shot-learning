@@ -91,11 +91,12 @@ class MiniImageNet(FewShotDataset):
             )
             self.images = None
 
-        self.labels = self.get_labels()
         self.class_names = self.data_df.class_name.unique()
+        self.class_to_label = {v: k for k, v in enumerate(self.class_names)}
+        self.labels = self.get_labels()
 
     def __len__(self):
-        return len(self.images)
+        return len(self.data_df)
 
     def __getitem__(self, item):
         img = (
@@ -132,4 +133,4 @@ class MiniImageNet(FewShotDataset):
         )
 
     def get_labels(self) -> List[int]:
-        return list(self.data_df.class_name.map(self.class_to_id))
+        return list(self.data_df.class_name.map(self.class_to_label))
