@@ -3,7 +3,6 @@
 ![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
 
 Ready-to-use code and tutorial notebooks to boost your way into few-shot image classification. 
 This repository is made for you if:
@@ -25,6 +24,9 @@ basically Few-Shot Learning 101, in less than 15mn.
 
 - **[Example of episodic training](notebooks/episodic_training.ipynb)**: 
 use it as a starting point if you want to design a script for episodic training using EasyFSL.
+- 
+- **[Example of classical training](notebooks/episodic_training.ipynb)**: 
+use it as a starting point if you want to design a script for classical training using EasyFSL.
 
 ### Code that you can use and understand
 
@@ -129,77 +131,17 @@ Note that I didn't specify a train and test set because the CSV I gave you descr
 I recommend to use it to test models with weights trained on an other dataset (like ImageNet).
 But if you want to propose a train/val/test split along classes, you're welcome to contribute!
 
-## [Deprecated] QuickStart
+## QuickStart
 
 
-1. Install the package with pip: 
-   
-```pip install easyfsl```
-
+1. Install the package: ```pip install easyfsl``` \
 Note: alternatively, you can clone the repository so that you can modify the code as you wish.
    
-2. [Download your data ](#datasets-to-test-your-model) (for instance CUB).
+2. [Download your data](#datasets-to-test-your-model).
 
-4. From the training subset of CUB, create a dataloader that yields few-shot classification tasks:
-
-```python
-from easyfsl.datasets import CUB
-from easyfsl.samplers import TaskSampler
-from torch.utils.data import DataLoader
-
-train_set = CUB(split="train", training=True)
-train_sampler = TaskSampler(
-    train_set, n_way=5, n_shot=5, n_query=10, n_tasks=40000
-)
-train_loader = DataLoader(
-    train_set,
-    batch_sampler=train_sampler,
-    num_workers=12,
-    pin_memory=True,
-    collate_fn=train_sampler.episodic_collate_fn,
-)
-```
-
-5. Create and train a model
-
-```python
-from easyfsl.methods import PrototypicalNetworks
-from torch import nn
-from torch.optim import Adam
-from torchvision.models import resnet18
-
-convolutional_network = resnet18(pretrained=False)
-convolutional_network.fc = nn.Flatten()
-model = PrototypicalNetworks(convolutional_network).cuda()
-
-optimizer = Adam(params=model.parameters())
-
-model.fit(train_loader, optimizer)
-```
-   **Note:** you can also define a validation data loader and use as an additional argument to `fit`
-in order to use validation during your training.
-
-   **Troubleshooting:** a ResNet18 with a batch size of (5 * (5+10)) = 75 would use about 4.2GB on your GPU.
-If you don't have it, switch to CPU, choose a smaller model or reduce the batch size (in `TaskSampler` above).
-
-6. Evaluate your model on the test set
-
-```python
-test_set = EasySet(specs_file="./data/CUB/test.json", training=False)
-test_sampler = TaskSampler(
-    test_set, n_way=5, n_shot=5, n_query=10, n_tasks=100
-)
-test_loader = DataLoader(
-    test_set,
-    batch_sampler=test_sampler,
-    num_workers=12,
-    pin_memory=True,
-    collate_fn=test_sampler.episodic_collate_fn,
-)
-
-accuracy = model.evaluate(test_loader)
-print(f"Average accuracy : {(100 * accuracy):.2f}")
-```
+3. Design your training and evaluation scripts. You can use our example notebooks for 
+[episodic training](notebooks/episodic_training.ipynb) 
+or [classical training](notebooks/classical_training.ipynb)
 
 ## Contribute
 This project is very open to contributions! You can help in various ways:
