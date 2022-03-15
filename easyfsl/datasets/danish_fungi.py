@@ -17,9 +17,9 @@ class DanishFungi(FewShotDataset):
         self,
         root: Union[Path, str],
         specs_file: Union[Path, str] = WHOLE_DANISH_FUNGI_SPECS_FILE,
-        image_size=84,
+        image_size: int = 84,
         transform: Callable = None,
-        training=False,
+        training: bool = False,
     ):
         """
         Args:

@@ -4,6 +4,7 @@ from easyfsl.datasets import EasySet, FewShotDataset
 
 TIERED_IMAGENET_SPECS_DIR = Path("data/tiered_imagenet")
 
+
 # pylint: disable=invalid-name
 def TieredImageNet(split: str, **kwargs) -> FewShotDataset:
     """

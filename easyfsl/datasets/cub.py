@@ -4,6 +4,7 @@ from easyfsl.datasets import EasySet, FewShotDataset
 
 CUB_SPECS_DIR = Path("data/CUB")
 
+
 # pylint: disable=invalid-name
 def CUB(split: str, **kwargs) -> FewShotDataset:
     """

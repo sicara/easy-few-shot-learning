@@ -28,9 +28,9 @@ class EasySet(FewShotDataset):
     def __init__(
         self,
         specs_file: Union[Path, str],
-        image_size=84,
+        image_size: int = 84,
         transform: Callable = None,
-        training=False,
+        training: bool = False,
         supported_formats: Set[str] = None,
     ):
         """
