@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
-from typing import List, Union, Set, Tuple
+from typing import List, Union, Set, Tuple, Callable
 
 from PIL import Image
 
 from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import default_transforms, DEFAULT_IMAGE_FORMATS
+from easyfsl.datasets.default_configs import default_transform, DEFAULT_IMAGE_FORMATS
 
 
 class EasySet(FewShotDataset):
@@ -28,16 +28,16 @@ class EasySet(FewShotDataset):
     def __init__(
         self,
         specs_file: Union[Path, str],
-        image_size=84,
-        transforms=None,
-        training=False,
+        image_size: int = 84,
+        transform: Callable = None,
+        training: bool = False,
         supported_formats: Set[str] = None,
     ):
         """
         Args:
             specs_file: path to the JSON file
             image_size: images returned by the dataset will be square images of the given size
-            transforms: torchvision transforms to be applied to images. If none is provided,
+            transform: torchvision transforms to be applied to images. If none is provided,
                 we use some standard transformations including ImageNet normalization.
                 These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
@@ -55,7 +55,7 @@ class EasySet(FewShotDataset):
         self.class_names = specs["class_names"]
 
         self.transform = (
-            transforms if transforms else default_transforms(image_size, training)
+            transform if transform else default_transform(image_size, training)
         )
 
     @staticmethod
