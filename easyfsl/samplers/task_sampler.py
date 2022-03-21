@@ -2,7 +2,10 @@ import random
 from typing import List, Tuple
 
 import torch
-from torch.utils.data import Sampler, Dataset
+from torch import Tensor
+from torch.utils.data import Sampler
+
+from easyfsl.datasets import FewShotDataset
 
 
 class TaskSampler(Sampler):
@@ -12,7 +15,12 @@ class TaskSampler(Sampler):
     """
 
     def __init__(
-        self, dataset: Dataset, n_way: int, n_shot: int, n_query: int, n_tasks: int
+        self,
+        dataset: FewShotDataset,
+        n_way: int,
+        n_shot: int,
+        n_query: int,
+        n_tasks: int,
     ):
         """
         Args:
@@ -30,10 +38,7 @@ class TaskSampler(Sampler):
         self.n_tasks = n_tasks
 
         self.items_per_label = {}
-        assert hasattr(
-            dataset, "labels"
-        ), "TaskSampler needs a dataset with a field 'label' containing the labels of all images."
-        for item, label in enumerate(dataset.labels):
+        for item, label in enumerate(dataset.get_labels()):
             if label in self.items_per_label.keys():
                 self.items_per_label[label].append(item)
             else:
@@ -58,8 +63,8 @@ class TaskSampler(Sampler):
             )
 
     def episodic_collate_fn(
-        self, input_data: List[Tuple[torch.Tensor, int]]
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[int]]:
+        self, input_data: List[Tuple[Tensor, int]]
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, List[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic
             data loaders.

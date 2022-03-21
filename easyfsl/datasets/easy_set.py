@@ -1,16 +1,14 @@
 import json
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Set, Tuple, Callable
 
 from PIL import Image
-from torchvision import transforms
-from torch.utils.data import Dataset
+
+from easyfsl.datasets import FewShotDataset
+from easyfsl.datasets.default_configs import default_transform, DEFAULT_IMAGE_FORMATS
 
 
-NORMALIZE_DEFAULT = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-
-
-class EasySet(Dataset):
+class EasySet(FewShotDataset):
     """
     A ready-to-use dataset. Will work for any dataset where the images are
     grouped in directories by class. It expects a JSON file defining the
@@ -27,21 +25,38 @@ class EasySet(Dataset):
         }
     """
 
-    def __init__(self, specs_file: Union[Path, str], image_size=224, training=False):
+    def __init__(
+        self,
+        specs_file: Union[Path, str],
+        image_size: int = 84,
+        transform: Callable = None,
+        training: bool = False,
+        supported_formats: Set[str] = None,
+    ):
         """
         Args:
             specs_file: path to the JSON file
             image_size: images returned by the dataset will be square images of the given size
+            transform: torchvision transforms to be applied to images. If none is provided,
+                we use some standard transformations including ImageNet normalization.
+                These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
-                cropping and a random horizontal flip.
+                cropping and a random horizontal flip. Only used if transforms = None.
+            supported_formats: set of allowed file format. When listing data instances, EasySet
+                will only consider these files. If none is provided, we use the default set of
+                image formats.
         """
         specs = self.load_specs(Path(specs_file))
 
-        self.images, self.labels = self.list_data_instances(specs["class_roots"])
+        self.images, self.labels = self.list_data_instances(
+            specs["class_roots"], supported_formats=supported_formats
+        )
 
         self.class_names = specs["class_names"]
 
-        self.transform = self.compose_transforms(image_size, training)
+        self.transform = (
+            transform if transform else default_transform(image_size, training)
+        )
 
     @staticmethod
     def load_specs(specs_file: Path) -> dict:
@@ -77,39 +92,9 @@ class EasySet(Dataset):
         return specs
 
     @staticmethod
-    def compose_transforms(image_size: int, training: bool) -> transforms.Compose:
-        """
-        Create a composition of torchvision transformations, with some randomization if we are
-            building a training set.
-        Args:
-            image_size: size of dataset images
-            training: whether this is a training set or not
-
-        Returns:
-            compositions of torchvision transformations
-        """
-        return (
-            transforms.Compose(
-                [
-                    transforms.RandomResizedCrop(image_size),
-                    transforms.RandomHorizontalFlip(),
-                    transforms.ToTensor(),
-                    transforms.Normalize(**NORMALIZE_DEFAULT),
-                ]
-            )
-            if training
-            else transforms.Compose(
-                [
-                    transforms.Resize([int(image_size * 1.15), int(image_size * 1.15)]),
-                    transforms.CenterCrop(image_size),
-                    transforms.ToTensor(),
-                    transforms.Normalize(**NORMALIZE_DEFAULT),
-                ]
-            )
-        )
-
-    @staticmethod
-    def list_data_instances(class_roots: List[str]) -> (List[str], List[int]):
+    def list_data_instances(
+        class_roots: List[str], supported_formats: Set[str] = None
+    ) -> Tuple[List[str], List[int]]:
         """
         Explore the directories specified in class_roots to find all data instances.
         Args:
@@ -120,13 +105,16 @@ class EasySet(Dataset):
             list of paths to the images, and a list of same length containing the integer label
                 of each image
         """
+        if supported_formats is None:
+            supported_formats = DEFAULT_IMAGE_FORMATS
+
         images = []
         labels = []
         for class_id, class_root in enumerate(class_roots):
             class_images = [
                 str(image_path)
                 for image_path in sorted(Path(class_root).glob("*"))
-                if image_path.is_file()
+                if image_path.is_file() & (image_path.suffix in supported_formats)
             ]
             images += class_images
             labels += len(class_images) * [class_id]
@@ -156,6 +144,9 @@ class EasySet(Dataset):
 
     def __len__(self) -> int:
         return len(self.labels)
+
+    def get_labels(self) -> List[int]:
+        return self.labels
 
     def number_of_classes(self):
         return len(self.class_names)

@@ -4,7 +4,8 @@ from unittest.mock import patch, mock_open
 
 import pytest
 
-from easyfsl.data_tools import EasySet
+from easyfsl.datasets import EasySet
+from easyfsl.datasets.tiered_imagenet import TieredImageNet
 
 
 def init_easy_set(specs):
@@ -99,3 +100,59 @@ class TestEasySetListDataInstances:
         mocker.patch("pathlib.Path.is_file", return_value=True)
 
         assert (images, labels) == EasySet.list_data_instances(class_roots)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "images, all_files",
+        [
+            (
+                [
+                    # These must be sorted
+                    "a.bmp",
+                    "a.jpeg",
+                    "a.jpg",
+                    "a.png",
+                ],
+                [
+                    "a.png",
+                    "a.jpg",
+                    "a.txt",
+                    "a.bmp",
+                    "a.jpeg",
+                    "a.tmp",
+                ],
+            ),
+        ],
+    )
+    def test_list_data_instances_lists_only_images(images, all_files, mocker):
+        mocker.patch(
+            "pathlib.Path.glob",
+            return_value=[Path(file_name) for file_name in all_files],
+        )
+        mocker.patch("pathlib.Path.is_file", return_value=True)
+
+        assert images == EasySet.list_data_instances(["abc"])[0]
+
+
+class TestTieredImagenet:
+    @staticmethod
+    def test_tiered_imagenet_raises_error_if_wrong_split():
+        with pytest.raises(ValueError):
+            TieredImageNet("nope")
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "split",
+        [
+            "train",
+            "val",
+            "test",
+        ],
+    )
+    def test_tiered_imagenet_builds_easyset(split, mocker):
+        mocker.patch(
+            "pathlib.Path.glob",
+            return_value=[Path("a.png"), Path("b.png")],
+        )
+        dataset = TieredImageNet(split)
+        assert isinstance(dataset, EasySet)

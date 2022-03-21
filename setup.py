@@ -7,14 +7,13 @@ with open("README.md", "r") as f:
 
 setup(
     name="easyfsl",
-    version="0.2.2",
+    version="1.0.0",
     description="Ready-to-use PyTorch code to boost your way into few-shot image classification",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/sicara/easy-few-shot-learning",
     license="MIT",
     install_requires=[
-        "loguru>=0.5.0",
         "matplotlib>=3.0.0",
         "pandas>=1.1.0",
         "torch>=1.4.0",
@@ -32,6 +31,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
     ],
 )
