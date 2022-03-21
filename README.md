@@ -1,5 +1,5 @@
 # Easy Few-Shot Learning
-![Python Versions](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8-%23EBBD68.svg)
+![Python Versions](https://img.shields.io/pypi/pyversions/easyfsl?style=flat)
 ![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -24,7 +24,7 @@ basically Few-Shot Learning 101, in less than 15mn.
 
 - **[Example of episodic training](notebooks/episodic_training.ipynb)**: 
 use it as a starting point if you want to design a script for episodic training using EasyFSL.
-- 
+
 - **[Example of classical training](notebooks/episodic_training.ipynb)**: 
 use it as a starting point if you want to design a script for classical training using EasyFSL.
 
