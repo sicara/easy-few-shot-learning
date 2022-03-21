@@ -14,7 +14,6 @@ setup(
     url="https://github.com/sicara/easy-few-shot-learning",
     license="MIT",
     install_requires=[
-        "loguru>=0.5.0",
         "matplotlib>=3.0.0",
         "pandas>=1.1.0",
         "torch>=1.4.0",
