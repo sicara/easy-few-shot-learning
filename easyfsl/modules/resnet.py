@@ -129,5 +129,14 @@ class ResNet(nn.Module):
 
         return x
 
+    def set_use_fc(self, use_fc: bool):
+        """
+        Change the use_fc property. Allow to decide when and where the model should use its last
+        fully connected layer.
+        Args:
+            use_fc: whether to set self.use_fc to True or False
+        """
+        self.use_fc = use_fc
+
 
 # pylint: enable=invalid-name, too-many-instance-attributes, too-many-arguments

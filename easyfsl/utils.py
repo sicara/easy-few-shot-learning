@@ -1,7 +1,7 @@
 """
 General utilities
 """
-
+import copy
 from typing import List, Tuple
 
 import torchvision
@@ -56,7 +56,8 @@ def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
 
     """
     input_images = torch.ones((4, 3, 32, 32))
-    output = backbone(input_images)
+    # Use a copy of the backbone on CPU, to avoid device conflict
+    output = copy.deepcopy(backbone).cpu()(input_images)
 
     return tuple(output.shape[1:])
 
