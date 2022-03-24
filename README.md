@@ -12,6 +12,9 @@ This repository is made for you if:
 
 Don't get lost in large repositories with hundreds of methods and no explanation on how to use them. Here, we want each line
 of code to be covered by a tutorial.
+
+<img src="https://ebennequin.github.io/resources/images/easyfsl.png" alt="easyfsl-motto" width="300"/>
+
 ## What's in there?
 
 ### Notebooks: learn and practice
