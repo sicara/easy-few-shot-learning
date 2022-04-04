@@ -1,4 +1,4 @@
-I made this fork to test the behaviour of CircleCI on forked PRs.
+I made this fork to test the behaviour of CircleCI on forked PRs. Twice.
 
 # Easy Few-Shot Learning
 ![Python Versions](https://img.shields.io/pypi/pyversions/easyfsl?style=flat)
