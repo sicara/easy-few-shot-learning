@@ -1,3 +1,5 @@
+I made this fork to test the behaviour of CircleCI on forked PRs.
+
 # Easy Few-Shot Learning
 ![Python Versions](https://img.shields.io/pypi/pyversions/easyfsl?style=flat)
 ![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
