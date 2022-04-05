@@ -137,8 +137,7 @@ But if you want to propose a train/val/test split along classes, you're welcome 
 ## QuickStart
 
 
-1. Install the package: ```pip install easyfsl``` \
-Note: alternatively, you can clone the repository so that you can modify the code as you wish.
+1. Install the package: ```pip install easyfsl``` or simply fork the repository.
    
 2. [Download your data](#datasets-to-test-your-model).
 
