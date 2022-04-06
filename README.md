@@ -28,7 +28,7 @@ basically Few-Shot Learning 101, in less than 15mn.
 - **[Example of episodic training](notebooks/episodic_training.ipynb)**: 
 use it as a starting point if you want to design a script for episodic training using EasyFSL.
 
-- **[Example of classical training](notebooks/episodic_training.ipynb)**: 
+- **[Example of classical training](notebooks/classical_training.ipynb)**: 
 use it as a starting point if you want to design a script for classical training using EasyFSL.
 
 ### Code that you can use and understand
