@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Iterator
 
 import torch
 from torch import Tensor
@@ -44,10 +44,10 @@ class TaskSampler(Sampler):
             else:
                 self.items_per_label[label] = [item]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.n_tasks
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[List[int]]:
         for _ in range(self.n_tasks):
             yield torch.cat(
                 [
@@ -60,7 +60,7 @@ class TaskSampler(Sampler):
                     # pylint: enable=not-callable
                     for label in random.sample(self.items_per_label.keys(), self.n_way)
                 ]
-            )
+            ).tolist()
 
     def episodic_collate_fn(
         self, input_data: List[Tuple[Tensor, int]]

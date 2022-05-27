@@ -114,7 +114,8 @@ class EasySet(FewShotDataset):
             class_images = [
                 str(image_path)
                 for image_path in sorted(Path(class_root).glob("*"))
-                if image_path.is_file() & (image_path.suffix.lower() in supported_formats)
+                if image_path.is_file()
+                & (image_path.suffix.lower() in supported_formats)
             ]
             images += class_images
             labels += len(class_images) * [class_id]

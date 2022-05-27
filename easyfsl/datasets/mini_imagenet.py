@@ -90,7 +90,7 @@ class MiniImageNet(FewShotDataset):
             self.transform = (
                 transform if transform else default_transform(image_size, training)
             )
-            self.images = None
+            self.images = self.data_df.image_path.tolist()
 
         self.class_names = self.data_df.class_name.unique()
         self.class_to_label = {v: k for k, v in enumerate(self.class_names)}
