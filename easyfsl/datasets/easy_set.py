@@ -1,4 +1,5 @@
 import json
+import warnings
 from pathlib import Path
 from typing import List, Union, Set, Tuple, Callable
 
@@ -117,8 +118,16 @@ class EasySet(FewShotDataset):
                 if image_path.is_file()
                 & (image_path.suffix.lower() in supported_formats)
             ]
+
             images += class_images
             labels += len(class_images) * [class_id]
+
+        if len(images) == 0:
+            warnings.warn(
+                UserWarning(
+                    "No images found in the specified directories. The dataset will be empty"
+                )
+            )
 
         return images, labels
 

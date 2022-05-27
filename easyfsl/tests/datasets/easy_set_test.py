@@ -12,12 +12,13 @@ def init_easy_set(specs):
     buffer = json.dumps(specs)
     with patch("builtins.open", mock_open(read_data=buffer)):
         with patch("pathlib.Path.glob") as mock_glob:
-            mock_glob.return_value = [Path("a"), Path("b")]
+            mock_glob.return_value = [Path("a.jpeg"), Path("b.jpeg")]
             EasySet(Path("dummy.json"))
 
 
 class TestEasySetInit:
     @staticmethod
+    @pytest.mark.filterwarnings("ignore::UserWarning")
     @pytest.mark.parametrize(
         "specs",
         [
@@ -149,6 +150,7 @@ class TestTieredImagenet:
             "test",
         ],
     )
+    @pytest.mark.filterwarnings("ignore::UserWarning")
     def test_tiered_imagenet_builds_easyset(split, mocker):
         mocker.patch(
             "pathlib.Path.glob",
