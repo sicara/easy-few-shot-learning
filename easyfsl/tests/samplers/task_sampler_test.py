@@ -1,21 +1,34 @@
-from unittest.mock import patch
+from typing import Tuple, List
 
 import pytest
+from torch import Tensor
 
 from easyfsl.datasets import FewShotDataset
 from easyfsl.samplers import TaskSampler
 
 
+class DummyFewShotDataset(FewShotDataset):
+    def __init__(self, labels):
+        self.labels = labels
+
+    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
+        raise NotImplementedError("__getitem__() is not supposed to be called.")
+
+    def __len__(self) -> int:
+        raise NotImplementedError("__len__() is not supposed to be called.")
+
+    def get_labels(self) -> List[int]:
+        return self.labels
+
+
 def init_task_sampler(labels, n_way, n_shot, n_query, n_tasks):
-    with patch("easyfsl.datasets.FewShotDataset.get_labels", return_value=labels):
-        print(labels)
-        return TaskSampler(
-            dataset=FewShotDataset(),
-            n_way=n_way,
-            n_shot=n_shot,
-            n_query=n_query,
-            n_tasks=n_tasks,
-        )
+    return TaskSampler(
+        dataset=DummyFewShotDataset(labels=labels),
+        n_way=n_way,
+        n_shot=n_shot,
+        n_query=n_query,
+        n_tasks=n_tasks,
+    )
 
 
 class TestTaskSamplerIter:
