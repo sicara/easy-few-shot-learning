@@ -132,7 +132,10 @@ dmypy.json
 .pyre/
 
 # data
-data/CUB/images
+data/**/images
 data/omniglot-py
 *.tgz
 *.tar
+
+# Tensorboard logs
+events.out.tfevents*
