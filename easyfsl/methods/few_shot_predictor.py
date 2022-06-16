@@ -10,7 +10,7 @@ class FewShotPredictor :
 
         This class aims to implement a predictor for a Few-shot classifier.
 
-        The few shot classifiers need a support set that will be used for 
+        The few shot classifiers need a support set that will be used for
         calculating the distance between the support set and the query image.
 
         To load the support we have used an ImageFolder Dataset, which needs to have the following structure:
