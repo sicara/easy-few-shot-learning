@@ -1,15 +1,17 @@
 import torchvision.transforms as tt
-import torch
 from torchvision.datasets import ImageFolder
-from easyfsl.methods import FewShotClassifier
 from torch.utils.data import DataLoader
+import torch
+from easyfsl.methods import FewShotClassifier
+
 
 class FewShotPredictor :
     """
 
         This class aims to implement a predictor for a Few-shot classifier.
 
-        The few shot classifiers need a support set that will be used for calculating the distance between the support set and the query image.
+        The few shot classifiers need a support set that will be used for 
+        calculating the distance between the support set and the query image.
 
         To load the support we have used an ImageFolder Dataset, which needs to have the following structure:
 
@@ -93,11 +95,12 @@ class FewShotPredictor :
         """
 
         with torch.no_grad():
-           self.classifier.eval()
-           self.classifier.to(self.device)
-           self.classifier.process_support_set(self.support_images.to(self.device), self.support_labels.to(self.device))
-           pre_predict = self.classifier(tensor_normalized_image.to(self.device))
-           predict = pre_predict.detach().data
-           torch_max = torch.max(predict,1)
-           class_name = self.test_ds.classes[torch_max[1].item()]
-           return predict, torch_max[1], class_name
+            self.classifier.eval()
+            self.classifier.to(self.device)
+            self.classifier.process_support_set(
+                self.support_images.to(self.device), self.support_labels.to(self.device))
+            pre_predict = self.classifier(tensor_normalized_image.to(self.device))
+            predict = pre_predict.detach().data
+            torch_max = torch.max(predict,1)
+            class_name = self.test_ds.classes[torch_max[1].item()]
+            return predict, torch_max[1], class_name
