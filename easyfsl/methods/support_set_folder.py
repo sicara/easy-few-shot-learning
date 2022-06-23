@@ -1,78 +1,68 @@
-
+import torch
+from torch import Tensor
 from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader
 
 
-class SupportSetFolder (ImageFolder):
+class SupportSetFolder(ImageFolder):
     """
-        This class aims to help you to create a support set based on a folder.
+    Create a support set from images located in a specified folder
+    with the following file structure:
 
-        The few shot classifiers need a support set that will be used for
-        calculating the distance between the support set and the query image.
+    root:
+      |_ subfolder_1:
+             |_ image_1
+             |_  …
+             |_ image_n
+      |_ subfolder_2:
+             |_ image_1
+             |_  …
+             |_ image_n
 
-        To load the support we have used an ImageFolder Dataset, which needs to have the following structure:
+    Following the ImageFolder logic, images of a same subfolder will share the same label,
+    and the classes will be named after the subfolders.
 
-        folder:
-          |_ class_name_folder_1:
-                 |_ image_1
-                 |_  …
-                 |_ image_n
-          |_ class_name_folder_2:
-                 |_ image_1
-                 |_  …
-                 |_ image_n
+    Example of use:
 
-        The folder must contain the same number of images per class, being the total images (n_way * n_shot).
-
-        There must be n_way folders with n_shot images per folder.
-
-        Example of use:
-
-        predict_transformation = tt.Compose([
-            tt.Resize((224, 224)),
-            tt.ToTensor()
-        ])
-        support_set = SupportSetFolder(root= path_to_support_images,
-                                       transform=predict_transformation,
-                                       device=DEVICE)
-        with torch.no_grad():
-            few_shot_classifier.eval()
-            few_shot_classifier.process_support_set(support_set.get_images(), support_set.get_labels())
-            predictions = few_shot_classifier(normed_torch_img.to(device))
-            class_names = support_set.classes
-            class_index = torch.max(predictions, 1)
-            class_name = classes[class_index[1].item()]
-
+    predict_transformation = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor()
+    ])
+    support_set = SupportSetFolder(
+        root=path_to_support_images,
+        transform=predict_transformation,
+        device="cuda"
+    )
+    with torch.no_grad():
+        few_shot_classifier.eval()
+        few_shot_classifier.process_support_set(support_set.get_images(), support_set.get_labels())
+        class_names = support_set.classes
+        predicted_labels = few_shot_classifier(query_images.to(device)).argmax(dim=1)
+        predicted_classes = [ support_set.classes[label] for label in predicted_labels]
     """
-    def __init__(self, root:str, transform, device,  n_way, n_shot):
 
+    def __init__(self, device="cpu", **kwargs):
         """
-            :param device: device to be executed
-            :param root: path to creating a support set
-            :param n_way: number of classes
-            :param n_shot: number of images on each class
-
+        Args:
+            device:
+            **kwargs: kwargs for the parent ImageFolder class
         """
 
-        super().__init__(root = root,transform = transform)
+        super().__init__(**kwargs)
 
-        self.val_loader = DataLoader(
-            self,
-            batch_size=(n_way * n_shot),
-            num_workers=1,
-            pin_memory=True
-        )
         self.device = device
-        self.support_images, self.support_labels = next(iter(self.val_loader))
+        self.images = torch.stack([instance[0] for instance in self]).to(self.device)
 
-    def get_images(self):
+    def get_images(self) -> Tensor:
         """
-            Returns the support set images on the selected device
+        Returns:
+            support set images as a (n_images, n_channels, width, height) tensor
+                on the selected device
         """
-        return self.support_images.to(self.device)
+        return self.images
 
-    def get_labels(self):
+    def get_labels(self) -> Tensor:
         """
-            Returns the support set labels on the selected device
+        Returns:
+            support set labels as a tensor on the selected device
         """
-        return self.support_labels.to(self.device)
+        return torch.tensor(self.targets).to(self.device)
