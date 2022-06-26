@@ -1,6 +1,17 @@
+from pathlib import Path
+from typing import Union, Callable
+
 import torch
 from torch import Tensor
 from torchvision.datasets import ImageFolder
+
+from easyfsl.datasets.default_configs import default_transform
+
+
+NOT_A_TENSOR_ERROR_MESSAGE = (
+    "SupportSetFolder handles instances as tensors. "
+    "Please ensure that the specific transform outputs a tensor."
+)
 
 
 class SupportSetFolder(ImageFolder):
@@ -40,17 +51,32 @@ class SupportSetFolder(ImageFolder):
         predicted_classes = [ support_set.classes[label] for label in predicted_labels]
     """
 
-    def __init__(self, device="cpu", **kwargs):
+    def __init__(
+        self,
+        root: Union[str, Path],
+        device="cpu",
+        image_size: int = 84,
+        transform: Callable = None,
+        **kwargs
+    ):
         """
         Args:
             device:
             **kwargs: kwargs for the parent ImageFolder class
         """
+        transform = (
+            transform if transform else default_transform(image_size, training=False)
+        )
 
-        super().__init__(**kwargs)
+        super().__init__(str(root), transform=transform, **kwargs)
 
         self.device = device
-        self.images = torch.stack([instance[0] for instance in self]).to(self.device)
+        try:
+            self.images = torch.stack([instance[0] for instance in self]).to(
+                self.device
+            )
+        except TypeError as type_error:
+            raise TypeError(NOT_A_TENSOR_ERROR_MESSAGE) from type_error
 
     def get_images(self) -> Tensor:
         """
