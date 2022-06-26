@@ -2,6 +2,7 @@ import pytest
 import torch
 from torch import nn
 
+from easyfsl.datasets import SupportSetFolder
 from easyfsl.methods import MatchingNetworks
 
 
@@ -46,3 +47,24 @@ class TestMatchingNetworksPipeline:
             )
         )
         # pylint: enable=not-callable
+
+
+class TestMatchingNetsCanProcessSupportSetFolder:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "support_set_path",
+        [
+            "easyfsl/tests/datasets/resources/balanced_support_set",
+            "easyfsl/tests/datasets/resources/unbalanced_support_set",
+        ],
+    )
+    def test_matching_nets_can_process_support_set(support_set_path, dummy_network):
+        support_set = SupportSetFolder(support_set_path)
+        support_images = support_set.get_images()
+        support_labels = support_set.get_labels()
+
+        model = MatchingNetworks(backbone=dummy_network)
+        model.process_support_set(support_images, support_labels)
+
+        query_images = torch.randn((4, 3, 224, 224))
+        model(query_images)

@@ -42,3 +42,11 @@ def dummy_network():
         nn.AdaptiveAvgPool1d(output_size=10),
         nn.Linear(10, 5),
     )
+
+
+@pytest.fixture()
+def deterministic_dummy_network():
+    return nn.Sequential(
+        nn.Flatten(),
+        nn.AdaptiveAvgPool1d(output_size=1),
+    )
