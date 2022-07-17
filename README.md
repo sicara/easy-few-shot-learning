@@ -28,8 +28,13 @@ basically Few-Shot Learning 101, in less than 15mn.
 - **[Example of episodic training](notebooks/episodic_training.ipynb)**: 
 use it as a starting point if you want to design a script for episodic training using EasyFSL.
 
+    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/episodic_training.ipynb)
+
 - **[Example of classical training](notebooks/classical_training.ipynb)**: 
 use it as a starting point if you want to design a script for classical training using EasyFSL.
+
+    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/classical_training.ipynb)
+
 
 ### Code that you can use and understand
 
