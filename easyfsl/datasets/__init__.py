@@ -7,3 +7,5 @@ from .mini_imagenet import MiniImageNet
 
 from .cub import CUB
 from .tiered_imagenet import TieredImageNet
+
+from .support_set_folder import SupportSetFolder
