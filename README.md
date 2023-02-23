@@ -21,7 +21,7 @@ of code to be covered by a tutorial.
 You want to learn few-shot learning and don't know where to start? Start with our tutorial.
 
 - **[First steps into few-shot image classification](notebooks/my_first_few_shot_classifier.ipynb)**: 
-basically Few-Shot Learning 101, in less than 15mn.
+basically Few-Shot Learning 101, in less than 15min.
 
     [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
 
