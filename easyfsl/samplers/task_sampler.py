@@ -44,6 +44,8 @@ class TaskSampler(Sampler):
             else:
                 self.items_per_label[label] = [item]
 
+        self._check_dataset_size_fits_sampler_parameters()
+
     def __len__(self) -> int:
         return self.n_tasks
 
@@ -107,3 +109,31 @@ class TaskSampler(Sampler):
             query_labels,
             true_class_ids,
         )
+
+    def _check_dataset_size_fits_sampler_parameters(self):
+        """
+        Check that the dataset size is compatible with the sampler parameters
+        """
+        self._check_dataset_has_enough_labels()
+        self._check_dataset_has_enough_items_per_label()
+
+    def _check_dataset_has_enough_labels(self):
+        if self.n_way > len(self.items_per_label):
+            raise ValueError(
+                f"The number of labels in the dataset ({len(self.items_per_label)} "
+                f"must be greater or equal to n_way ({self.n_way})."
+            )
+
+    def _check_dataset_has_enough_items_per_label(self):
+        number_of_samples_per_label = [
+            len(items_for_label) for items_for_label in self.items_per_label.values()
+        ]
+        minimum_number_of_samples_per_label = min(number_of_samples_per_label)
+        label_with_minimum_number_of_samples = number_of_samples_per_label.index(
+            minimum_number_of_samples_per_label
+        )
+        if self.n_shot + self.n_query > minimum_number_of_samples_per_label:
+            raise ValueError(
+                f"Label {label_with_minimum_number_of_samples} has only {minimum_number_of_samples_per_label} samples"
+                f"but all classes must have at least n_shot + n_query ({self.n_shot + self.n_query}) samples."
+            )
