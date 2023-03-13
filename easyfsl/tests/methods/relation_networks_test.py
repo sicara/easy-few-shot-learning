@@ -66,7 +66,7 @@ class TestRelationNetsCanProcessSupportSetFolder:
         ],
     )
     def test_relation_nets_can_process_support_set_from_balanced_folder(
-        support_set_path
+        support_set_path,
     ):
         support_set = SupportSetFolder(support_set_path)
         support_images = support_set.get_images()

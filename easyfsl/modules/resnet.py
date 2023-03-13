@@ -1,8 +1,7 @@
 from typing import Type, Union, List
 
-import torch.nn as nn
 import torch
-from torch import Tensor
+from torch import nn, Tensor
 from torchvision.models.resnet import Bottleneck, BasicBlock, conv1x1
 
 # pylint: disable=invalid-name, too-many-instance-attributes, too-many-arguments

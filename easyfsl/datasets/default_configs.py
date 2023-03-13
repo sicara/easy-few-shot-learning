@@ -3,7 +3,7 @@ from typing import Callable
 from torchvision import transforms
 
 
-IMAGENET_NORMALIZATION = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+IMAGENET_NORMALIZATION = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
 
 DEFAULT_IMAGE_FORMATS = {".bmp", ".png", ".jpeg", ".jpg"}
 
