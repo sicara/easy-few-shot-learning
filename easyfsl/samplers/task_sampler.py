@@ -103,9 +103,9 @@ class TaskSampler(Sampler):
                 "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
                 )
             #if the input is List[Tuple[Tensor, 0-dim Tensor]], turn the tensor into an int
-            else:
-                for i,_ in enumerate(input_data):
-                    input_data[i]=(input_data[i][0],int(input_data[i][1]))
+            
+            for i,_ in enumerate(input_data):
+                input_data[i]=(input_data[i][0],int(input_data[i][1]))
 
         true_class_ids = list({x[1] for x in input_data})
 
