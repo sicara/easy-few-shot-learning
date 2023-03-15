@@ -96,14 +96,15 @@ class TaskSampler(Sampler):
             )
         #inside the tuple there should be  List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]
         if not all( isinstance(n[0],torch.Tensor) and isinstance(n[1],int) for n in input_data):
-            if not all( isinstance(n[0],torch.Tensor) and isinstance(n[1],torch.Tensor) and n[1].ndim==0 for n in input_data):
+            if not all( isinstance(n[0],torch.Tensor)
+                       and isinstance(n[1],torch.Tensor)
+                       and n[1].ndim==0 for n in input_data):
                 raise TypeError(
                 "Illegal type of input."
                 "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
                 "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
                 )
             #if the input is List[Tuple[Tensor, 0-dim Tensor]], turn the tensor into an int
-            
             for i,_ in enumerate(input_data):
                 input_data[i]=(input_data[i][0],int(input_data[i][1]))
 
