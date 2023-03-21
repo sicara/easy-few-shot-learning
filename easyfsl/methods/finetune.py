@@ -72,7 +72,6 @@ class Finetune(FewShotClassifier):
             self.prototypes.requires_grad_()
             optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
             for _ in range(self.fine_tuning_steps):
-
                 support_logits = self.cosine_distance_to_prototypes(
                     self.support_features
                 )

@@ -24,8 +24,8 @@ class TaskSampler(Sampler):
     ):
         """
         Args:
-            dataset: dataset from which to sample classification tasks. Must have a field 'label': a
-                list of length len(dataset) containing containing the labels of all images.
+            dataset: dataset from which to sample classification tasks. Must have implement get_labels() from
+                FewShotDataset.
             n_way: number of classes in one task
             n_shot: number of support images for each class in one task
             n_query: number of query images for each class in one task
