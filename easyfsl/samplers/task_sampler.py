@@ -4,7 +4,7 @@ from typing import List, Tuple, Iterator
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
-
+from typing import Union
 from easyfsl.datasets import FewShotDataset
 
 
@@ -63,7 +63,7 @@ class TaskSampler(Sampler):
             ).tolist()
 
     def episodic_collate_fn(
-        self, input_data: List[Tuple[Tensor, int]]
+        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor, List[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic
@@ -71,7 +71,7 @@ class TaskSampler(Sampler):
         Args:
             input_data: each element is a tuple containing:
                 - an image as a torch Tensor
-                - the label of this image
+                - the label of this image as an int or a 0-dim tensor
         Returns:
             tuple(Tensor, Tensor, Tensor, Tensor, list[int]): respectively:
                 - support images,
@@ -79,21 +79,21 @@ class TaskSampler(Sampler):
                 - query images,
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
+        Raises:
+            TypeError : Wrong type of input 
         """
-        #inside the tuple there should be  List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]
-        if not all( isinstance(n[0],torch.Tensor) and isinstance(n[1],int) for n in input_data):
-            if not all( isinstance(n[0],torch.Tensor)
-                       and isinstance(n[1],torch.Tensor)
-                       and n[1].ndim==0 for n in input_data):
-                raise TypeError(
+        #checking the input type
+        right_input_type, o_dim_tesors_labesl= self.check_episodic_collate_fn_input(input_data)
+        if not right_input_type:
+            raise TypeError(
                 "Illegal type of input."
                 "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
                 "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
                 )
-            #if the input is List[Tuple[Tensor, 0-dim Tensor]], turn the tensor into an int
-            for i,_ in enumerate(input_data):
-                input_data[i]=(input_data[i][0],int(input_data[i][1]))
-
+        #if the input is List[Tuple[Tensor, 0-dim Tensor]], turn the tensor into an int
+        if  o_dim_tesors_labesl:
+            self.o_tesors_to_ints(input_data)
+            
         true_class_ids = list({x[1] for x in input_data})
 
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
@@ -120,3 +120,45 @@ class TaskSampler(Sampler):
             query_labels,
             true_class_ids,
         )
+        
+    def check_episodic_collate_fn_input(
+        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
+    ) -> bool:
+        """
+        Check the type of the input for the episodic_collate_fn method.
+        Args:
+            input_data: each element is a tuple containing:
+                - an image as a torch Tensor
+                - the label of this image as an int or a 0-dim tensor
+        Returns:
+            bool:
+                - True if the input is of correct type,
+                - False if input is of wrong type.
+        """
+        #that flag is true when the input labels are  0-dim tensors
+        o_dim_tesors_labesl=False
+        for img, label in input_data:
+            #if that label isn't int then check if it's a 0-tensor
+            if not  (isinstance(img,torch.Tensor) and isinstance(label,int)):
+                if not (isinstance(img,torch.Tensor) and isinstance(label,torch.Tensor) and label.ndim==0):
+                    return False,o_dim_tesors_labesl
+                else:
+                    o_dim_tesors_labesl=True
+        #if that loop went fine, then the data is the correct type
+        return True,o_dim_tesors_labesl
+    
+    def o_tesors_to_ints(
+        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
+    ) -> None:
+        """
+        Turn 0-dim tensors into ints.
+        Args:
+            input_data: each element is a tuple containing:
+                - an image as a torch Tensor
+                - the label of this image as a 0-dim tensor
+        """ 
+        for idx,_ in enumerate(input_data):
+            input_data[idx]=(input_data[idx][0],int(input_data[idx][1]))
+        
+        
+        
