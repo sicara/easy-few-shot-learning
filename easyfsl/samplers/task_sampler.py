@@ -129,9 +129,9 @@ class TaskSampler(Sampler):
                 - an image as a torch Tensor
                 - the label of this image as an int or a 0-dim tensor
         Returns:
-            bool:
-                - True if the input is of correct type,
-                - False if input is of wrong type.
+            bool,bool: respectively::
+                - True if the input is of correct type, False if input is of wrong type.
+                - True if the input labels needs to be transformed from tensor to int and False otherwise.
         """
         #that flag is true when the input labels are  0-dim tensors
         o_dim_tesors_labesl=False
