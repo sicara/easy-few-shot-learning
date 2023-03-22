@@ -85,7 +85,7 @@ class TaskSampler(Sampler):
                 )
         #if the input is List[Tuple[Tensor, 0-dim Tensor]], turn the tensor into an int
         if  o_dim_tesors_labesl:
-            self.o_tesors_to_ints(input_data)   
+            self.o_tesors_to_ints(input_data)
         true_class_ids = list({x[1] for x in input_data})
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
         all_images = all_images.reshape(
@@ -109,7 +109,6 @@ class TaskSampler(Sampler):
             query_labels,
             true_class_ids,
         )
-   
     def check_episodic_collate_fn_input(
         self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
     ) -> bool:
@@ -144,7 +143,7 @@ class TaskSampler(Sampler):
             input_data: each element is a tuple containing:
                 - an image as a torch Tensor
                 - the label of this image as a 0-dim tensor
-        """ 
+        """
         for idx,_ in enumerate(input_data):
             input_data[idx]=(input_data[idx][0],int(input_data[idx][1]))
             
