@@ -4,14 +4,11 @@ import torch
 from torch import Tensor
 from torch.utils.data import Sampler
 from easyfsl.datasets import FewShotDataset
-
-
 class TaskSampler(Sampler):
     """
     Samples batches in the shape of few-shot classification tasks. At each iteration, it will sample
     n_way classes, and then sample support and query images from these classes.
     """
-
     def __init__(
         self,
         dataset: FewShotDataset,
@@ -34,14 +31,12 @@ class TaskSampler(Sampler):
         self.n_shot = n_shot
         self.n_query = n_query
         self.n_tasks = n_tasks
-
         self.items_per_label = {}
         for item, label in enumerate(dataset.get_labels()):
             if label in self.items_per_label:
                 self.items_per_label[label].append(item)
             else:
                 self.items_per_label[label] = [item]
-
     def __len__(self) -> int:
         return self.n_tasks
 
@@ -92,7 +87,6 @@ class TaskSampler(Sampler):
         if  o_dim_tesors_labesl:
             self.o_tesors_to_ints(input_data)   
         true_class_ids = list({x[1] for x in input_data})
-
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
         all_images = all_images.reshape(
             (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
@@ -102,21 +96,20 @@ class TaskSampler(Sampler):
             [true_class_ids.index(x[1]) for x in input_data]
         ).reshape((self.n_way, self.n_shot + self.n_query))
         # pylint: enable=not-callable
-
         support_images = all_images[:, : self.n_shot].reshape(
             (-1, *all_images.shape[2:])
         )
         query_images = all_images[:, self.n_shot :].reshape((-1, *all_images.shape[2:]))
         support_labels = all_labels[:, : self.n_shot].flatten()
         query_labels = all_labels[:, self.n_shot :].flatten()
-
         return (
             support_images,
             support_labels,
             query_images,
             query_labels,
             true_class_ids,
-        )   
+        )
+   
     def check_episodic_collate_fn_input(
         self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
     ) -> bool:
@@ -141,6 +134,7 @@ class TaskSampler(Sampler):
                 o_dim_tesors_labesl=True
         #if that loop went fine, then the data is the correct type
         return True,o_dim_tesors_labesl
+
     def o_tesors_to_ints(
         self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
     ) -> None:
@@ -153,3 +147,4 @@ class TaskSampler(Sampler):
         """ 
         for idx,_ in enumerate(input_data):
             input_data[idx]=(input_data[idx][0],int(input_data[idx][1]))
+            
