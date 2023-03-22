@@ -1,10 +1,8 @@
 import random
-from typing import List, Tuple, Iterator
-
+from typing import List, Tuple, Iterator,Union
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
-from typing import Union
 from easyfsl.datasets import FewShotDataset
 
 
@@ -142,8 +140,7 @@ class TaskSampler(Sampler):
             if not  (isinstance(img,torch.Tensor) and isinstance(label,int)):
                 if not (isinstance(img,torch.Tensor) and isinstance(label,torch.Tensor) and label.ndim==0):
                     return False,o_dim_tesors_labesl
-                else:
-                    o_dim_tesors_labesl=True
+                o_dim_tesors_labesl=True
         #if that loop went fine, then the data is the correct type
         return True,o_dim_tesors_labesl
     
