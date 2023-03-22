@@ -80,20 +80,6 @@ class TaskSampler(Sampler):
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
         """
-        #the input_data should be a list
-        if not isinstance(input_data, list):
-            raise TypeError(
-                "Illegal type of input."
-                "check out the type of the output of the .getitem() method of your dataset and make sure it's"
-                "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
-            )
-        #the instances inside the input_data list should be all Tuples
-        if not all(isinstance(n, tuple) for n in input_data):
-            raise TypeError(
-                "Illegal type of input."
-                "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
-                "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
-            )
         #inside the tuple there should be  List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]
         if not all( isinstance(n[0],torch.Tensor) and isinstance(n[1],int) for n in input_data):
             if not all( isinstance(n[0],torch.Tensor)
