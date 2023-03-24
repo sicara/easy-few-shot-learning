@@ -1,7 +1,6 @@
 from typing import Tuple, List
 
 import pytest
-import torch
 from torch import Tensor
 
 from easyfsl.datasets import FewShotDataset
