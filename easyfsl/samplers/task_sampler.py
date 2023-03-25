@@ -111,7 +111,7 @@ class TaskSampler(Sampler):
             TypeError : Wrong type of input 
         """
         for item_index, (image, label) in enumerate(input_data):
-            if not isinstance(image, Tensor): 
+            if not isinstance(image, Tensor):
                 raise TypeError(
                 "Illegal type of input."
                 "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
