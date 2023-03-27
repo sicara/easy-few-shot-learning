@@ -47,6 +47,7 @@ jobs:
           name: run pylint
           command: |
             . venv/bin/activate
+            pylint --version
             make lint
       - store_artifacts:
           path: lint-project-reports
