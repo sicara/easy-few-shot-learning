@@ -78,7 +78,6 @@ class TransductiveFinetuning(FewShotClassifier):
             self.prototypes.requires_grad_()
             optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
             for _ in range(self.fine_tuning_steps):
-
                 support_cross_entropy = nn.functional.cross_entropy(
                     self.l2_distance_to_prototypes(self.support_features),
                     self.support_labels,
