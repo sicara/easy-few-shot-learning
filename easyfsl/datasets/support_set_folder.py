@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Union, Optional
 
 import torch
 from torch import Tensor
@@ -55,7 +55,7 @@ class SupportSetFolder(ImageFolder):
         root: Union[str, Path],
         device="cpu",
         image_size: int = 84,
-        transform: Callable = None,
+        transform: Optional[Callable] = None,
         **kwargs
     ):
         """

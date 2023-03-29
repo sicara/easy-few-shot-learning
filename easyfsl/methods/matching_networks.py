@@ -2,6 +2,7 @@
 See original implementation at
 https://github.com/facebookresearch/low-shot-shrink-hallucinate
 """
+from typing import Optional
 
 import torch
 from torch import Tensor, nn
@@ -30,8 +31,8 @@ class MatchingNetworks(FewShotClassifier):
     def __init__(
         self,
         *args,
-        support_encoder: nn.Module = None,
-        query_encoder: nn.Module = None,
+        support_encoder: Optional[nn.Module] = None,
+        query_encoder: Optional[nn.Module] = None,
         **kwargs
     ):
         """
@@ -71,8 +72,8 @@ class MatchingNetworks(FewShotClassifier):
 
         # Here we create the fields so that the model can store
         # the computed information from one support set
-        self.contextualized_support_features = None
-        self.one_hot_support_labels = None
+        self.contextualized_support_features = torch.tensor(())
+        self.one_hot_support_labels = torch.tensor(())
 
     def process_support_set(
         self,

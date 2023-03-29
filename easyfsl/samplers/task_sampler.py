@@ -1,5 +1,5 @@
 import random
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Tuple, Dict
 
 import torch
 from torch import Tensor
@@ -37,7 +37,7 @@ class TaskSampler(Sampler):
         self.n_query = n_query
         self.n_tasks = n_tasks
 
-        self.items_per_label = {}
+        self.items_per_label: Dict[int, List[int]] = {}
         for item, label in enumerate(dataset.get_labels()):
             if label in self.items_per_label:
                 self.items_per_label[label].append(item)

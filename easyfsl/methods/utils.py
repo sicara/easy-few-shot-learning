@@ -1,3 +1,5 @@
+from typing import Tuple, Optional
+
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
@@ -12,7 +14,7 @@ def evaluate_on_one_task(
     support_labels: Tensor,
     query_images: Tensor,
     query_labels: Tensor,
-) -> [int, int]:
+) -> Tuple[int, int]:
     """
     Returns the number of correct predictions of query labels, and the total number of
     predictions.
@@ -32,7 +34,7 @@ def evaluate(
     data_loader: DataLoader,
     device: str = "cuda",
     use_tqdm: bool = True,
-    tqdm_prefix: str = None,
+    tqdm_prefix: Optional[str] = None,
 ) -> float:
     """
     Evaluate the model on few-shot classification tasks
