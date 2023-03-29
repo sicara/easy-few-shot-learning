@@ -135,6 +135,17 @@ class TaskSampler(Sampler):
                         f"Illegal type of input label: {type(label)}. "
                         + GENERIC_TYPING_ERROR_MESSAGE
                     )
+                if label.dtype not in {
+                    torch.uint8,
+                    torch.int8,
+                    torch.int16,
+                    torch.int32,
+                    torch.int64,
+                }:
+                    raise TypeError(
+                        f"Illegal dtype of input label tensor: {label.dtype}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
                 if label.ndim != 0:
                     raise ValueError(
                         f"Illegal shape for input label tensor: {label.shape}. "
