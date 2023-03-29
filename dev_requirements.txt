@@ -1,5 +1,5 @@
 black>=20.8b1
-isort>=5.12.0
+isort>=5.10.1
 jupyter>=1.0.0
 loguru>=0.5.3
 matplotlib>=3.3.4
