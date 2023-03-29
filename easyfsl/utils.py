@@ -2,6 +2,7 @@
 General utilities
 """
 import copy
+from typing import List, Tuple
 
 import torchvision
 from matplotlib import pyplot as plt
@@ -25,7 +26,7 @@ def plot_images(images: Tensor, title: str, images_per_row: int):
     )
 
 
-def sliding_average(value_list: list[float], window: int) -> float:
+def sliding_average(value_list: List[float], window: int) -> float:
     """
     Computes the average of the latest instances in a list
     Args:
@@ -44,7 +45,7 @@ def sliding_average(value_list: list[float], window: int) -> float:
     return np.asarray(value_list[-window:]).mean()
 
 
-def compute_backbone_output_shape(backbone: nn.Module) -> tuple[int]:
+def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
     """
     Compute the dimension of the feature space defined by a feature extractor.
     Args:

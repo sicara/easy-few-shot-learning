@@ -1,7 +1,7 @@
 import json
 import warnings
 from pathlib import Path
-from typing import Union, Callable
+from typing import List, Union, Set, Tuple, Callable
 
 from PIL import Image
 
@@ -32,7 +32,7 @@ class EasySet(FewShotDataset):
         image_size: int = 84,
         transform: Callable = None,
         training: bool = False,
-        supported_formats: set[str] = None,
+        supported_formats: Set[str] = None,
     ):
         """
         Args:
@@ -94,16 +94,13 @@ class EasySet(FewShotDataset):
 
     @staticmethod
     def list_data_instances(
-        class_roots: list[str], supported_formats: set[str] = None
-    ) -> tuple[list[str], list[int]]:
+        class_roots: List[str], supported_formats: Set[str] = None
+    ) -> Tuple[List[str], List[int]]:
         """
         Explore the directories specified in class_roots to find all data instances.
         Args:
             class_roots: each element is the path to the directory containing the elements
                 of one class
-            supported_formats: set of allowed file format. When listing data instances, EasySet
-                will only consider these files. If none is provided, we use the default set of
-                image formats.
 
         Returns:
             list of paths to the images, and a list of same length containing the integer label
@@ -158,7 +155,7 @@ class EasySet(FewShotDataset):
     def __len__(self) -> int:
         return len(self.labels)
 
-    def get_labels(self) -> list[int]:
+    def get_labels(self) -> List[int]:
         return self.labels
 
     def number_of_classes(self):

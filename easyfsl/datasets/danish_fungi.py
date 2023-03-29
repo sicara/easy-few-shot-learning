@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, Callable
+from typing import List, Union, Tuple, Callable
 
 import pandas as pd
 from pandas import DataFrame
@@ -57,7 +57,7 @@ class DanishFungi(FewShotDataset):
 
         return data.assign(label=lambda df: df.scientific_name.map(label_mapping))
 
-    def __getitem__(self, item: int) -> tuple[Tensor, int]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
         """
         Get a data sample from its integer id.
         Args:
@@ -76,5 +76,5 @@ class DanishFungi(FewShotDataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def get_labels(self) -> list[int]:
+    def get_labels(self) -> List[int]:
         return list(self.data.label)

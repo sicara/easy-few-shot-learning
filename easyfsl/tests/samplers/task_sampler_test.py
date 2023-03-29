@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 import numpy as np
 import pytest
 import torch
@@ -11,13 +13,13 @@ class DummyFewShotDataset(FewShotDataset):
     def __init__(self, labels):
         self.labels = labels
 
-    def __getitem__(self, item: int) -> tuple[Tensor, int]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
         raise NotImplementedError("__getitem__() is not supposed to be called.")
 
     def __len__(self) -> int:
         raise NotImplementedError("__len__() is not supposed to be called.")
 
-    def get_labels(self) -> list[int]:
+    def get_labels(self) -> List[int]:
         return self.labels
 
 
