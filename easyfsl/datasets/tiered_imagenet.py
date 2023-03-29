@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from easyfsl.datasets import EasySet, FewShotDataset
+from easyfsl.datasets import EasySet
 
 TIERED_IMAGENET_SPECS_DIR = Path("data/tiered_imagenet")
 
 
 # pylint: disable=invalid-name
-def TieredImageNet(split: str, **kwargs) -> FewShotDataset:
+def TieredImageNet(split: str, **kwargs) -> EasySet:
     """
     Build the tieredImageNet dataset for the specific split.
     Args:

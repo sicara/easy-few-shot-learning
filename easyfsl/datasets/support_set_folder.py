@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Union, Optional
+from typing import Callable, Optional, Union
 
 import torch
 from torch import Tensor

@@ -1,0 +1,12 @@
+## isort
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+py_version = 39
+
+## mypy
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true

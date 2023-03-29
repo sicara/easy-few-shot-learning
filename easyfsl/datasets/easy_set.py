@@ -1,7 +1,7 @@
 import json
 import warnings
 from pathlib import Path
-from typing import Callable, List, Set, Tuple, Union, Optional
+from typing import Callable, List, Optional, Set, Tuple, Union
 
 from PIL import Image
 
