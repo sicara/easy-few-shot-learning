@@ -1,4 +1,26 @@
 version: 2.1
+
+orbs:
+
+executors:
+  base-python:
+    working_directory: ~/project
+    docker:
+      - image: cimg/python:3.10.10
+
+commands:
+  get_code_and_cached_dependencies:
+    steps:
+      - run:
+          name: Set python 3.10.10
+          command: |
+            pyenv global 3.10.10
+            python -m pip install --upgrade pip setuptools wheel
+      - checkout
+      - restore_cache:
+          key: docker-3.10.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+
+
 jobs:
   install:
     parameters:
@@ -31,27 +53,42 @@ jobs:
             - ./venv
           key: docker-<< parameters.python-version >>-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
   lint:
-    working_directory: ~/project
-    docker:
-      - image: cimg/python:3.10.10
+    executor: base-python
     steps:
-      - run:
-          name: Set python 3.10.10
-          command: |
-            pyenv global 3.10.10
-            python -m pip install --upgrade pip setuptools wheel
-      - checkout
-      - restore_cache:
-          key: docker-3.10.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+      - get_code_and_cached_dependencies
       - run:
           name: run pylint
           command: |
             . venv/bin/activate
             pylint --version
             make lint
-      - store_artifacts:
-          path: lint-project-reports
-          destination: lint-project-reports
+  black:
+    executor: base-python
+    steps:
+      - get_code_and_cached_dependencies
+      - run:
+          name: run black
+          command: |
+            . venv/bin/activate
+            make black-check
+  isort:
+    executor: base-python
+    steps:
+      - get_code_and_cached_dependencies
+      - run:
+          name: run isort
+          command: |
+            . venv/bin/activate
+            make isort-check
+  mypy:
+    executor: base-python
+    steps:
+      - get_code_and_cached_dependencies
+      - run:
+          name: run mypy
+          command: |
+            . venv/bin/activate
+            make mypy
   test:
     parameters:
       python-version:
