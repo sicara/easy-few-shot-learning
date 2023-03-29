@@ -1,14 +1,22 @@
 import random
-from typing import List, Tuple, Iterator,Union
+from typing import List, Tuple, Iterator, Union
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
 from easyfsl.datasets import FewShotDataset
+
+GENERIC_TYPING_ERROR_MESSAGE = (
+    "Check out the output's type of your dataset's __getitem__() method."
+    "It must be a Tuple[Tensor, int] or Tuple[Tensor, 0-dim Tensor]."
+)
+
+
 class TaskSampler(Sampler):
     """
     Samples batches in the shape of few-shot classification tasks. At each iteration, it will sample
     n_way classes, and then sample support and query images from these classes.
     """
+
     def __init__(
         self,
         dataset: FewShotDataset,
@@ -76,8 +84,7 @@ class TaskSampler(Sampler):
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
         """
-        #checking the input type
-        self.check_episodic_collate_fn_input(input_data)
+        input_data = self._cast_input_data_to_tensor_int_tuple(input_data)
         true_class_ids = list({x[1] for x in input_data})
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
         all_images = all_images.reshape(
@@ -101,40 +108,41 @@ class TaskSampler(Sampler):
             query_labels,
             true_class_ids,
         )
-    
-    def check_episodic_collate_fn_input(
-        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
-    ) -> None:
+
+    @staticmethod
+    def _cast_input_data_to_tensor_int_tuple(
+        input_data: List[Tuple[Tensor, Union[Tensor, int]]]
+    ) -> List[Tuple[Tensor, int]]:
         """
-        Check the type of the input for the episodic_collate_fn method.
+        Check the type of the input for the episodic_collate_fn method, and cast it to the right type if possible.
         Args:
             input_data: each element is a tuple containing:
                 - an image as a torch Tensor
                 - the label of this image as an int or a 0-dim tensor
         Raises:
-            TypeError : Wrong type of input 
+            TypeError : Wrong type of input images or labels
+            ValueError: Input label is not a 0-dim tensor
         """
         for item_index, (image, label) in enumerate(input_data):
             if not isinstance(image, Tensor):
                 raise TypeError(
-                "Illegal type of input."
-                "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
-                "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
+                    f"Illegal type of input instance: {type(image)}. "
+                    + GENERIC_TYPING_ERROR_MESSAGE
                 )
             if not isinstance(label, int):
                 if not isinstance(label, Tensor):
                     raise TypeError(
-                "Illegal type of input."
-                "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
-                "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
-                )
-                if label.ndim !=0:
-                    raise TypeError(
-                "Illegal type of input."
-                "check out the type of the output of the .getitem() method of your dataset and make sure it's" 
-                "a List[Tuple[Tensor, int]] or List[Tuple[Tensor, 0-dim Tensor]]."
-                )
+                        f"Illegal type of input label: {type(label)}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
+                if label.ndim != 0:
+                    raise ValueError(
+                        f"Illegal shape for input label tensor: {label.shape}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
                 input_data[item_index] = (image, int(label))
+
+        return input_data
 
     def _check_dataset_size_fits_sampler_parameters(self):
         """
