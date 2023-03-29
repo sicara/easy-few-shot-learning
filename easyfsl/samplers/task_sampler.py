@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple, Iterator, Union
+from typing import Iterator, Union
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
@@ -7,7 +7,7 @@ from easyfsl.datasets import FewShotDataset
 
 GENERIC_TYPING_ERROR_MESSAGE = (
     "Check out the output's type of your dataset's __getitem__() method."
-    "It must be a Tuple[Tensor, int] or Tuple[Tensor, 0-dim Tensor]."
+    "It must be a tuple[Tensor, int] or tuple[Tensor, 0-dim Tensor]."
 )
 
 
@@ -51,7 +51,7 @@ class TaskSampler(Sampler):
     def __len__(self) -> int:
         return self.n_tasks
 
-    def __iter__(self) -> Iterator[List[int]]:
+    def __iter__(self) -> Iterator[list[int]]:
         for _ in range(self.n_tasks):
             yield torch.cat(
                 [
@@ -67,8 +67,8 @@ class TaskSampler(Sampler):
             ).tolist()
 
     def episodic_collate_fn(
-        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
-    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, List[int]]:
+        self, input_data: list[tuple[Tensor, Union[Tensor, int]]]
+    ) -> tuple[Tensor, Tensor, Tensor, Tensor, list[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic
             data loaders.
@@ -111,8 +111,8 @@ class TaskSampler(Sampler):
 
     @staticmethod
     def _cast_input_data_to_tensor_int_tuple(
-        input_data: List[Tuple[Tensor, Union[Tensor, int]]]
-    ) -> List[Tuple[Tensor, int]]:
+        input_data: list[tuple[Tensor, Union[Tensor, int]]]
+    ) -> list[tuple[Tensor, int]]:
         """
         Check the type of the input for the episodic_collate_fn method, and cast it to the right type if possible.
         Args:

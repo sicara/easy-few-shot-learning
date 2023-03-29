@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import List, Tuple
 
 from torch import Tensor
 from torch.utils.data import Dataset
@@ -16,7 +15,7 @@ class FewShotDataset(Dataset):
     """
 
     @abstractmethod
-    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
+    def __getitem__(self, item: int) -> tuple[Tensor, int]:
         raise NotImplementedError(
             "All PyTorch datasets, including few-shot datasets, need a __getitem__ method."
         )
@@ -28,7 +27,7 @@ class FewShotDataset(Dataset):
         )
 
     @abstractmethod
-    def get_labels(self) -> List[int]:
+    def get_labels(self) -> list[int]:
         raise NotImplementedError(
             "Implementations of FewShotDataset need a get_labels method."
         )

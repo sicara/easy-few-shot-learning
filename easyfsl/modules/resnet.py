@@ -1,4 +1,4 @@
-from typing import Type, Union, List
+from typing import Type, Union
 
 import torch
 from torch import nn, Tensor
@@ -11,8 +11,8 @@ class ResNet(nn.Module):
     def __init__(
         self,
         block: Type[Union[BasicBlock, Bottleneck]],
-        layers: List[int],
-        planes: List[int] = None,
+        layers: list[int],
+        planes: list[int] = None,
         use_fc: bool = False,
         num_classes: int = 1000,
         use_pooling: bool = True,

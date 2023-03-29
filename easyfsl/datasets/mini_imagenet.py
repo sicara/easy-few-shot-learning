@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Optional, Union, List
+from typing import Callable, Optional, Union
 
 
 import pandas as pd
@@ -148,5 +148,5 @@ class MiniImageNet(FewShotDataset):
             )
         )
 
-    def get_labels(self) -> List[int]:
+    def get_labels(self) -> list[int]:
         return list(self.data_df.class_name.map(self.class_to_label))
