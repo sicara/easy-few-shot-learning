@@ -4,11 +4,12 @@ https://github.com/facebookresearch/low-shot-shrink-hallucinate
 """
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
+
 from easyfsl.methods import FewShotClassifier
 from easyfsl.modules.predesigned_modules import (
-    default_matching_networks_support_encoder,
     default_matching_networks_query_encoder,
+    default_matching_networks_support_encoder,
 )
 
 

@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple, Iterator
+from typing import Iterator, List, Tuple
 
 import torch
 from torch import Tensor

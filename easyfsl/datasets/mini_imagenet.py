@@ -1,11 +1,10 @@
 from pathlib import Path
-from typing import Callable, Optional, Union, List
-
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
+import torch
 from pandas import DataFrame
 from PIL import Image
-import torch
 from torch import Tensor
 from tqdm import tqdm
 

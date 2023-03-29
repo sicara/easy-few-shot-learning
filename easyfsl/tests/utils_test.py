@@ -2,7 +2,7 @@ import pytest
 import torch
 from torchvision import transforms
 
-from easyfsl.utils import plot_images, sliding_average, compute_prototypes, entropy
+from easyfsl.utils import compute_prototypes, entropy, plot_images, sliding_average
 
 TO_PIL_IMAGE = transforms.ToPILImage()
 

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 from easyfsl.utils import compute_backbone_output_shape, compute_prototypes
 

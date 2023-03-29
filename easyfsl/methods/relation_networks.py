@@ -4,7 +4,8 @@ https://github.com/floodsung/LearningToCompare_FSL
 """
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
+
 from easyfsl.methods import FewShotClassifier
 from easyfsl.modules.predesigned_modules import default_relation_module
 from easyfsl.utils import compute_prototypes

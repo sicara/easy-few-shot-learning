@@ -4,11 +4,11 @@ General utilities
 import copy
 from typing import List, Tuple
 
-import torchvision
-from matplotlib import pyplot as plt
 import numpy as np
 import torch
-from torch import nn, Tensor
+import torchvision
+from matplotlib import pyplot as plt
+from torch import Tensor, nn
 
 
 def plot_images(images: Tensor, title: str, images_per_row: int):

@@ -1,12 +1,12 @@
 import json
 import warnings
 from pathlib import Path
-from typing import List, Union, Set, Tuple, Callable
+from typing import Callable, List, Set, Tuple, Union
 
 from PIL import Image
 
 from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import default_transform, DEFAULT_IMAGE_FORMATS
+from easyfsl.datasets.default_configs import DEFAULT_IMAGE_FORMATS, default_transform
 
 
 class EasySet(FewShotDataset):
