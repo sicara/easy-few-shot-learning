@@ -1,8 +1,10 @@
 # Easy Few-Shot Learning
-![Python Versions](https://img.shields.io/pypi/pyversions/easyfsl?style=flat)
-![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Python Versions](https://img.shields.io/pypi/pyversions/easyfsl?logo=python&logoColor=white&style=for-the-badge)
+![License: MIT](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+![CircleCI](https://img.shields.io/circleci/build/github/sicara/easy-few-shot-learning?logo=circleci&style=for-the-badge)
+![PyPi Downloads](https://img.shields.io/pypi/dm/easyfsl?logo=pypi&logoColor=white&style=for-the-badge)
+![Last Release](https://img.shields.io/github/release-date/sicara/easy-few-shot-learning?label=Last%20Release&logo=pypi&logoColor=white&style=for-the-badge)
+![Github Issues](https://img.shields.io/github/issues-closed/sicara/easy-few-shot-learning?color=green&logo=github&style=for-the-badge)
 
 Ready-to-use code and tutorial notebooks to boost your way into few-shot image classification. 
 This repository is made for you if:
@@ -12,9 +14,6 @@ This repository is made for you if:
 
 Don't get lost in large repositories with hundreds of methods and no explanation on how to use them. Here, we want each line
 of code to be covered by a tutorial.
-
-<img src="https://ebennequin.github.io/resources/images/easyfsl.png" alt="easyfsl-motto" width="300"/>
-
 ## What's in there?
 
 ### Notebooks: learn and practice
