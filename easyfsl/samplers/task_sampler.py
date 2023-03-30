@@ -87,15 +87,15 @@ class TaskSampler(Sampler):
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
         """
-        input_data = self._cast_input_data_to_tensor_int_tuple(input_data)
-        true_class_ids = list({x[1] for x in input_data})
-        all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
+        input_data_with_int_labels = self._cast_input_data_to_tensor_int_tuple(input_data)
+        true_class_ids = list({x[1] for x in input_data_with_int_labels})
+        all_images = torch.cat([x[0].unsqueeze(0) for x in input_data_with_int_labels])
         all_images = all_images.reshape(
             (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
         )
         # pylint: disable=not-callable
         all_labels = torch.tensor(
-            [true_class_ids.index(x[1]) for x in input_data]
+            [true_class_ids.index(x[1]) for x in input_data_with_int_labels]
         ).reshape((self.n_way, self.n_shot + self.n_query))
         # pylint: enable=not-callable
         support_images = all_images[:, : self.n_shot].reshape(
@@ -154,9 +154,8 @@ class TaskSampler(Sampler):
                         f"Illegal shape for input label tensor: {label.shape}. "
                         + GENERIC_TYPING_ERROR_MESSAGE
                     )
-                input_data[item_index] = (image, int(label))
 
-        return input_data
+        return [(image, int(label)) for (image, label) in input_data]
 
     def _check_dataset_size_fits_sampler_parameters(self):
         """
