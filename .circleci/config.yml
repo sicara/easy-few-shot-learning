@@ -121,6 +121,15 @@ workflows:
       - lint:
           requires:
             - install-3.10.10
+      - black:
+          requires:
+            - install-3.10.10
+      - isort:
+          requires:
+            - install-3.10.10
+      - mypy:
+          requires:
+            - install-3.10.10
       - test:
           matrix:
             parameters:
