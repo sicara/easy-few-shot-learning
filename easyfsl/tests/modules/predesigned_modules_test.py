@@ -1,13 +1,7 @@
 import pytest
 import torch
 
-from easyfsl.modules import (
-    resnet10,
-    resnet12,
-    resnet18,
-    resnet34,
-    resnet50,
-)
+from easyfsl.modules import resnet10, resnet12, resnet18, resnet34, resnet50
 
 
 class TestResNets:

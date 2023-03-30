@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
 from easyfsl.utils import compute_backbone_output_shape, compute_prototypes
 
@@ -27,9 +27,9 @@ class FewShotClassifier(nn.Module):
 
         self.use_softmax = use_softmax
 
-        self.prototypes = None
-        self.support_features = None
-        self.support_labels = None
+        self.prototypes = torch.tensor(())
+        self.support_features = torch.tensor(())
+        self.support_labels = torch.tensor(())
 
     @abstractmethod
     def forward(

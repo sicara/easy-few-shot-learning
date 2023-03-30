@@ -1,11 +1,10 @@
 from pathlib import Path
-from typing import Callable, Optional, Union, List
-
+from typing import Callable, List, Optional, Union
 
 import pandas as pd
+import torch
 from pandas import DataFrame
 from PIL import Image
-import torch
 from torch import Tensor
 from tqdm import tqdm
 
@@ -27,8 +26,8 @@ class MiniImageNet(FewShotDataset):
         specs_file: Optional[Union[Path, str]] = None,
         image_size: int = 84,
         load_on_ram: bool = False,
-        loading_transform: Callable = None,
-        transform: Callable = None,
+        loading_transform: Optional[Callable] = None,
+        transform: Optional[Callable] = None,
         training: bool = False,
     ):
         """
@@ -86,7 +85,7 @@ class MiniImageNet(FewShotDataset):
             )
 
         else:
-            self.loading_transform = None
+            self.loading_transform = lambda x: x
             self.transform = (
                 transform if transform else default_transform(image_size, training)
             )

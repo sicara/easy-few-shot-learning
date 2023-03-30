@@ -1,7 +1,6 @@
 import torch
 from torch import Tensor, nn
 
-
 from easyfsl.methods import FewShotClassifier
 
 

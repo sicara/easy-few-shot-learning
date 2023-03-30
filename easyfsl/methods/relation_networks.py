@@ -2,9 +2,11 @@
 See original implementation at
 https://github.com/floodsung/LearningToCompare_FSL
 """
+from typing import Optional
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
+
 from easyfsl.methods import FewShotClassifier
 from easyfsl.modules.predesigned_modules import default_relation_module
 from easyfsl.utils import compute_prototypes
@@ -34,7 +36,7 @@ class RelationNetworks(FewShotClassifier):
     score, which makes it a regression problem. See the article for more details.
     """
 
-    def __init__(self, *args, relation_module: nn.Module = None, **kwargs):
+    def __init__(self, *args, relation_module: Optional[nn.Module] = None, **kwargs):
         """
         Build Relation Networks by calling the constructor of FewShotClassifier.
         Args:

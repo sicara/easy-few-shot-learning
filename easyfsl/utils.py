@@ -2,13 +2,13 @@
 General utilities
 """
 import copy
-from typing import List, Tuple
+from typing import List
 
-import torchvision
-from matplotlib import pyplot as plt
 import numpy as np
 import torch
-from torch import nn, Tensor
+import torchvision
+from matplotlib import pyplot as plt
+from torch import Tensor, nn
 
 
 def plot_images(images: Tensor, title: str, images_per_row: int):
@@ -45,7 +45,7 @@ def sliding_average(value_list: List[float], window: int) -> float:
     return np.asarray(value_list[-window:]).mean()
 
 
-def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
+def compute_backbone_output_shape(backbone: nn.Module) -> torch.Size:
     """
     Compute the dimension of the feature space defined by a feature extractor.
     Args:
@@ -59,7 +59,7 @@ def compute_backbone_output_shape(backbone: nn.Module) -> Tuple[int]:
     # Use a copy of the backbone on CPU, to avoid device conflict
     output = copy.deepcopy(backbone).cpu()(input_images)
 
-    return tuple(output.shape[1:])
+    return output.shape[1:]
 
 
 def compute_prototypes(support_features: Tensor, support_labels: Tensor) -> Tensor:

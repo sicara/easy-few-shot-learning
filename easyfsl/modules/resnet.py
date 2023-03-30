@@ -1,8 +1,8 @@
-from typing import Type, Union, List
+from typing import List, Optional, Type, Union
 
 import torch
-from torch import nn, Tensor
-from torchvision.models.resnet import Bottleneck, BasicBlock, conv1x1
+from torch import Tensor, nn
+from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
 
 # pylint: disable=invalid-name, too-many-instance-attributes, too-many-arguments
 
@@ -12,7 +12,7 @@ class ResNet(nn.Module):
         self,
         block: Type[Union[BasicBlock, Bottleneck]],
         layers: List[int],
-        planes: List[int] = None,
+        planes: Optional[List[int]] = None,
         use_fc: bool = False,
         num_classes: int = 1000,
         use_pooling: bool = True,

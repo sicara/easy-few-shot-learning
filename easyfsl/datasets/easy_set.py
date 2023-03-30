@@ -1,12 +1,12 @@
 import json
 import warnings
 from pathlib import Path
-from typing import List, Union, Set, Tuple, Callable
+from typing import Callable, List, Optional, Set, Tuple, Union
 
 from PIL import Image
 
 from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import default_transform, DEFAULT_IMAGE_FORMATS
+from easyfsl.datasets.default_configs import DEFAULT_IMAGE_FORMATS, default_transform
 
 
 class EasySet(FewShotDataset):
@@ -30,9 +30,9 @@ class EasySet(FewShotDataset):
         self,
         specs_file: Union[Path, str],
         image_size: int = 84,
-        transform: Callable = None,
+        transform: Optional[Callable] = None,
         training: bool = False,
-        supported_formats: Set[str] = None,
+        supported_formats: Optional[Set[str]] = None,
     ):
         """
         Args:
@@ -94,7 +94,7 @@ class EasySet(FewShotDataset):
 
     @staticmethod
     def list_data_instances(
-        class_roots: List[str], supported_formats: Set[str] = None
+        class_roots: List[str], supported_formats: Optional[Set[str]] = None
     ) -> Tuple[List[str], List[int]]:
         """
         Explore the directories specified in class_roots to find all data instances.

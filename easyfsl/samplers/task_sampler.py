@@ -1,8 +1,10 @@
 import random
-from typing import List, Tuple, Iterator, Union
+from typing import Dict, Iterator, List, Tuple, Union
+
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
+
 from easyfsl.datasets import FewShotDataset
 
 GENERIC_TYPING_ERROR_MESSAGE = (
@@ -39,7 +41,8 @@ class TaskSampler(Sampler):
         self.n_shot = n_shot
         self.n_query = n_query
         self.n_tasks = n_tasks
-        self.items_per_label = {}
+
+        self.items_per_label: Dict[int, List[int]] = {}
         for item, label in enumerate(dataset.get_labels()):
             if label in self.items_per_label:
                 self.items_per_label[label].append(item)

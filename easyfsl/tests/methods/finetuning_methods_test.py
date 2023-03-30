@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from easyfsl.datasets import SupportSetFolder
-from easyfsl.methods import Finetune, TIM, TransductiveFinetuning
+from easyfsl.methods import TIM, Finetune, TransductiveFinetuning
 
 ALL_FINETUNING_METHODS = [
     Finetune,

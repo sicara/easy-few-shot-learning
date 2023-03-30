@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Union, Tuple, Callable
+from typing import Callable, List, Optional, Tuple, Union
 
 import pandas as pd
 from pandas import DataFrame
@@ -18,7 +18,7 @@ class DanishFungi(FewShotDataset):
         root: Union[Path, str],
         specs_file: Union[Path, str] = WHOLE_DANISH_FUNGI_SPECS_FILE,
         image_size: int = 84,
-        transform: Callable = None,
+        transform: Optional[Callable] = None,
         training: bool = False,
     ):
         """
@@ -33,7 +33,7 @@ class DanishFungi(FewShotDataset):
                 cropping and a random horizontal flip. Only used if transforms = None.
         """
         self.root = Path(root)
-        self.data = self.load_specs(specs_file)
+        self.data = self.load_specs(Path(specs_file))
 
         self.class_names = list(self.data.drop_duplicates("label").scientific_name)
 

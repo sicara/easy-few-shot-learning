@@ -1,12 +1,11 @@
 from pathlib import Path
-from typing import Union, Callable
+from typing import Callable, Optional, Union
 
 import torch
 from torch import Tensor
 from torchvision.datasets import ImageFolder
 
 from easyfsl.datasets.default_configs import default_transform
-
 
 NOT_A_TENSOR_ERROR_MESSAGE = (
     "SupportSetFolder handles instances as tensors. "
@@ -56,7 +55,7 @@ class SupportSetFolder(ImageFolder):
         root: Union[str, Path],
         device="cpu",
         image_size: int = 84,
-        transform: Callable = None,
+        transform: Optional[Callable] = None,
         **kwargs
     ):
         """

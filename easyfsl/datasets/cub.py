@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from easyfsl.datasets import EasySet, FewShotDataset
+from easyfsl.datasets import EasySet
 
 CUB_SPECS_DIR = Path("data/CUB")
 
 
 # pylint: disable=invalid-name
-def CUB(split: str, **kwargs) -> FewShotDataset:
+def CUB(split: str, **kwargs) -> EasySet:
     """
     Build the CUB dataset for the specific split.
     Args:
