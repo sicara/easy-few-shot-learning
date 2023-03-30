@@ -87,7 +87,9 @@ class TaskSampler(Sampler):
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
         """
-        input_data_with_int_labels = self._cast_input_data_to_tensor_int_tuple(input_data)
+        input_data_with_int_labels = self._cast_input_data_to_tensor_int_tuple(
+            input_data
+        )
         true_class_ids = list({x[1] for x in input_data_with_int_labels})
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data_with_int_labels])
         all_images = all_images.reshape(
@@ -126,7 +128,7 @@ class TaskSampler(Sampler):
             TypeError : Wrong type of input images or labels
             ValueError: Input label is not a 0-dim tensor
         """
-        for item_index, (image, label) in enumerate(input_data):
+        for image, label in input_data:
             if not isinstance(image, Tensor):
                 raise TypeError(
                     f"Illegal type of input instance: {type(image)}. "
