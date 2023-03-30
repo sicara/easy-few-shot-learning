@@ -1,9 +1,10 @@
 import random
-from typing import Dict, Iterator, List, Tuple
+from typing import Dict, Iterator, List, Tuple, Union
 
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
+
 from easyfsl.datasets import FewShotDataset
 
 GENERIC_TYPING_ERROR_MESSAGE = (
