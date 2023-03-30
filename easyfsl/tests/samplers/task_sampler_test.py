@@ -1,6 +1,8 @@
 from typing import List, Tuple
 
+import numpy as np
 import pytest
+import torch
 from torch import Tensor
 
 from easyfsl.datasets import FewShotDataset
@@ -192,3 +194,229 @@ class TestTaskSamplerSizeChecks:
         labels, n_shot, n_query
     ):
         init_task_sampler(labels, 1, n_shot, n_query, 1)
+
+
+class TestCastInputDataToTensorIntTuple:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "input_data,expected_error",
+        [
+            (
+                [
+                    (np.ones((2, 2)), 0),
+                    (np.ones((2, 2)), 0),
+                    (np.ones((2, 2)), 1),
+                    (np.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                    (np.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0.5),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), "0"),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (np.ones((2, 2)), "0"),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), "0"),
+                    (np.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), "0"),
+                    (torch.ones((2, 2)), torch.ones((2, 2), dtype=torch.int8)),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones((2, 2), dtype=torch.int8)),
+                    (torch.ones((2, 2)), "0"),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones((2, 2), dtype=torch.int8)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones((2, 2), dtype=torch.int8)),
+                    (np.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones((1, 2), dtype=torch.int8)),
+                    (np.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones(2, dtype=torch.int8)),
+                    (np.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones(1, dtype=torch.int8)),
+                    (np.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                ValueError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.tensor(0.5)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.tensor(True)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.tensor(False)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.ones((2, 2), dtype=torch.float16)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                ],
+                TypeError,
+            ),
+        ],
+    )
+    def test_raises_error_for_inappropriate_input(
+        input_data, expected_error
+    ):  # pylint: disable=protected-access
+        sampler = init_task_sampler([0, 0, 1, 1, 2, 2], 2, 1, 1, 1)
+        with pytest.raises(expected_error):
+            sampler._cast_input_data_to_tensor_int_tuple(input_data)
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "input_data,expected_output",
+        [
+            (
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), torch.tensor(0)),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), torch.tensor(1)),
+                    (torch.ones((2, 2)), 1),
+                ],
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+            ),
+            (
+                [
+                    (torch.ones((2, 2)), torch.tensor(0)),
+                    (torch.ones((2, 2)), torch.tensor(0)),
+                    (torch.ones((2, 2)), torch.tensor(1)),
+                    (torch.ones((2, 2)), torch.tensor(1)),
+                ],
+                [
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 0),
+                    (torch.ones((2, 2)), 1),
+                    (torch.ones((2, 2)), 1),
+                ],
+            ),
+        ],
+    )
+    def test_correctly_casts_input_data(
+        input_data, expected_output
+    ):  # pylint: disable=protected-access
+        sampler = init_task_sampler([0, 0, 1, 1, 2, 2], 2, 1, 1, 1)
+        output = sampler._cast_input_data_to_tensor_int_tuple(input_data)
+        assert len(output) == len(expected_output)
+        for output_instance, expected_output_instance in zip(output, expected_output):
+            assert output_instance[0].equal(expected_output_instance[0])
+            assert output_instance[1] == expected_output_instance[1]

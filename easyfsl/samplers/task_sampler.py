@@ -4,8 +4,12 @@ from typing import Dict, Iterator, List, Tuple
 import torch
 from torch import Tensor
 from torch.utils.data import Sampler
-
 from easyfsl.datasets import FewShotDataset
+
+GENERIC_TYPING_ERROR_MESSAGE = (
+    "Check out the output's type of your dataset's __getitem__() method."
+    "It must be a Tuple[Tensor, int] or Tuple[Tensor, 0-dim Tensor]."
+)
 
 
 class TaskSampler(Sampler):
@@ -65,7 +69,7 @@ class TaskSampler(Sampler):
             ).tolist()
 
     def episodic_collate_fn(
-        self, input_data: List[Tuple[Tensor, int]]
+        self, input_data: List[Tuple[Tensor, Union[Tensor, int]]]
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor, List[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic
@@ -73,7 +77,7 @@ class TaskSampler(Sampler):
         Args:
             input_data: each element is a tuple containing:
                 - an image as a torch Tensor
-                - the label of this image
+                - the label of this image as an int or a 0-dim tensor
         Returns:
             tuple(Tensor, Tensor, Tensor, Tensor, list[int]): respectively:
                 - support images,
@@ -82,9 +86,8 @@ class TaskSampler(Sampler):
                 - their labels,
                 - the dataset class ids of the class sampled in the episode
         """
-
+        input_data = self._cast_input_data_to_tensor_int_tuple(input_data)
         true_class_ids = list({x[1] for x in input_data})
-
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
         all_images = all_images.reshape(
             (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
@@ -94,14 +97,12 @@ class TaskSampler(Sampler):
             [true_class_ids.index(x[1]) for x in input_data]
         ).reshape((self.n_way, self.n_shot + self.n_query))
         # pylint: enable=not-callable
-
         support_images = all_images[:, : self.n_shot].reshape(
             (-1, *all_images.shape[2:])
         )
         query_images = all_images[:, self.n_shot :].reshape((-1, *all_images.shape[2:]))
         support_labels = all_labels[:, : self.n_shot].flatten()
         query_labels = all_labels[:, self.n_shot :].flatten()
-
         return (
             support_images,
             support_labels,
@@ -109,6 +110,52 @@ class TaskSampler(Sampler):
             query_labels,
             true_class_ids,
         )
+
+    @staticmethod
+    def _cast_input_data_to_tensor_int_tuple(
+        input_data: List[Tuple[Tensor, Union[Tensor, int]]]
+    ) -> List[Tuple[Tensor, int]]:
+        """
+        Check the type of the input for the episodic_collate_fn method, and cast it to the right type if possible.
+        Args:
+            input_data: each element is a tuple containing:
+                - an image as a torch Tensor
+                - the label of this image as an int or a 0-dim tensor
+        Raises:
+            TypeError : Wrong type of input images or labels
+            ValueError: Input label is not a 0-dim tensor
+        """
+        for item_index, (image, label) in enumerate(input_data):
+            if not isinstance(image, Tensor):
+                raise TypeError(
+                    f"Illegal type of input instance: {type(image)}. "
+                    + GENERIC_TYPING_ERROR_MESSAGE
+                )
+            if not isinstance(label, int):
+                if not isinstance(label, Tensor):
+                    raise TypeError(
+                        f"Illegal type of input label: {type(label)}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
+                if label.dtype not in {
+                    torch.uint8,
+                    torch.int8,
+                    torch.int16,
+                    torch.int32,
+                    torch.int64,
+                }:
+                    raise TypeError(
+                        f"Illegal dtype of input label tensor: {label.dtype}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
+                if label.ndim != 0:
+                    raise ValueError(
+                        f"Illegal shape for input label tensor: {label.shape}. "
+                        + GENERIC_TYPING_ERROR_MESSAGE
+                    )
+                input_data[item_index] = (image, int(label))
+
+        return input_data
 
     def _check_dataset_size_fits_sampler_parameters(self):
         """
