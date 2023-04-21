@@ -43,7 +43,7 @@ class TestTaskSamplerIter:
             "n_tasks": 5,
         },
         {
-            "labels": ["label0", "label0", "label0", 1, 1, 1, 2, 2, 2],
+            "labels": [0, 0, 0, 1, 1, 1, 2, 2, 2],
             "n_way": 2,
             "n_shot": 1,
             "n_query": 1,

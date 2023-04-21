@@ -107,6 +107,14 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward pass through the ResNet.
+        Args:
+            x: input tensor of shape (batch_size, **image_shape)
+        Returns:
+            x: output tensor of shape (batch_size, num_classes) if self.use_fc is True,
+                otherwise of shape (batch_size, **feature_shape)
+        """
         x = self.layer4(
             self.layer3(self.layer2(self.layer1(self.relu(self.bn1(self.conv1(x))))))
         )

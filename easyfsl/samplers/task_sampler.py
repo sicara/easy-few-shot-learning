@@ -65,7 +65,9 @@ class TaskSampler(Sampler):
                         )
                     )
                     # pylint: enable=not-callable
-                    for label in random.sample(self.items_per_label.keys(), self.n_way)
+                    for label in random.sample(
+                        sorted(self.items_per_label.keys()), self.n_way
+                    )
                 ]
             ).tolist()
 

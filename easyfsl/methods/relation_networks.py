@@ -7,9 +7,10 @@ from typing import Optional
 import torch
 from torch import Tensor, nn
 
-from easyfsl.methods import FewShotClassifier
 from easyfsl.modules.predesigned_modules import default_relation_module
 from easyfsl.utils import compute_prototypes
+
+from .few_shot_classifier import FewShotClassifier
 
 
 class RelationNetworks(FewShotClassifier):

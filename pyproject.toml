@@ -1,12 +1,46 @@
+## black
+
+[tool.black]
+target-version = ['py311']
+
+## pylint
+
+[tool.pylint.messages_control]
+disable = [
+    "no-member",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "too-few-public-methods",
+    # already managed by isort:
+    "ungrouped-imports",
+    "wrong-import-order",
+    "wrong-import-position",
+]
+
+[tool.pylint.miscellaneous]
+notes = ["FIXME"]
+
+[tool.pylint.similarities]
+ignore-signatures = "yes"
+ignore-imports = "yes"
+min-similarity-lines = 8
+
+[tool.pylint.basic]
+no-docstring-rgx = "^_|^test_|^Test[A-Z]" # no docstrings for tests
+max-line-length = 120
+docstring-min-length = 15
+max-args=10
+max-attributes=10
+
 ## isort
 
 [tool.isort]
 profile = "black"
 multi_line_output = 3
-py_version = 39
+py_version=311
 
 ## mypy
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 ignore_missing_imports = true

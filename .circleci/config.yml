@@ -6,19 +6,19 @@ executors:
   base-python:
     working_directory: ~/project
     docker:
-      - image: cimg/python:3.10.10
+      - image: cimg/python:3.11.3
 
 commands:
   get_code_and_cached_dependencies:
     steps:
       - run:
-          name: Set python 3.10.10
+          name: Set python 3.11.3
           command: |
-            pyenv global 3.10.10
+            pyenv global 3.11.3
             python -m pip install --upgrade pip setuptools wheel
       - checkout
       - restore_cache:
-          key: docker-3.10.10-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
+          key: docker-3.11.3-{{ checksum "setup.py" }}-{{ checksum "dev_requirements.txt" }}
 
 
 jobs:
@@ -117,22 +117,22 @@ workflows:
       - install:
           matrix:
             parameters:
-              python-version: ["3.6.13", "3.7.10", "3.8.8", "3.9.11", "3.10.10"]
+              python-version: ["3.7.10", "3.8.8", "3.9.11", "3.10.10", "3.11.3"]
       - lint:
           requires:
-            - install-3.10.10
+            - install-3.11.3
       - black:
           requires:
-            - install-3.10.10
+            - install-3.11.3
       - isort:
           requires:
-            - install-3.10.10
+            - install-3.11.3
       - mypy:
           requires:
-            - install-3.10.10
+            - install-3.11.3
       - test:
           matrix:
             parameters:
-              python-version: ["3.6.13", "3.7.10", "3.8.8", "3.9.11", "3.10.10"]
+              python-version: ["3.7.10", "3.8.8", "3.9.11", "3.10.10", "3.11.3"]
           requires:
             - install-<< matrix.python-version >>

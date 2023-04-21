@@ -5,7 +5,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from easyfsl.methods import FewShotClassifier
+from .few_shot_classifier import FewShotClassifier
 
 
 def evaluate_on_one_task(
