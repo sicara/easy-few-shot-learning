@@ -7,11 +7,12 @@ from typing import Optional
 import torch
 from torch import Tensor, nn
 
-from easyfsl.methods import FewShotClassifier
 from easyfsl.modules.predesigned_modules import (
     default_matching_networks_query_encoder,
     default_matching_networks_support_encoder,
 )
+
+from .few_shot_classifier import FewShotClassifier
 
 
 class MatchingNetworks(FewShotClassifier):
@@ -33,7 +34,7 @@ class MatchingNetworks(FewShotClassifier):
         *args,
         support_encoder: Optional[nn.Module] = None,
         query_encoder: Optional[nn.Module] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Build Matching Networks by calling the constructor of FewShotClassifier.

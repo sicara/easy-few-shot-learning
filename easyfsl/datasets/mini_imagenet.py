@@ -8,12 +8,12 @@ from PIL import Image
 from torch import Tensor
 from tqdm import tqdm
 
-from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import (
+from .default_configs import (
     default_mini_imagenet_loading_transform,
     default_mini_imagenet_serving_transform,
     default_transform,
 )
+from .few_shot_dataset import FewShotDataset
 
 MINI_IMAGENET_SPECS_DIR = Path("data/mini_imagenet")
 

@@ -6,8 +6,9 @@ at https://github.com/jakesnell/prototypical-networks
 import torch
 from torch import Tensor
 
-from easyfsl.methods import FewShotClassifier
 from easyfsl.utils import compute_prototypes
+
+from .few_shot_classifier import FewShotClassifier
 
 
 class PrototypicalNetworks(FewShotClassifier):

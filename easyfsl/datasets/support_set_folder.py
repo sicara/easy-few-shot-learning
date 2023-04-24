@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 from torchvision.datasets import ImageFolder
 
-from easyfsl.datasets.default_configs import default_transform
+from .default_configs import default_transform
 
 NOT_A_TENSOR_ERROR_MESSAGE = (
     "SupportSetFolder handles instances as tensors. "
@@ -56,7 +56,7 @@ class SupportSetFolder(ImageFolder):
         device="cpu",
         image_size: int = 84,
         transform: Optional[Callable] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:

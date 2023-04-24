@@ -5,8 +5,8 @@ from typing import Callable, List, Optional, Set, Tuple, Union
 
 from PIL import Image
 
-from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import DEFAULT_IMAGE_FORMATS, default_transform
+from .default_configs import DEFAULT_IMAGE_FORMATS, default_transform
+from .few_shot_dataset import FewShotDataset
 
 
 class EasySet(FewShotDataset):
@@ -101,6 +101,9 @@ class EasySet(FewShotDataset):
         Args:
             class_roots: each element is the path to the directory containing the elements
                 of one class
+            supported_formats: set of allowed file format. When listing data instances, EasySet
+                will only consider these files. If none is provided, we use the default set of
+                image formats.
 
         Returns:
             list of paths to the images, and a list of same length containing the integer label

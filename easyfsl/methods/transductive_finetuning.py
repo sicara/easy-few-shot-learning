@@ -1,11 +1,12 @@
 import torch
 from torch import Tensor, nn
 
-from easyfsl.methods import FewShotClassifier
 from easyfsl.utils import entropy
 
+from .finetune import Finetune
 
-class TransductiveFinetuning(FewShotClassifier):
+
+class TransductiveFinetuning(Finetune):
     """
     Guneet S. Dhillon, Pratik Chaudhari, Avinash Ravichandran, Stefano Soatto.
     "A Baseline for Few-Shot Image Classification" (ICLR 2020)
@@ -18,10 +19,9 @@ class TransductiveFinetuning(FewShotClassifier):
     This is a transductive method.
     WARNING: this implementation only updates prototypes, not the whole set of model's
     parameters. Updating the model's parameters raises performance issues that we didn't
+    have time to solve yet. We welcome contributions.
     As is, it is incompatible with episodic training because we freeze the backbone to perform
     fine-tuning.
-
-    have time to solve yet.
     """
 
     def __init__(
@@ -32,31 +32,20 @@ class TransductiveFinetuning(FewShotClassifier):
         **kwargs,
     ):
         """
+        TransductiveFinetuning is very similar to the inductive method Finetune.
+        The difference only resides in the way we perform the fine-tuning step and in the
+        distance we use. Therefore, we call the super constructor of Finetune
+        (and same for preprocess_support_set()).
         Args:
             fine_tuning_steps: number of fine-tuning steps
             fine_tuning_lr: learning rate for fine-tuning
         """
-        super().__init__(*args, **kwargs)
-
-        # Since we fine-tune the prototypes we need to make them leaf variables
-        # i.e. we need to freeze the backbone.
-        self.backbone.requires_grad_(False)
-
-        self.fine_tuning_steps = fine_tuning_steps
-        self.fine_tuning_lr = fine_tuning_lr
-
-    def process_support_set(
-        self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
-    ):
-        """
-        Overrides process_support_set of FewShotClassifier.
-        Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
-        """
-        self.store_support_set_data(support_images, support_labels)
+        super().__init__(
+            *args,
+            fine_tuning_steps=fine_tuning_steps,
+            fine_tuning_lr=fine_tuning_lr,
+            **kwargs,
+        )
 
     def forward(
         self,

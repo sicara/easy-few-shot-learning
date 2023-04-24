@@ -6,8 +6,8 @@ from pandas import DataFrame
 from PIL import Image
 from torch import Tensor
 
-from easyfsl.datasets import FewShotDataset
-from easyfsl.datasets.default_configs import default_transform
+from .default_configs import default_transform
+from .few_shot_dataset import FewShotDataset
 
 WHOLE_DANISH_FUNGI_SPECS_FILE = Path("data/fungi") / "DF20_metadata.csv"
 

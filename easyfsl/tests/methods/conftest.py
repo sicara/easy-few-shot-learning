@@ -9,6 +9,7 @@ from torchvision import transforms
 
 @pytest.fixture
 def example_few_shot_classification_task():
+    """Dummy few-shot classification task fixture."""
     images_dir = Path("easyfsl/tests/methods/resources")
     support_image_paths = [
         "Black_footed_Albatross_0001_2950163169.jpg",

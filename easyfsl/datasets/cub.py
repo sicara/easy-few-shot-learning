@@ -1,12 +1,11 @@
 from pathlib import Path
 
-from easyfsl.datasets import EasySet
+from .easy_set import EasySet
 
 CUB_SPECS_DIR = Path("data/CUB")
 
 
-# pylint: disable=invalid-name
-def CUB(split: str, **kwargs) -> EasySet:
+def CUB(split: str, **kwargs) -> EasySet:  # pylint: disable=invalid-name
     """
     Build the CUB dataset for the specific split.
     Args:
@@ -24,6 +23,3 @@ def CUB(split: str, **kwargs) -> EasySet:
         return EasySet(specs_file=specs_file, **kwargs)
 
     raise ValueError(f"Could not find specs file {specs_file.name} in {CUB_SPECS_DIR}")
-
-
-# pylint: enable=invalid-name
