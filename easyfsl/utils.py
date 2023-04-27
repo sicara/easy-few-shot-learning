@@ -2,13 +2,17 @@
 General utilities
 """
 import copy
-from typing import List
+from pathlib import Path
+from typing import List, Optional, Union
 
 import numpy as np
+import pandas as pd
 import torch
 import torchvision
 from matplotlib import pyplot as plt
 from torch import Tensor, nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 
 def plot_images(images: Tensor, title: str, images_per_row: int):
@@ -94,3 +98,46 @@ def entropy(logits: Tensor) -> Tensor:
     """
     probabilities = logits.softmax(dim=1)
     return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
+
+
+def predict_embeddings(
+    dataloader: DataLoader,
+    model: nn.Module,
+    device: Optional[str] = None,
+    output_parquet: Optional[Union[Path, str]] = None,
+) -> pd.DataFrame:
+    """
+    Predict embeddings for a dataloader and save them to a parquet file.
+    Args:
+        dataloader: dataloader to predict embeddings for. Must deliver tuples (images, class_names)
+        model: model to use for prediction
+        device: device to cast the images to. If none, no casting is performed. Must be the same as
+            the device the model is on.
+        output_parquet: path to save the embeddings to. If None, embeddings are not saved.
+    Returns:
+        dataframe with columns embedding and class_name
+    """
+    all_embeddings = []
+    all_class_names = []
+    with torch.no_grad():
+        for images, class_names in tqdm(
+            dataloader, unit="batch", desc="Predicting embeddings"
+        ):
+            if device is not None:
+                images = images.to(device)
+            all_embeddings.append(model(images).cpu())
+            all_class_names += class_names
+
+    concatenated_embeddings = torch.cat(all_embeddings)
+
+    if output_parquet is not None:
+        pd.DataFrame(
+            {
+                "embedding": list(concatenated_embeddings.numpy()),
+                "class_name": all_class_names,
+            }
+        ).to_parquet(output_parquet, index=False, compression="gzip")
+
+    return pd.DataFrame(
+        {"embedding": list(concatenated_embeddings), "class_name": all_class_names}
+    )
