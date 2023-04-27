@@ -1,7 +1,9 @@
-import json
+import pickle
+import warnings
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
+import numpy as np
 import pandas as pd
 import torch
 from numpy import ndarray
@@ -41,7 +43,8 @@ class FeaturesDataset(FewShotDataset):
         embeddings and class_names are directly inferred from the dataframe's content,
         while labels are inferred from the class_names.
         Args:
-            source_dataframe: must have the columns embedding and class_name
+            source_dataframe: must have the columns embedding and class_name.
+                Embeddings must be tensors or numpy arrays.
         """
         if not {"embedding", "class_name"}.issubset(source_dataframe.columns):
             raise ValueError(
@@ -58,7 +61,16 @@ class FeaturesDataset(FewShotDataset):
                 }
             )
         )
-        embeddings = torch.tensor(list(source_dataframe.embedding))
+        if len(source_dataframe) == 0:
+            warnings.warn(
+                UserWarning(
+                    "Empty source dataframe. Initializing an empty FeaturesDataset."
+                )
+            )
+            embeddings = torch.empty(0)
+        else:
+            embeddings = torch.from_numpy(np.stack(list(source_dataframe.embedding)))
+
         return cls(labels, embeddings, class_names)
 
     @classmethod
@@ -84,7 +96,15 @@ class FeaturesDataset(FewShotDataset):
         embeddings_list = []
         for class_id, (class_name, class_embeddings) in enumerate(source_dict.items()):
             class_names.append(class_name)
-            embeddings_list.append(torch.tensor(class_embeddings))
+            if isinstance(class_embeddings, ndarray):
+                embeddings_list.append(torch.from_numpy(class_embeddings))
+            elif isinstance(class_embeddings, Tensor):
+                embeddings_list.append(class_embeddings)
+            else:
+                raise ValueError(
+                    f"Each value of the source_dict must be an array-like, "
+                    f"but the value for class {class_name} is {class_embeddings}"
+                )
             labels += len(class_embeddings) * [class_id]
         return cls(labels, torch.cat(embeddings_list), class_names)
 
@@ -98,7 +118,8 @@ class FeaturesDataset(FewShotDataset):
                 with the same format as the one expected by from_dict
         """
         with open(source_dict_pickle, "rb") as file:
-            return cls.from_dict(json.load(file))
+            source_dict = pickle.load(file)
+        return cls.from_dict(source_dict)
 
     def __getitem__(self, index: int) -> Tuple[Tensor, int]:
         return self.embeddings[index], self.labels[index]

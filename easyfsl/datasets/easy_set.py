@@ -128,7 +128,7 @@ class EasySet(FewShotDataset):
         if len(images) == 0:
             warnings.warn(
                 UserWarning(
-                    "No images found in the specified directories. The dataset will be empty"
+                    "No images found in the specified directories. The dataset will be empty."
                 )
             )
 
