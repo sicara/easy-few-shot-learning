@@ -8,9 +8,9 @@ import torch
 from torch import Tensor, nn
 
 from easyfsl.modules.predesigned_modules import default_relation_module
-from easyfsl.utils import compute_prototypes
 
 from .few_shot_classifier import FewShotClassifier
+from .utils import compute_prototypes
 
 
 class RelationNetworks(FewShotClassifier):
@@ -37,10 +37,17 @@ class RelationNetworks(FewShotClassifier):
     score, which makes it a regression problem. See the article for more details.
     """
 
-    def __init__(self, *args, relation_module: Optional[nn.Module] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        feature_dimension: int,
+        relation_module: Optional[nn.Module] = None,
+        **kwargs,
+    ):
         """
         Build Relation Networks by calling the constructor of FewShotClassifier.
         Args:
+            feature_dimension: first dimension of the feature maps extracted by the backbone.
             relation_module: module that will take the concatenation of a query features vector
                 and a prototype to output a relation score. If none is specific, we use the default
                 relation module from the original paper.
@@ -51,11 +58,7 @@ class RelationNetworks(FewShotClassifier):
         """
         super().__init__(*args, **kwargs)
 
-        if len(self.backbone_output_shape) != 3:
-            raise ValueError(
-                "Illegal backbone for Relation Networks. Expected output for an image is a 3-dim "
-                "tensor of shape (n_channels, width, height)."
-            )
+        self.feature_dimension = feature_dimension
 
         # Here we build the relation module that will output the relation score for each
         # (query, prototype) pair. See the function docstring for more details.
@@ -80,6 +83,7 @@ class RelationNetworks(FewShotClassifier):
         """
 
         support_features = self.backbone(support_images)
+        self._validate_features_shape(support_features)
         self.prototypes = compute_prototypes(support_features, support_labels)
 
     def forward(self, query_images: Tensor) -> Tensor:
@@ -96,6 +100,7 @@ class RelationNetworks(FewShotClassifier):
             a prediction of classification scores for query images
         """
         query_features = self.backbone(query_images)
+        self._validate_features_shape(query_features)
 
         # For each pair (query, prototype), we compute the concatenation of their feature maps
         # Given that query_features is of shape (n_queries, n_channels, width, height), the
@@ -120,6 +125,17 @@ class RelationNetworks(FewShotClassifier):
         )
 
         return self.softmax_if_specified(relation_scores)
+
+    def _validate_features_shape(self, features):
+        if len(features.shape) != 4:
+            raise ValueError(
+                "Illegal backbone for Relation Networks. "
+                "Expected output for an image is a 3-dim  tensor of shape (n_channels, width, height)."
+            )
+        if features.shape[1] != self.feature_dimension:
+            raise ValueError(
+                f"Expected feature dimension is {self.feature_dimension}, but got {features.shape[1]}."
+            )
 
     @staticmethod
     def is_transductive() -> bool:

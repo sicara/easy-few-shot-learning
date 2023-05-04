@@ -11,12 +11,11 @@ class TestPrototypicalNetworksInit:
     @pytest.mark.parametrize(
         "backbone",
         [
-            nn.Flatten(),
+            nn.Conv2d(3, 4, 4),
         ],
     )
-    def test_constructor_raises_error_when_arg_doesnt_output_3d_feature_maps(backbone):
-        with pytest.raises(ValueError):
-            RelationNetworks(backbone)
+    def test_init(backbone):
+        RelationNetworks(backbone, feature_dimension=4)
 
 
 class TestRelationNetworksPipeline:
@@ -38,6 +37,7 @@ class TestRelationNetworksPipeline:
             relation_module=nn.Sequential(
                 nn.AdaptiveAvgPool3d((1, 1, 1)), nn.Flatten()
             ),
+            feature_dimension=3,
         )
 
         model.process_support_set(support_images, support_labels)
@@ -54,6 +54,52 @@ class TestRelationNetworksPipeline:
             ),
         )
         # pylint: enable=not-callable
+
+    @staticmethod
+    def test_process_support_set_returns_value_error_for_not_3_dim_features(
+        example_few_shot_classification_task,
+    ):
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+
+        torch.manual_seed(1)
+        torch.set_num_threads(1)
+
+        model = RelationNetworks(
+            nn.Flatten(),
+            relation_module=nn.Sequential(
+                nn.AdaptiveAvgPool3d((1, 1, 1)), nn.Flatten()
+            ),
+            feature_dimension=3,
+        )
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
+
+    @staticmethod
+    def test_process_support_set_returns_value_error_for_wrong_dim_features(
+        example_few_shot_classification_task,
+    ):
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+
+        torch.manual_seed(1)
+        torch.set_num_threads(1)
+
+        model = RelationNetworks(
+            nn.Identity(),
+            relation_module=nn.Sequential(
+                nn.AdaptiveAvgPool3d((1, 1, 1)), nn.Flatten()
+            ),
+            feature_dimension=2,
+        )
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
 
 
 class TestRelationNetsCanProcessSupportSetFolder:
@@ -77,6 +123,7 @@ class TestRelationNetsCanProcessSupportSetFolder:
             relation_module=nn.Sequential(
                 nn.AdaptiveAvgPool3d((1, 1, 1)), nn.Flatten()
             ),
+            feature_dimension=3,
         )
         model.process_support_set(support_images, support_labels)
 

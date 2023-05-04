@@ -6,19 +6,6 @@ from easyfsl.datasets import SupportSetFolder
 from easyfsl.methods import PrototypicalNetworks
 
 
-class TestPrototypicalNetworksInit:
-    @staticmethod
-    @pytest.mark.parametrize(
-        "backbone",
-        [
-            nn.Conv2d(3, 4, 4),
-        ],
-    )
-    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
-        with pytest.raises(ValueError):
-            PrototypicalNetworks(backbone)
-
-
 class TestPrototypicalNetworksPipeline:
     @staticmethod
     def test_prototypical_networks_returns_expected_output_for_example_images(
@@ -49,6 +36,20 @@ class TestPrototypicalNetworksPipeline:
             )
         )
         # pylint: enable=not-callable
+
+    @staticmethod
+    def test_prototypical_networks_raise_error_when_features_are_not_1_dim(
+        example_few_shot_classification_task,
+    ):
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+
+        model = PrototypicalNetworks(nn.Identity())
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
 
 
 class TestProtoNetsCanProcessSupportSetFolder:

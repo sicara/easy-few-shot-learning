@@ -1,9 +1,8 @@
 import torch
 from torch import Tensor, nn
 
-from easyfsl.utils import entropy
-
 from .finetune import Finetune
+from .utils import entropy
 
 
 class TransductiveFinetuning(Finetune):

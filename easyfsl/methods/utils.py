@@ -1,86 +1,36 @@
-from typing import Optional, Tuple
-
 import torch
 from torch import Tensor
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-
-from .few_shot_classifier import FewShotClassifier
 
 
-def evaluate_on_one_task(
-    model: FewShotClassifier,
-    support_images: Tensor,
-    support_labels: Tensor,
-    query_images: Tensor,
-    query_labels: Tensor,
-) -> Tuple[int, int]:
+def compute_prototypes(support_features: Tensor, support_labels: Tensor) -> Tensor:
     """
-    Returns the number of correct predictions of query labels, and the total number of
-    predictions.
-    """
-    model.process_support_set(support_images, support_labels)
-    return (
-        torch.max(
-            model(query_images).detach().data,
-            1,
-        )[1]
-        == query_labels
-    ).sum().item(), len(query_labels)
-
-
-def evaluate(
-    model: FewShotClassifier,
-    data_loader: DataLoader,
-    device: str = "cuda",
-    use_tqdm: bool = True,
-    tqdm_prefix: Optional[str] = None,
-) -> float:
-    """
-    Evaluate the model on few-shot classification tasks
+    Compute class prototypes from support features and labels
     Args:
-        model: a few-shot classifier
-        data_loader: loads data in the shape of few-shot classification tasks*
-        device: where to cast data tensors.
-            Must be the same as the device hosting the model's parameters.
-        use_tqdm: whether to display the evaluation's progress bar
-        tqdm_prefix: prefix of the tqdm bar
+        support_features: for each instance in the support set, its feature vector
+        support_labels: for each instance in the support set, its label
+
     Returns:
-        average classification accuracy
+        for each label of the support set, the average feature vector of instances with this label
     """
-    # We'll count everything and compute the ratio at the end
-    total_predictions = 0
-    correct_predictions = 0
 
-    # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
-    # no_grad() tells torch not to keep in memory the whole computational graph
-    model.eval()
-    with torch.no_grad():
-        with tqdm(
-            enumerate(data_loader),
-            total=len(data_loader),
-            disable=not use_tqdm,
-            desc=tqdm_prefix,
-        ) as tqdm_eval:
-            for _, (
-                support_images,
-                support_labels,
-                query_images,
-                query_labels,
-                _,
-            ) in tqdm_eval:
-                correct, total = evaluate_on_one_task(
-                    model,
-                    support_images.to(device),
-                    support_labels.to(device),
-                    query_images.to(device),
-                    query_labels.to(device),
-                )
+    n_way = len(torch.unique(support_labels))
+    # Prototype i is the mean of all instances of features corresponding to labels == i
+    return torch.cat(
+        [
+            support_features[torch.nonzero(support_labels == label)].mean(0)
+            for label in range(n_way)
+        ]
+    )
 
-                total_predictions += total
-                correct_predictions += correct
 
-                # Log accuracy in real time
-                tqdm_eval.set_postfix(accuracy=correct_predictions / total_predictions)
-
-    return correct_predictions / total_predictions
+def entropy(logits: Tensor) -> Tensor:
+    """
+    Compute entropy of prediction.
+    WARNING: takes logit as input, not probability.
+    Args:
+        logits: shape (n_images, n_way)
+    Returns:
+        Tensor: shape(), Mean entropy.
+    """
+    probabilities = logits.softmax(dim=1)
+    return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()

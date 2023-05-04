@@ -8,15 +8,8 @@ from easyfsl.methods import MatchingNetworks
 
 class TestMatchingNetworksInit:
     @staticmethod
-    @pytest.mark.parametrize(
-        "backbone",
-        [
-            nn.Conv2d(3, 4, 4),
-        ],
-    )
-    def test_constructor_raises_error_when_arg_is_not_a_feature_extractor(backbone):
-        with pytest.raises(ValueError):
-            MatchingNetworks(backbone)
+    def test_init(dummy_network):
+        MatchingNetworks(dummy_network, feature_dimension=4)
 
 
 class TestMatchingNetworksPipeline:
@@ -33,7 +26,7 @@ class TestMatchingNetworksPipeline:
         torch.manual_seed(1)
         torch.set_num_threads(1)
 
-        model = MatchingNetworks(nn.Flatten())
+        model = MatchingNetworks(nn.Flatten(), feature_dimension=3072)
 
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
@@ -47,6 +40,40 @@ class TestMatchingNetworksPipeline:
             )
         )
         # pylint: enable=not-callable
+
+    @staticmethod
+    def test_process_support_set_returns_value_error_for_not_1_dim_features(
+        example_few_shot_classification_task,
+    ):
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+
+        torch.manual_seed(1)
+        torch.set_num_threads(1)
+
+        model = MatchingNetworks(nn.Identity(), feature_dimension=3072)
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
+
+    @staticmethod
+    def test_process_support_set_returns_value_error_for_wrong_dim_features(
+        example_few_shot_classification_task,
+    ):
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+
+        torch.manual_seed(1)
+        torch.set_num_threads(1)
+
+        model = MatchingNetworks(nn.Identity(), feature_dimension=10)
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
 
 
 class TestMatchingNetsCanProcessSupportSetFolder:
@@ -63,7 +90,7 @@ class TestMatchingNetsCanProcessSupportSetFolder:
         support_images = support_set.get_images()
         support_labels = support_set.get_labels()
 
-        model = MatchingNetworks(backbone=dummy_network)
+        model = MatchingNetworks(backbone=dummy_network, feature_dimension=5)
         model.process_support_set(support_images, support_labels)
 
         query_images = torch.randn((4, 3, 224, 224))

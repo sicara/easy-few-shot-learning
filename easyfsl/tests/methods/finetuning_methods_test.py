@@ -2,6 +2,7 @@ from itertools import product
 
 import pytest
 import torch
+from torch import nn
 
 from easyfsl.datasets import SupportSetFolder
 from easyfsl.methods import TIM, Finetune, TransductiveFinetuning
@@ -80,6 +81,21 @@ class TestFinetuningMethodsRun:
 
             model(query_images)
             assert not prototypes.isclose(model.prototypes, atol=1e-02).all()
+
+    @staticmethod
+    @pytest.mark.parametrize("method", ALL_FINETUNING_METHODS)
+    def test_raise_value_error_for_not_1_dim_features(
+        method,
+        example_few_shot_classification_task,
+    ):
+        model = method(backbone=nn.Identity(), fine_tuning_steps=2, fine_tuning_lr=1.0)
+        (
+            support_images,
+            support_labels,
+            _,
+        ) = example_few_shot_classification_task
+        with pytest.raises(ValueError):
+            model.process_support_set(support_images, support_labels)
 
 
 class TestFinetuningMethodsCanProcessSupportSetFolder:

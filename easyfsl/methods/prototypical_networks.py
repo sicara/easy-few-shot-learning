@@ -6,9 +6,8 @@ at https://github.com/jakesnell/prototypical-networks
 import torch
 from torch import Tensor
 
-from easyfsl.utils import compute_prototypes
-
 from .few_shot_classifier import FewShotClassifier
+from .utils import compute_prototypes
 
 
 class PrototypicalNetworks(FewShotClassifier):
@@ -21,20 +20,6 @@ class PrototypicalNetworks(FewShotClassifier):
     computes the mean of support features for each class (called prototypes), and predict
     classification scores for query images based on their euclidean distance to the prototypes.
     """
-
-    def __init__(self, *args, **kwargs):
-        """
-        Raises:
-            ValueError: if the backbone is not a feature extractor,
-            i.e. if its output for a given image is not a 1-dim tensor.
-        """
-        super().__init__(*args, **kwargs)
-
-        if len(self.backbone_output_shape) != 1:
-            raise ValueError(
-                "Illegal backbone for Prototypical Networks. "
-                "Expected output for an image is a 1-dim tensor."
-            )
 
     def process_support_set(
         self,
@@ -51,6 +36,7 @@ class PrototypicalNetworks(FewShotClassifier):
         """
 
         support_features = self.backbone.forward(support_images)
+        self._raise_error_if_features_are_multi_dimensional(support_features)
         self.prototypes = compute_prototypes(support_features, support_labels)
 
     def forward(
@@ -67,11 +53,12 @@ class PrototypicalNetworks(FewShotClassifier):
         Returns:
             a prediction of classification scores for query images
         """
-        # Extract the features of support and query images
-        z_query = self.backbone.forward(query_images)
+        # Extract the features of query images
+        query_features = self.backbone.forward(query_images)
+        self._raise_error_if_features_are_multi_dimensional(query_features)
 
         # Compute the euclidean distance from queries to prototypes
-        dists = torch.cdist(z_query, self.prototypes)
+        dists = torch.cdist(query_features, self.prototypes)
 
         # Use it to compute classification scores
         scores = -dists

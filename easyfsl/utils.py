@@ -1,9 +1,8 @@
 """
 General utilities
 """
-import copy
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -13,6 +12,8 @@ from matplotlib import pyplot as plt
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from easyfsl.methods import FewShotClassifier
 
 
 def plot_images(images: Tensor, title: str, images_per_row: int):
@@ -47,57 +48,6 @@ def sliding_average(value_list: List[float], window: int) -> float:
     if len(value_list) == 0:
         raise ValueError("Cannot perform sliding average on an empty list.")
     return np.asarray(value_list[-window:]).mean()
-
-
-def compute_backbone_output_shape(backbone: nn.Module) -> torch.Size:
-    """
-    Compute the dimension of the feature space defined by a feature extractor.
-    Args:
-        backbone: feature extractor
-
-    Returns:
-        shape of the feature vector computed by the feature extractor for an instance
-
-    """
-    input_images = torch.ones((4, 3, 32, 32))
-    # Use a copy of the backbone on CPU, to avoid device conflict
-    output = copy.deepcopy(backbone).cpu()(input_images)
-
-    return output.shape[1:]
-
-
-def compute_prototypes(support_features: Tensor, support_labels: Tensor) -> Tensor:
-    """
-    Compute class prototypes from support features and labels
-    Args:
-        support_features: for each instance in the support set, its feature vector
-        support_labels: for each instance in the support set, its label
-
-    Returns:
-        for each label of the support set, the average feature vector of instances with this label
-    """
-
-    n_way = len(torch.unique(support_labels))
-    # Prototype i is the mean of all instances of features corresponding to labels == i
-    return torch.cat(
-        [
-            support_features[torch.nonzero(support_labels == label)].mean(0)
-            for label in range(n_way)
-        ]
-    )
-
-
-def entropy(logits: Tensor) -> Tensor:
-    """
-    Compute entropy of prediction.
-    WARNING: takes logit as input, not probability.
-    Args:
-        logits: shape (n_images, n_way)
-    Returns:
-        Tensor: shape(), Mean entropy.
-    """
-    probabilities = logits.softmax(dim=1)
-    return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
 
 
 def predict_embeddings(
@@ -141,3 +91,81 @@ def predict_embeddings(
     return pd.DataFrame(
         {"embedding": list(concatenated_embeddings), "class_name": all_class_names}
     )
+
+
+def evaluate_on_one_task(
+    model: FewShotClassifier,
+    support_images: Tensor,
+    support_labels: Tensor,
+    query_images: Tensor,
+    query_labels: Tensor,
+) -> Tuple[int, int]:
+    """
+    Returns the number of correct predictions of query labels, and the total number of
+    predictions.
+    """
+    model.process_support_set(support_images, support_labels)
+    return (
+        torch.max(
+            model(query_images).detach().data,
+            1,
+        )[1]
+        == query_labels
+    ).sum().item(), len(query_labels)
+
+
+def evaluate(
+    model: FewShotClassifier,
+    data_loader: DataLoader,
+    device: str = "cuda",
+    use_tqdm: bool = True,
+    tqdm_prefix: Optional[str] = None,
+) -> float:
+    """
+    Evaluate the model on few-shot classification tasks
+    Args:
+        model: a few-shot classifier
+        data_loader: loads data in the shape of few-shot classification tasks*
+        device: where to cast data tensors.
+            Must be the same as the device hosting the model's parameters.
+        use_tqdm: whether to display the evaluation's progress bar
+        tqdm_prefix: prefix of the tqdm bar
+    Returns:
+        average classification accuracy
+    """
+    # We'll count everything and compute the ratio at the end
+    total_predictions = 0
+    correct_predictions = 0
+
+    # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
+    # no_grad() tells torch not to keep in memory the whole computational graph
+    model.eval()
+    with torch.no_grad():
+        with tqdm(
+            enumerate(data_loader),
+            total=len(data_loader),
+            disable=not use_tqdm,
+            desc=tqdm_prefix,
+        ) as tqdm_eval:
+            for _, (
+                support_images,
+                support_labels,
+                query_images,
+                query_labels,
+                _,
+            ) in tqdm_eval:
+                correct, total = evaluate_on_one_task(
+                    model,
+                    support_images.to(device),
+                    support_labels.to(device),
+                    query_images.to(device),
+                    query_labels.to(device),
+                )
+
+                total_predictions += total
+                correct_predictions += correct
+
+                # Log accuracy in real time
+                tqdm_eval.set_postfix(accuracy=correct_predictions / total_predictions)
+
+    return correct_predictions / total_predictions
