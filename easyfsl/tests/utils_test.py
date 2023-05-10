@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 import torch
@@ -204,6 +203,32 @@ class TestPredictEmbeddings:
                 }
             ),
         ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [0.0, 0.0, 0.0],
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                        ],
+                        dtype=torch.float32,
+                    ),
+                    [1, 2, 2],
+                ),
+                batch_size=2,
+            ),
+            pd.DataFrame(
+                {
+                    "embedding": [
+                        torch.tensor([0.0, 0.0, 0.0], dtype=torch.float32),
+                        torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32),
+                        torch.tensor([2.0, 2.0, 2.0], dtype=torch.float32),
+                    ],
+                    "class_name": [1, 2, 2],
+                }
+            ),
+        ),
     ]
 
     @staticmethod
@@ -213,38 +238,3 @@ class TestPredictEmbeddings:
     ):
         output_dataframe = predict_embeddings(dataloader, nn.Identity())
         pd.testing.assert_frame_equal(output_dataframe, expected_dataframe)
-
-    @staticmethod
-    def test_predict_embeddings_saves_expected_output_df(tmp_path):
-        output_path = tmp_path / "output.parquet.gzip"
-
-        dataloader = DataLoader(
-            DummyDataset(
-                torch.tensor(
-                    [
-                        [0.0, 0.0, 0.0],
-                        [1.0, 1.0, 1.0],
-                        [2.0, 2.0, 2.0],
-                    ],
-                    dtype=torch.float32,
-                ),
-                ["class_1", "class_2", "class_2"],
-            ),
-            batch_size=2,
-        )
-        predict_embeddings(dataloader, nn.Identity(), output_parquet=output_path)
-
-        assert output_path.exists()
-        pd.testing.assert_frame_equal(
-            pd.read_parquet(output_path),
-            pd.DataFrame(
-                {
-                    "embedding": [
-                        np.array([0.0, 0.0, 0.0], dtype=np.float32),
-                        np.array([1.0, 1.0, 1.0], dtype=np.float32),
-                        np.array([2.0, 2.0, 2.0], dtype=np.float32),
-                    ],
-                    "class_name": ["class_1", "class_2", "class_2"],
-                }
-            ),
-        )

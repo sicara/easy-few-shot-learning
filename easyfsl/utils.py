@@ -1,8 +1,7 @@
 """
 General utilities
 """
-from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -54,16 +53,14 @@ def predict_embeddings(
     dataloader: DataLoader,
     model: nn.Module,
     device: Optional[str] = None,
-    output_parquet: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
     """
-    Predict embeddings for a dataloader and save them to a parquet file.
+    Predict embeddings for a dataloader.
     Args:
         dataloader: dataloader to predict embeddings for. Must deliver tuples (images, class_names)
         model: model to use for prediction
         device: device to cast the images to. If none, no casting is performed. Must be the same as
             the device the model is on.
-        output_parquet: path to save the embeddings to. If None, embeddings are not saved.
     Returns:
         dataframe with columns embedding and class_name
     """
@@ -76,17 +73,12 @@ def predict_embeddings(
             if device is not None:
                 images = images.to(device)
             all_embeddings.append(model(images).cpu())
-            all_class_names += class_names
+            if isinstance(class_names, torch.Tensor):
+                all_class_names += class_names.tolist()
+            else:
+                all_class_names += class_names
 
     concatenated_embeddings = torch.cat(all_embeddings)
-
-    if output_parquet is not None:
-        pd.DataFrame(
-            {
-                "embedding": list(concatenated_embeddings.numpy()),
-                "class_name": all_class_names,
-            }
-        ).to_parquet(output_parquet, index=False, compression="gzip")
 
     return pd.DataFrame(
         {"embedding": list(concatenated_embeddings), "class_name": all_class_names}

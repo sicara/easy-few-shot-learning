@@ -1,5 +1,3 @@
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -172,61 +170,6 @@ class TestFromDataFrame:
         source_dataframe, expected_embeddings, expected_labels, expected_class_names
     ):
         dataset = FeaturesDataset.from_dataframe(source_dataframe)
-        assert_dataset_equals(
-            dataset, expected_embeddings, expected_labels, expected_class_names
-        )
-
-    @staticmethod
-    @pytest.mark.parametrize(
-        "source_dataframe,expected_embeddings,expected_labels,expected_class_names",
-        [
-            (
-                pd.DataFrame(
-                    {
-                        "embedding": [
-                            np.array([0.0, 0.0, 0.0], dtype=np.float32),
-                            np.array([1.0, 1.0, 1.0], dtype=np.float32),
-                            np.array([2.0, 2.0, 2.0], dtype=np.float32),
-                        ],
-                        "class_name": ["class_0", "class_1", "class_0"],
-                    }
-                ),
-                torch.tensor(
-                    [
-                        [0.0, 0.0, 0.0],
-                        [1.0, 1.0, 1.0],
-                        [2.0, 2.0, 2.0],
-                    ],
-                    dtype=torch.float32,
-                ),
-                [0, 1, 0],
-                ["class_0", "class_1"],
-            ),
-            (
-                pd.DataFrame(
-                    {
-                        "embedding": [],
-                        "class_name": [],
-                    }
-                ),
-                torch.empty(0),
-                [],
-                [],
-            ),
-        ],
-    )
-    @pytest.mark.filterwarnings("ignore::UserWarning")
-    def test_init_from_dataframe_parquet_gives_expected_dataset(
-        source_dataframe,
-        expected_embeddings,
-        expected_labels,
-        expected_class_names,
-        tmp_path,
-    ):
-        source_dataframe.to_parquet(
-            tmp_path / "test.parquet.gzip", index=False, compression="gzip"
-        )
-        dataset = FeaturesDataset.from_dataframe_parquet(tmp_path / "test.parquet.gzip")
         assert_dataset_equals(
             dataset, expected_embeddings, expected_labels, expected_class_names
         )
@@ -451,25 +394,6 @@ class TestFromDict:
         expected_class_names,
     ):
         dataset = FeaturesDataset.from_dict(source_dict)
-        assert_dataset_equals(
-            dataset, expected_embeddings, expected_labels, expected_class_names
-        )
-
-    @staticmethod
-    @pytest.mark.parametrize(
-        "source_dict,expected_embeddings,expected_labels,expected_class_names",
-        dict_cases,
-    )
-    def test_init_from_dict_pickle_gives_expected_dataset(
-        source_dict,
-        expected_embeddings,
-        expected_labels,
-        expected_class_names,
-        tmp_path,
-    ):
-        with open(tmp_path / "source_dict.pkl", "wb") as file:
-            pickle.dump(source_dict, file, protocol=pickle.HIGHEST_PROTOCOL)
-        dataset = FeaturesDataset.from_dict_pickle(tmp_path / "source_dict.pkl")
         assert_dataset_equals(
             dataset, expected_embeddings, expected_labels, expected_class_names
         )
