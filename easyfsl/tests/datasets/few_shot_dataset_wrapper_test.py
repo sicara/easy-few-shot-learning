@@ -1,7 +1,33 @@
 import pytest
-from torchvision.datasets import FakeData, ImageFolder
+from torchvision.datasets import ImageFolder
 
 from easyfsl.datasets import FewShotDatasetWrapper
+
+
+class FakeImageFolder(ImageFolder):
+    def __init__(
+        self,
+        *args,
+        image_position_in_get_item_output,
+        label_position_in_get_item_output,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.image_position_in_get_item_output = image_position_in_get_item_output
+        self.label_position_in_get_item_output = label_position_in_get_item_output
+
+    def __getitem__(self, item):
+        image, label = super().__getitem__(item)
+        output_as_list = [None] * (
+            max(
+                self.image_position_in_get_item_output,
+                self.label_position_in_get_item_output,
+            )
+            + 1
+        )
+        output_as_list[self.image_position_in_get_item_output] = image
+        output_as_list[self.label_position_in_get_item_output] = label
+        return tuple(output_as_list)
 
 
 class TestInit:
@@ -34,26 +60,14 @@ class TestInit:
             (10, 0),
         ],
     )
-    def test_default_init_retrieves_correct_labels(
+    def test_init_retrieves_correct_labels_from_special_positions(
         image_position_in_get_item_output,
         label_position_in_get_item_output,
     ):
-        class FakeImageFolder(ImageFolder):
-            def __getitem__(self, item):
-                image, label = super().__getitem__(item)
-                output_as_list = [None] * (
-                    max(
-                        image_position_in_get_item_output,
-                        label_position_in_get_item_output,
-                    )
-                    + 1
-                )
-                output_as_list[image_position_in_get_item_output] = image
-                output_as_list[label_position_in_get_item_output] = label
-                return tuple(output_as_list)
-
         source_dataset = FakeImageFolder(
-            "easyfsl/tests/datasets/resources/unbalanced_support_set"
+            "easyfsl/tests/datasets/resources/unbalanced_support_set",
+            image_position_in_get_item_output=image_position_in_get_item_output,
+            label_position_in_get_item_output=label_position_in_get_item_output,
         )
         wrapped_dataset = FewShotDatasetWrapper(
             source_dataset,
@@ -63,5 +77,28 @@ class TestInit:
         assert wrapped_dataset.get_labels() == [0, 0, 1, 2, 2, 2, 2, 2]
 
     @staticmethod
-    def test_raises_error_when_input_positions_are_out_of_item_range():
-        pass
+    @pytest.mark.parametrize(
+        "image_position_in_get_item_output,label_position_in_get_item_output",
+        [
+            (0, 2),
+            (2, 0),
+            (-1, 0),
+            (0, -1),
+            (10, 9),
+            (1, 1),
+        ],
+    )
+    def test_raises_error_when_input_positions_are_out_of_item_range(
+        image_position_in_get_item_output, label_position_in_get_item_output
+    ):
+        source_dataset = FakeImageFolder(
+            "easyfsl/tests/datasets/resources/unbalanced_support_set",
+            image_position_in_get_item_output=0,
+            label_position_in_get_item_output=1,
+        )
+        with pytest.raises(ValueError):
+            FewShotDatasetWrapper(
+                source_dataset,
+                image_position_in_get_item_output,
+                label_position_in_get_item_output,
+            )

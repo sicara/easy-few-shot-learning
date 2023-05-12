@@ -4,7 +4,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from easyfsl.datasets import FewShotDataset
+from .few_shot_dataset import FewShotDataset
 
 
 class FewShotDatasetWrapper(FewShotDataset):
@@ -30,15 +30,21 @@ class FewShotDatasetWrapper(FewShotDataset):
         """
         if image_position_in_get_item_output == label_position_in_get_item_output:
             raise ValueError(
-                "image_position_in_get_item_output and label_position_in_get_item_output must be different"
+                "image_position_in_get_item_output and label_position_in_get_item_output must be different."
             )
         if (
             image_position_in_get_item_output < 0
             or label_position_in_get_item_output < 0
         ):
             raise ValueError(
-                "image_position_in_get_item_output and label_position_in_get_item_output must be positive"
+                "image_position_in_get_item_output and label_position_in_get_item_output must be positive."
             )
+        item_length = len(dataset[0])
+        if (
+            image_position_in_get_item_output >= item_length
+            or label_position_in_get_item_output >= item_length
+        ):
+            raise ValueError("Specified positions in output are out of range.")
 
         self.source_dataset = dataset
         self.labels = [
