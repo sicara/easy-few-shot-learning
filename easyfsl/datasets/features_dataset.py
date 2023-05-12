@@ -74,7 +74,7 @@ class FeaturesDataset(FewShotDataset):
         """
         Instantiate a FeaturesDataset from a dictionary.
         Args:
-            source_dict: each key is a class's name and each value is an array-like
+            source_dict: each key is a class's name and each value is a numpy array or torch tensor
                 with shape (n_images_for_this_class, **embedding_dimension)
         """
         class_names = []
@@ -88,7 +88,7 @@ class FeaturesDataset(FewShotDataset):
                 embeddings_list.append(class_embeddings)
             else:
                 raise ValueError(
-                    f"Each value of the source_dict must be an array-like, "
+                    f"Each value of the source_dict must be a ndarray or torch tensor, "
                     f"but the value for class {class_name} is {class_embeddings}"
                 )
             labels += len(class_embeddings) * [class_id]
