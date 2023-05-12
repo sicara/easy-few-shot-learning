@@ -26,7 +26,7 @@ class BDCSPN(FewShotClassifier):
             support_images: images of the support set
             support_labels: labels of support set images
         """
-        self.store_support_set_data(support_images, support_labels)
+        self.compute_prototypes_and_store_support_set(support_images, support_labels)
 
     def rectify_prototypes(self, query_features: Tensor):
         """
@@ -72,7 +72,7 @@ class BDCSPN(FewShotClassifier):
     ) -> Tensor:
         """
         Overrides forward method of FewShotClassifier.
-        Updates prototypes using query images, then classify query images based
+        Update prototypes using query images, then classify query images based
         on their cosine distance to updated prototypes.
         Args:
             query_images: images of the query set

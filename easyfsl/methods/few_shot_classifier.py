@@ -1,9 +1,10 @@
 from abc import abstractmethod
+from typing import Optional
 
 import torch
 from torch import Tensor, nn
 
-from easyfsl.utils import compute_backbone_output_shape, compute_prototypes
+from easyfsl.methods.utils import compute_prototypes
 
 
 class FewShotClassifier(nn.Module):
@@ -11,20 +12,18 @@ class FewShotClassifier(nn.Module):
     Abstract class providing methods usable by all few-shot classification algorithms
     """
 
-    def __init__(self, backbone: nn.Module, use_softmax: bool = False):
+    def __init__(self, backbone: Optional[nn.Module] = None, use_softmax: bool = False):
         """
         Initialize the Few-Shot Classifier
         Args:
             backbone: the feature extractor used by the method. Must output a tensor of the
-                appropriate shape (depending on the method)
+                appropriate shape (depending on the method).
+                If None is passed, the backbone will be initialized as nn.Identity().
             use_softmax: whether to return predictions as soft probabilities
         """
         super().__init__()
 
-        self.backbone = backbone
-        self.backbone_output_shape = compute_backbone_output_shape(backbone)
-        self.feature_dimension = self.backbone_output_shape[0]
-
+        self.backbone = backbone if backbone is not None else nn.Identity()
         self.use_softmax = use_softmax
 
         self.prototypes = torch.tensor(())
@@ -109,7 +108,7 @@ class FewShotClassifier(nn.Module):
             @ nn.functional.normalize(self.prototypes, dim=1).T
         )
 
-    def store_support_set_data(
+    def compute_prototypes_and_store_support_set(
         self,
         support_images: Tensor,
         support_labels: Tensor,
@@ -123,4 +122,13 @@ class FewShotClassifier(nn.Module):
         """
         self.support_labels = support_labels
         self.support_features = self.backbone(support_images)
+        self._raise_error_if_features_are_multi_dimensional(self.support_features)
         self.prototypes = compute_prototypes(self.support_features, support_labels)
+
+    @staticmethod
+    def _raise_error_if_features_are_multi_dimensional(features: Tensor):
+        if len(features.shape) != 2:
+            raise ValueError(
+                "Illegal backbone or feature shape. "
+                "Expected output for an image is a 1-dim tensor."
+            )

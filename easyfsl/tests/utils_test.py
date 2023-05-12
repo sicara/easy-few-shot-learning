@@ -1,8 +1,12 @@
+import pandas as pd
 import pytest
 import torch
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from easyfsl.utils import compute_prototypes, entropy, plot_images, sliding_average
+from easyfsl.methods.utils import compute_prototypes, entropy
+from easyfsl.utils import plot_images, predict_embeddings, sliding_average
 
 TO_PIL_IMAGE = transforms.ToPILImage()
 
@@ -93,3 +97,144 @@ class TestEntropy:
     )
     def test_entropy_returns_correctly_shaped_tensor(input_):
         assert entropy(input_).shape == ()
+
+
+class DummyDataset(Dataset):
+    def __init__(self, images, class_names):
+        self.images = images
+        self.class_names = class_names
+
+    def __getitem__(self, index):
+        return self.images[index], self.class_names[index]
+
+    def __len__(self):
+        return len(self.class_names)
+
+
+class TestPredictEmbeddings:
+    cases_grid = [
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                        ],
+                        dtype=torch.float64,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=3,
+            ),
+            pd.DataFrame(
+                {
+                    "embedding": [
+                        torch.tensor(
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], dtype=torch.float64
+                        ),
+                        torch.tensor(
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=torch.float64
+                        ),
+                        torch.tensor(
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]], dtype=torch.float64
+                        ),
+                    ],
+                    "class_name": ["class_1", "class_2", "class_2"],
+                }
+            ),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                        ],
+                        dtype=torch.float64,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=2,
+            ),
+            pd.DataFrame(
+                {
+                    "embedding": [
+                        torch.tensor(
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], dtype=torch.float64
+                        ),
+                        torch.tensor(
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=torch.float64
+                        ),
+                        torch.tensor(
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]], dtype=torch.float64
+                        ),
+                    ],
+                    "class_name": ["class_1", "class_2", "class_2"],
+                }
+            ),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [0.0, 0.0, 0.0],
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                        ],
+                        dtype=torch.float32,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=2,
+            ),
+            pd.DataFrame(
+                {
+                    "embedding": [
+                        torch.tensor([0.0, 0.0, 0.0], dtype=torch.float32),
+                        torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32),
+                        torch.tensor([2.0, 2.0, 2.0], dtype=torch.float32),
+                    ],
+                    "class_name": ["class_1", "class_2", "class_2"],
+                }
+            ),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [0.0, 0.0, 0.0],
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                        ],
+                        dtype=torch.float32,
+                    ),
+                    [1, 2, 2],
+                ),
+                batch_size=2,
+            ),
+            pd.DataFrame(
+                {
+                    "embedding": [
+                        torch.tensor([0.0, 0.0, 0.0], dtype=torch.float32),
+                        torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32),
+                        torch.tensor([2.0, 2.0, 2.0], dtype=torch.float32),
+                    ],
+                    "class_name": [1, 2, 2],
+                }
+            ),
+        ),
+    ]
+
+    @staticmethod
+    @pytest.mark.parametrize("dataloader, expected_dataframe", cases_grid)
+    def test_predict_embeddings_returns_expected_dataframe(
+        dataloader, expected_dataframe
+    ):
+        output_dataframe = predict_embeddings(dataloader, nn.Identity())
+        pd.testing.assert_frame_equal(output_dataframe, expected_dataframe)

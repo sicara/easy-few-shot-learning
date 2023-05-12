@@ -1,14 +1,18 @@
 """
 General utilities
 """
-import copy
-from typing import List
+from typing import List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 import torch
 import torchvision
 from matplotlib import pyplot as plt
 from torch import Tensor, nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+from easyfsl.methods import FewShotClassifier
 
 
 def plot_images(images: Tensor, title: str, images_per_row: int):
@@ -45,52 +49,115 @@ def sliding_average(value_list: List[float], window: int) -> float:
     return np.asarray(value_list[-window:]).mean()
 
 
-def compute_backbone_output_shape(backbone: nn.Module) -> torch.Size:
+def predict_embeddings(
+    dataloader: DataLoader,
+    model: nn.Module,
+    device: Optional[str] = None,
+) -> pd.DataFrame:
     """
-    Compute the dimension of the feature space defined by a feature extractor.
+    Predict embeddings for a dataloader.
     Args:
-        backbone: feature extractor
-
+        dataloader: dataloader to predict embeddings for. Must deliver tuples (images, class_names)
+        model: model to use for prediction
+        device: device to cast the images to. If none, no casting is performed. Must be the same as
+            the device the model is on.
     Returns:
-        shape of the feature vector computed by the feature extractor for an instance
-
+        dataframe with columns embedding and class_name
     """
-    input_images = torch.ones((4, 3, 32, 32))
-    # Use a copy of the backbone on CPU, to avoid device conflict
-    output = copy.deepcopy(backbone).cpu()(input_images)
+    all_embeddings = []
+    all_class_names = []
+    with torch.no_grad():
+        for images, class_names in tqdm(
+            dataloader, unit="batch", desc="Predicting embeddings"
+        ):
+            if device is not None:
+                images = images.to(device)
+            all_embeddings.append(model(images).cpu())
+            if isinstance(class_names, torch.Tensor):
+                all_class_names += class_names.tolist()
+            else:
+                all_class_names += class_names
 
-    return output.shape[1:]
+    concatenated_embeddings = torch.cat(all_embeddings)
 
-
-def compute_prototypes(support_features: Tensor, support_labels: Tensor) -> Tensor:
-    """
-    Compute class prototypes from support features and labels
-    Args:
-        support_features: for each instance in the support set, its feature vector
-        support_labels: for each instance in the support set, its label
-
-    Returns:
-        for each label of the support set, the average feature vector of instances with this label
-    """
-
-    n_way = len(torch.unique(support_labels))
-    # Prototype i is the mean of all instances of features corresponding to labels == i
-    return torch.cat(
-        [
-            support_features[torch.nonzero(support_labels == label)].mean(0)
-            for label in range(n_way)
-        ]
+    return pd.DataFrame(
+        {"embedding": list(concatenated_embeddings), "class_name": all_class_names}
     )
 
 
-def entropy(logits: Tensor) -> Tensor:
+def evaluate_on_one_task(
+    model: FewShotClassifier,
+    support_images: Tensor,
+    support_labels: Tensor,
+    query_images: Tensor,
+    query_labels: Tensor,
+) -> Tuple[int, int]:
     """
-    Compute entropy of prediction.
-    WARNING: takes logit as input, not probability.
+    Returns the number of correct predictions of query labels, and the total number of
+    predictions.
+    """
+    model.process_support_set(support_images, support_labels)
+    return (
+        torch.max(
+            model(query_images).detach().data,
+            1,
+        )[1]
+        == query_labels
+    ).sum().item(), len(query_labels)
+
+
+def evaluate(
+    model: FewShotClassifier,
+    data_loader: DataLoader,
+    device: str = "cuda",
+    use_tqdm: bool = True,
+    tqdm_prefix: Optional[str] = None,
+) -> float:
+    """
+    Evaluate the model on few-shot classification tasks
     Args:
-        logits: shape (n_images, n_way)
+        model: a few-shot classifier
+        data_loader: loads data in the shape of few-shot classification tasks*
+        device: where to cast data tensors.
+            Must be the same as the device hosting the model's parameters.
+        use_tqdm: whether to display the evaluation's progress bar
+        tqdm_prefix: prefix of the tqdm bar
     Returns:
-        Tensor: shape(), Mean entropy.
+        average classification accuracy
     """
-    probabilities = logits.softmax(dim=1)
-    return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
+    # We'll count everything and compute the ratio at the end
+    total_predictions = 0
+    correct_predictions = 0
+
+    # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
+    # no_grad() tells torch not to keep in memory the whole computational graph
+    model.eval()
+    with torch.no_grad():
+        with tqdm(
+            enumerate(data_loader),
+            total=len(data_loader),
+            disable=not use_tqdm,
+            desc=tqdm_prefix,
+        ) as tqdm_eval:
+            for _, (
+                support_images,
+                support_labels,
+                query_images,
+                query_labels,
+                _,
+            ) in tqdm_eval:
+                correct, total = evaluate_on_one_task(
+                    model,
+                    support_images.to(device),
+                    support_labels.to(device),
+                    query_images.to(device),
+                    query_labels.to(device),
+                )
+
+                total_predictions += total
+                correct_predictions += correct
+
+                # Log accuracy in real time
+                tqdm_eval.set_postfix(accuracy=correct_predictions / total_predictions)
+
+    return correct_predictions / total_predictions

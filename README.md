@@ -17,23 +17,14 @@ of code to be covered by a tutorial.
 ## What's in there?
 
 ### Notebooks: learn and practice
-You want to learn few-shot learning and don't know where to start? Start with our tutorial.
+You want to learn few-shot learning and don't know where to start? Start with our tutorials.
 
-- **[First steps into few-shot image classification](notebooks/my_first_few_shot_classifier.ipynb)**: 
-basically Few-Shot Learning 101, in less than 15min.
-
-    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)
-
-- **[Example of episodic training](notebooks/episodic_training.ipynb)**: 
-use it as a starting point if you want to design a script for episodic training using EasyFSL.
-
-    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/episodic_training.ipynb)
-
-- **[Example of classical training](notebooks/classical_training.ipynb)**: 
-use it as a starting point if you want to design a script for classical training using EasyFSL.
-
-    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/classical_training.ipynb)
-
+| Notebook                                                                                       | Description                                                                                                                                                                                  | Colab                                                                                                                                                                                                              |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [First steps into few-shot image classification](notebooks/my_first_few_shot_classifier.ipynb) | Basically Few-Shot Learning 101, in less than 15min.                                                                                                                                         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/my_first_few_shot_classifier.ipynb)      |
+| [Example of episodic training](notebooks/episodic_training.ipynb)                              | Use it as a starting point if you want to design a script for episodic training using EasyFSL.                                                                                               | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/episodic_training.ipynb)                 |
+| [Example of classical training](notebooks/classical_training.ipynb)                            | Use it as a starting point if you want to design a script for classical training using EasyFSL.                                                                                              | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/classical_training.ipynb)                |
+| [Test with pre-extracted embeddings](notebooks/inference_with_extracted_embeddings.ipynb)      | Most few-shot methods use a frozen backbone at test-time. With EasyFSL, you can extract all embeddings for your dataset once and for all, and then perform inference directly on embeddings. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sicara/easy-few-shot-learning/blob/master/notebooks/inference_with_extracted_embeddings.ipynb) |
 
 ### Code that you can use and understand
 
@@ -147,7 +138,7 @@ But if you want to propose a train/val/test split along classes, you're welcome 
 
 3. Design your training and evaluation scripts. You can use our example notebooks for 
 [episodic training](notebooks/episodic_training.ipynb) 
-or [classical training](notebooks/classical_training.ipynb)
+or [classical training](notebooks/classical_training.ipynb).
 
 ## Contribute
 This project is very open to contributions! You can help in various ways:

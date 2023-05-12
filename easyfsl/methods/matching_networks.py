@@ -32,6 +32,7 @@ class MatchingNetworks(FewShotClassifier):
     def __init__(
         self,
         *args,
+        feature_dimension: int,
         support_encoder: Optional[nn.Module] = None,
         query_encoder: Optional[nn.Module] = None,
         **kwargs,
@@ -39,22 +40,15 @@ class MatchingNetworks(FewShotClassifier):
         """
         Build Matching Networks by calling the constructor of FewShotClassifier.
         Args:
+            feature_dimension: dimension of the feature vectors extracted by the backbone.
             support_encoder: module encoding support features. If none is specific, we use
                 the default encoder from the original paper.
             query_encoder: module encoding query features. If none is specific, we use
                 the default encoder from the original paper.
-
-        Raises:
-            ValueError: if the backbone is not a feature extractor,
-            i.e. if its output for a given image is not a 1-dim tensor.
         """
         super().__init__(*args, **kwargs)
 
-        if len(self.backbone_output_shape) != 1:
-            raise ValueError(
-                "Illegal backbone for Matching Networks. "
-                "Expected output for an image is a 1-dim tensor."
-            )
+        self.feature_dimension = feature_dimension
 
         # These modules refine support and query feature vectors
         # using information from the whole support set
@@ -91,6 +85,7 @@ class MatchingNetworks(FewShotClassifier):
             support_labels: labels of support set images
         """
         support_features = self.backbone(support_images)
+        self._validate_features_shape(support_features)
         self.contextualized_support_features = self.encode_support_features(
             support_features
         )
@@ -110,6 +105,8 @@ class MatchingNetworks(FewShotClassifier):
         """
 
         # Refine query features using the context of the whole support set
+        query_features = self.backbone(query_images)
+        self._validate_features_shape(query_features)
         contextualized_query_features = self.encode_query_features(
             self.backbone(query_images)
         )
@@ -190,6 +187,13 @@ class MatchingNetworks(FewShotClassifier):
             hidden_state = hidden_state + query_features
 
         return hidden_state
+
+    def _validate_features_shape(self, features: Tensor):
+        self._raise_error_if_features_are_multi_dimensional(features)
+        if features.shape[1] != self.feature_dimension:
+            raise ValueError(
+                f"Expected feature dimension is {self.feature_dimension}, but got {features.shape[1]}."
+            )
 
     @staticmethod
     def is_transductive() -> bool:

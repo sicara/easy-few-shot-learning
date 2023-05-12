@@ -50,7 +50,7 @@ class Finetune(FewShotClassifier):
             support_images: images of the support set
             support_labels: labels of support set images
         """
-        self.store_support_set_data(support_images, support_labels)
+        self.compute_prototypes_and_store_support_set(support_images, support_labels)
 
     def forward(
         self,
