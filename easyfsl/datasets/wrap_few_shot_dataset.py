@@ -7,7 +7,7 @@ from tqdm import tqdm
 from .few_shot_dataset import FewShotDataset
 
 
-class FewShotDatasetWrapper(FewShotDataset):
+class WrapFewShotDataset(FewShotDataset):
     """
     Wrap a dataset in a FewShotDataset. This is useful if you have your own dataset
     and want to use it with the tools provided by EasyFSL such as TaskSampler.

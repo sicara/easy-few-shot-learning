@@ -1,7 +1,7 @@
 import pytest
 from torchvision.datasets import ImageFolder
 
-from easyfsl.datasets import FewShotDatasetWrapper
+from easyfsl.datasets import WrapFewShotDataset
 
 
 class FakeImageFolder(ImageFolder):
@@ -46,7 +46,7 @@ class TestInit:
         ],
     )
     def test_default_init_retrieves_correct_labels(source_dataset, expected_labels):
-        wrapped_dataset = FewShotDatasetWrapper(source_dataset)
+        wrapped_dataset = WrapFewShotDataset(source_dataset)
         assert wrapped_dataset.get_labels() == expected_labels
 
     @staticmethod
@@ -69,7 +69,7 @@ class TestInit:
             image_position_in_get_item_output=image_position_in_get_item_output,
             label_position_in_get_item_output=label_position_in_get_item_output,
         )
-        wrapped_dataset = FewShotDatasetWrapper(
+        wrapped_dataset = WrapFewShotDataset(
             source_dataset,
             image_position_in_get_item_output,
             label_position_in_get_item_output,
@@ -97,7 +97,7 @@ class TestInit:
             label_position_in_get_item_output=1,
         )
         with pytest.raises(ValueError):
-            FewShotDatasetWrapper(
+            WrapFewShotDataset(
                 source_dataset,
                 image_position_in_get_item_output,
                 label_position_in_get_item_output,
