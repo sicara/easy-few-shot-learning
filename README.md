@@ -51,6 +51,9 @@ instances in the shape of few-shot classification tasks. No sweat! In EasyFSL yo
 - [TaskSampler](easyfsl/samplers/task_sampler.py): an extension of the standard PyTorch Sampler object, to sample batches in the shape of few-shot classification tasks
 - [FewShotDataset](easyfsl/datasets/few_shot_dataset.py): an abstract class to standardize the interface of any dataset you'd like to use
 - [EasySet](easyfsl/datasets/easy_set.py): a ready-to-use FewShotDataset object to handle datasets of images with a class-wise directory split
+- [WrapFewShotDataset](easyfsl/datasets/wrap_few_shot_dataset.py): a wrapper to transform any dataset into a FewShotDataset object
+- [FeaturesDataset](easyfsl/datasets/features_dataset.py): a dataset to handle pre-extracted features
+- [SupportSetFolder](easyfsl/datasets/support_set_folder.py): a dataset to handle support sets stored in a directory
 
 **And also:** [some utilities](easyfsl/utils.py) that I felt I often used in my research, so I'm sharing with you.
 
