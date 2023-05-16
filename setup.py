@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="easyfsl",
-    version="1.2.1",
+    version="1.3.0",
     description="Ready-to-use PyTorch code to boost your way into few-shot image classification",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(
     license="MIT",
     install_requires=[
         "matplotlib>=3.0.0",
-        "pandas>=1.2.1",
+        "pandas>=1.3.0",
         "torch>=1.4.0",
         "torchvision>=0.7.0",
         "tqdm>=4.1.0",

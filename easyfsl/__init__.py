@@ -5,4 +5,4 @@ This library implements few-shot learning methods, along with data loading tools
 for few-shot learning experiences.
 """
 
-__version__ = "1.2.1"
+__version__ = "1.3.0"
