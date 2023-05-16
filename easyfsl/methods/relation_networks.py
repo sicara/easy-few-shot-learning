@@ -51,10 +51,6 @@ class RelationNetworks(FewShotClassifier):
             relation_module: module that will take the concatenation of a query features vector
                 and a prototype to output a relation score. If none is specific, we use the default
                 relation module from the original paper.
-
-        Raises:
-            ValueError: if the backbone doesn't outputs feature maps, i.e. if its output for a
-            given image is not a tensor of shape (n_channels, width, height)
         """
         super().__init__(*args, **kwargs)
 
@@ -76,10 +72,6 @@ class RelationNetworks(FewShotClassifier):
         """
         Overrides process_support_set of FewShotClassifier.
         Extract feature maps from the support set and store class prototypes.
-
-        Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
         """
 
         support_features = self.backbone(support_images)
@@ -93,11 +85,6 @@ class RelationNetworks(FewShotClassifier):
         prototype and feeding the result into a relation module, i.e. a CNN that outputs a relation
         score. Finally, the classification vector of the query is its relation score to each class
         prototype.
-
-        Args:
-            query_images: images of the query set
-        Returns:
-            a prediction of classification scores for query images
         """
         query_features = self.backbone(query_images)
         self._validate_features_shape(query_features)

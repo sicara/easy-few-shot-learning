@@ -55,16 +55,20 @@ class TaskSampler(Sampler):
         return self.n_tasks
 
     def __iter__(self) -> Iterator[List[int]]:
+        """
+        Sample n_way labels uniformly at random,
+        and then sample n_shot + n_query items for each label, also uniformly at random.
+        Yields:
+            a list of indices of length (n_way * (n_shot + n_query))
+        """
         for _ in range(self.n_tasks):
             yield torch.cat(
                 [
-                    # pylint: disable=not-callable
                     torch.tensor(
                         random.sample(
                             self.items_per_label[label], self.n_shot + self.n_query
                         )
                     )
-                    # pylint: enable=not-callable
                     for label in random.sample(
                         sorted(self.items_per_label.keys()), self.n_way
                     )
@@ -79,14 +83,14 @@ class TaskSampler(Sampler):
             data loaders.
         Args:
             input_data: each element is a tuple containing:
-                - an image as a torch Tensor
+                - an image as a torch Tensor of shape (n_channels, height, width)
                 - the label of this image as an int or a 0-dim tensor
         Returns:
             tuple(Tensor, Tensor, Tensor, Tensor, list[int]): respectively:
-                - support images,
-                - their labels,
-                - query images,
-                - their labels,
+                - support images of shape (n_way * n_shot, n_channels, height, width),
+                - their labels of shape (n_way * n_shot),
+                - query images of shape (n_way * n_query, n_channels, height, width)
+                - their labels of shape (n_way * n_query),
                 - the dataset class ids of the class sampled in the episode
         """
         input_data_with_int_labels = self._cast_input_data_to_tensor_int_tuple(
@@ -97,11 +101,9 @@ class TaskSampler(Sampler):
         all_images = all_images.reshape(
             (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
         )
-        # pylint: disable=not-callable
         all_labels = torch.tensor(
             [true_class_ids.index(x[1]) for x in input_data_with_int_labels]
         ).reshape((self.n_way, self.n_shot + self.n_query))
-        # pylint: enable=not-callable
         support_images = all_images[:, : self.n_shot].reshape(
             (-1, *all_images.shape[2:])
         )
@@ -124,8 +126,10 @@ class TaskSampler(Sampler):
         Check the type of the input for the episodic_collate_fn method, and cast it to the right type if possible.
         Args:
             input_data: each element is a tuple containing:
-                - an image as a torch Tensor
+                - an image as a torch Tensor of shape (n_channels, height, width)
                 - the label of this image as an int or a 0-dim tensor
+        Returns:
+            the input data with the labels cast to int
         Raises:
             TypeError : Wrong type of input images or labels
             ValueError: Input label is not a 0-dim tensor

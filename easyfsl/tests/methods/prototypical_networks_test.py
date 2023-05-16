@@ -25,7 +25,6 @@ class TestPrototypicalNetworksPipeline:
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
 
-        # pylint: disable=not-callable
         assert torch.all(
             torch.isclose(
                 predictions,
@@ -35,7 +34,6 @@ class TestPrototypicalNetworksPipeline:
                 atol=1e-01,
             )
         )
-        # pylint: enable=not-callable
 
     @staticmethod
     def test_prototypical_networks_raise_error_when_features_are_not_1_dim(

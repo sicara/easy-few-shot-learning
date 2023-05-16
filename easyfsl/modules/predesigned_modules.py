@@ -17,37 +17,37 @@ __all__ = [
 ]
 
 
-def resnet10(**kwargs):
+def resnet10(**kwargs) -> ResNet:
     """Constructs a ResNet-10 model."""
     return ResNet(BasicBlock, [1, 1, 1, 1], **kwargs)
 
 
-def resnet12(**kwargs):
+def resnet12(**kwargs) -> ResNet:
     """Constructs a ResNet-12 model."""
     return ResNet(BasicBlock, [1, 1, 2, 1], planes=[64, 160, 320, 640], **kwargs)
 
 
-def resnet18(**kwargs):
+def resnet18(**kwargs) -> ResNet:
     """Constructs a ResNet-18 model."""
     return ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
 
 
-def resnet34(**kwargs):
+def resnet34(**kwargs) -> ResNet:
     """Constructs a ResNet-34 model."""
     return ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
 
 
-def resnet50(**kwargs):
+def resnet50(**kwargs) -> ResNet:
     """Constructs a ResNet-50 model."""
     return ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
 
 
-def resnet101(**kwargs):
+def resnet101(**kwargs) -> ResNet:
     """Constructs a ResNet-101 model."""
     return ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
 
 
-def resnet152(**kwargs):
+def resnet152(**kwargs) -> ResNet:
     """Constructs a ResNet-152 model."""
     return ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
 
@@ -66,7 +66,9 @@ def default_matching_networks_query_encoder(feature_dimension: int) -> nn.Module
     return nn.LSTMCell(feature_dimension * 2, feature_dimension)
 
 
-def default_relation_module(feature_dimension: int, inner_channels: int = 8):
+def default_relation_module(
+    feature_dimension: int, inner_channels: int = 8
+) -> nn.Module:
     """
     Build the relation module that takes as input the concatenation of two feature maps, from
     Sung et al. : "Learning to compare: Relation network for few-shot learning." (2018)
@@ -76,7 +78,6 @@ def default_relation_module(feature_dimension: int, inner_channels: int = 8):
     Args:
         feature_dimension: the dimension of the feature space i.e. size of a feature vector
         inner_channels: number of hidden channels between the linear layers of  the relation module
-
     Returns:
         the constructed relation module
     """
