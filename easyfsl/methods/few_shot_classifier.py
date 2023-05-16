@@ -37,11 +37,10 @@ class FewShotClassifier(nn.Module):
     ) -> Tensor:
         """
         Predict classification labels.
-
         Args:
-            query_images: images of the query set
+            query_images: images of the query set of shape (n_query, **image_shape)
         Returns:
-            a prediction of classification scores for query images
+            a prediction of classification scores for query images of shape (n_query, n_classes)
         """
         raise NotImplementedError(
             "All few-shot algorithms must implement a forward method."
@@ -54,12 +53,10 @@ class FewShotClassifier(nn.Module):
         support_labels: Tensor,
     ):
         """
-        Harness information from the support set, so that query labels can later be predicted using
-        a forward call
-
+        Harness information from the support set, so that query labels can later be predicted using a forward call.
         Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
+            support_images: images of the support set of shape (n_support, **image_shape)
+            support_labels: labels of support set images of shape (n_support, )
         """
         raise NotImplementedError(
             "All few-shot algorithms must implement a process_support_set method."
@@ -76,10 +73,9 @@ class FewShotClassifier(nn.Module):
         If the option is chosen when the classifier is initialized, we perform a softmax on the
         output in order to return soft probabilities.
         Args:
-            output: output of the forward method
-
+            output: output of the forward method of shape (n_query, n_classes)
         Returns:
-            output as it was, or output as soft probabilities
+            output as it was, or output as soft probabilities, of shape (n_query, n_classes)
         """
         return output.softmax(-1) if self.use_softmax else output
 
@@ -87,10 +83,9 @@ class FewShotClassifier(nn.Module):
         """
         Compute prediction logits from their euclidean distance to support set prototypes.
         Args:
-            samples: features of the items to classify
-
+            samples: features of the items to classify of shape (n_samples, feature_dimension)
         Returns:
-            prediction logits
+            prediction logits of shape (n_samples, n_classes)
         """
         return -torch.cdist(samples, self.prototypes)
 
@@ -98,10 +93,9 @@ class FewShotClassifier(nn.Module):
         """
         Compute prediction logits from their cosine distance to support set prototypes.
         Args:
-            samples: features of the items to classify
-
+            samples: features of the items to classify of shape (n_samples, feature_dimension)
         Returns:
-            prediction logits
+            prediction logits of shape (n_samples, n_classes)
         """
         return (
             nn.functional.normalize(samples, dim=1)
@@ -114,11 +108,10 @@ class FewShotClassifier(nn.Module):
         support_labels: Tensor,
     ):
         """
-        Extract support features, compute prototypes,
-            and store support labels, features, and prototypes
+        Extract support features, compute prototypes, and store support labels, features, and prototypes.
         Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
+            support_images: images of the support set of shape (n_support, **image_shape)
+            support_labels: labels of support set images of shape (n_support, )
         """
         self.support_labels = support_labels
         self.support_features = self.backbone(support_images)

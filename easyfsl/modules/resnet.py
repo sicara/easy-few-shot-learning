@@ -90,7 +90,7 @@ class ResNet(nn.Module):
         planes: int,
         blocks: int,
         stride: int = 1,
-    ):
+    ) -> nn.Module:
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(

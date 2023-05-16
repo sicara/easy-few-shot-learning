@@ -53,7 +53,6 @@ class TestSlidingAverage:
             sliding_average(value_list, window)
 
 
-# pylint: disable=not-callable
 class TestComputePrototypes:
     @staticmethod
     @pytest.mark.parametrize(
@@ -80,9 +79,6 @@ class TestComputePrototypes:
         features, labels, expected_prototypes
     ):
         assert torch.equal(compute_prototypes(features, labels), expected_prototypes)
-
-
-# pylint: enable=not-callable
 
 
 class TestEntropy:

@@ -29,10 +29,6 @@ class PrototypicalNetworks(FewShotClassifier):
         """
         Overrides process_support_set of FewShotClassifier.
         Extract feature vectors from the support set and store class prototypes.
-
-        Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
         """
 
         support_features = self.backbone.forward(support_images)
@@ -47,11 +43,6 @@ class PrototypicalNetworks(FewShotClassifier):
         Overrides forward method of FewShotClassifier.
         Predict query labels based on their distance to class prototypes in the feature space.
         Classification scores are the negative of euclidean distances.
-
-        Args:
-            query_images: images of the query set
-        Returns:
-            a prediction of classification scores for query images
         """
         # Extract the features of query images
         query_features = self.backbone.forward(query_images)

@@ -22,9 +22,6 @@ class BDCSPN(FewShotClassifier):
     ):
         """
         Overrides process_support_set of FewShotClassifier.
-        Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
         """
         self.compute_prototypes_and_store_support_set(support_images, support_labels)
 
@@ -32,7 +29,7 @@ class BDCSPN(FewShotClassifier):
         """
         Updates prototypes with label propagation and feature shifting.
         Args:
-            query_features: query features
+            query_features: query features of shape (n_query, feature_dimension)
         """
         n_classes = self.support_labels.unique().size(0)
         one_hot_support_labels = nn.functional.one_hot(self.support_labels, n_classes)
@@ -54,13 +51,13 @@ class BDCSPN(FewShotClassifier):
             + (one_hot_query_prediction * query_logits).sum(0)
         ).unsqueeze(
             0
-        )  # [1, K]
+        )  # [1, n_classes]
         support_reweighting = (
             one_hot_support_labels * support_logits
-        ) / normalization_vector  # [shot_s, K]
+        ) / normalization_vector  # [n_support, n_classes]
         query_reweighting = (
             one_hot_query_prediction * query_logits
-        ) / normalization_vector  # [shot_q, K]
+        ) / normalization_vector  # [n_query, n_classes]
 
         self.prototypes = (support_reweighting * one_hot_support_labels).t().matmul(
             self.support_features
@@ -74,10 +71,6 @@ class BDCSPN(FewShotClassifier):
         Overrides forward method of FewShotClassifier.
         Update prototypes using query images, then classify query images based
         on their cosine distance to updated prototypes.
-        Args:
-            query_images: images of the query set
-        Returns:
-            a prediction of classification scores for query images
         """
         query_features = self.backbone.forward(query_images)
 

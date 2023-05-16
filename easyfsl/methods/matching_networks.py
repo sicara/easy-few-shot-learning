@@ -81,8 +81,8 @@ class MatchingNetworks(FewShotClassifier):
         Store contextualized feature vectors, as well as support labels in the one hot format.
 
         Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
+            support_images: images of the support set of shape (n_support, **image_shape)
+            support_labels: labels of support set images of shape (n_support, )
         """
         support_features = self.backbone(support_images)
         self._validate_features_shape(support_features)
@@ -99,9 +99,9 @@ class MatchingNetworks(FewShotClassifier):
         Classification scores are log-probabilities.
 
         Args:
-            query_images: images of the query set
+            query_images: images of the query set of shape (n_query, **image_shape)
         Returns:
-            a prediction of classification scores for query images
+            a prediction of classification scores for query images of shape (n_query, n_classes)
         """
 
         # Refine query features using the context of the whole support set
@@ -136,7 +136,7 @@ class MatchingNetworks(FewShotClassifier):
         Refine support set features by putting them in the context of the whole support set,
         using a bidirectional LSTM.
         Args:
-            support_features: output of the backbone
+            support_features: output of the backbone of shape (n_support, feature_dimension)
 
         Returns:
             contextualised support features, with the same shape as input features
@@ -163,7 +163,7 @@ class MatchingNetworks(FewShotClassifier):
         Refine query set features by putting them in the context of the whole support set,
         using attention over support set features.
         Args:
-            query_features: output of the backbone
+            query_features: output of the backbone of shape (n_query, feature_dimension)
 
         Returns:
             contextualized query features, with the same shape as input features

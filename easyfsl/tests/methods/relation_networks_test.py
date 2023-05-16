@@ -43,7 +43,6 @@ class TestRelationNetworksPipeline:
         model.process_support_set(support_images, support_labels)
         predictions = model(query_images)
 
-        # pylint: disable=not-callable
         assert torch.all(
             torch.isclose(
                 predictions,
@@ -53,7 +52,6 @@ class TestRelationNetworksPipeline:
                 rtol=1e-3,
             ),
         )
-        # pylint: enable=not-callable
 
     @staticmethod
     def test_process_support_set_returns_value_error_for_not_3_dim_features(

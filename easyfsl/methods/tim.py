@@ -57,9 +57,6 @@ class TIM(FewShotClassifier):
     ):
         """
         Overrides process_support_set of FewShotClassifier.
-        Args:
-            support_images: images of the support set
-            support_labels: labels of support set images
         """
         self.compute_prototypes_and_store_support_set(support_images, support_labels)
 
@@ -72,10 +69,6 @@ class TIM(FewShotClassifier):
         Fine-tune prototypes based on support classification error and mutual information between
         query features and their label predictions.
         Then classify w.r.t. to euclidean distance to prototypes.
-        Args:
-            query_images: images of the query set
-        Returns:
-            a prediction of classification scores for query images
         """
         query_features = self.backbone.forward(query_images)
 

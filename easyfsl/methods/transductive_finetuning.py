@@ -54,10 +54,6 @@ class TransductiveFinetuning(Finetune):
         Overrides forward method of FewShotClassifier.
         Fine-tune model's parameters based on support classification error and
         query classification entropy.
-        Args:
-            query_images: images of the query set
-        Returns:
-            a prediction of classification scores for query images
         """
         query_features = self.backbone.forward(query_images)
 
