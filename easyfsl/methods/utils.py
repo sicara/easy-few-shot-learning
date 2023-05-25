@@ -34,3 +34,19 @@ def entropy(logits: Tensor) -> Tensor:
     """
     probabilities = logits.softmax(dim=1)
     return (-(probabilities * (probabilities + 1e-12).log()).sum(dim=1)).mean()
+
+
+def k_nearest_neighbours(features: Tensor, k: int, p_norm: int = 2) -> Tensor:
+    """
+    Compute k nearest neighbours of each feature vector, not included itself.
+    Args:
+        features: input features of shape (n_features, feature_dimension)
+        k: number of nearest neighbours to retain
+        p_norm: use l_p distance. Defaults: 2.
+
+    Returns:
+        Tensor: shape (n_features, k), indices of k nearest neighbours of each feature vector.
+    """
+    distances = torch.cdist(features, features, p_norm)
+
+    return distances.topk(k, largest=False).indices[:, 1:]
