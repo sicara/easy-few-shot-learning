@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import Tensor
 
@@ -32,6 +31,23 @@ class LaplacianShot(BDCSPN):
         self.knn = knn
         self.inference_steps = inference_steps
         self.lambda_regularization = lambda_regularization
+
+    def forward(
+        self,
+        query_images: Tensor,
+    ) -> Tensor:
+        query_features = self.backbone(query_images)
+        self.rectify_prototypes(query_features=query_features)
+
+        features_to_prototypes_distances = (
+            torch.cdist(query_features, self.prototypes) ** 2
+        )
+        pairwise_affinities = self.compute_pairwise_affinities(query_features)
+        predictions = self.bound_updates(
+            initial_scores=features_to_prototypes_distances, kernel=pairwise_affinities
+        )
+
+        return predictions
 
     def compute_pairwise_affinities(self, features: Tensor) -> Tensor:
         """
@@ -70,9 +86,7 @@ class LaplacianShot(BDCSPN):
         temp = (initial_scores * soft_assignments) + (
             -self.lambda_regularization * pairwise * soft_assignments
         )
-        upper_bound = (
-            soft_assignments * (soft_assignments + 1e-12).log() + temp
-        ).sum()
+        upper_bound = (soft_assignments * (soft_assignments + 1e-12).log() + temp).sum()
 
         return upper_bound
 
@@ -107,22 +121,6 @@ class LaplacianShot(BDCSPN):
 
         return soft_assignments
 
-    def forward(
-        self,
-        query_images: Tensor,
-    ) -> Tensor:
-        query_features = self.backbone(query_images)
-        self.rectify_prototypes(query_features=query_features)
-
-        features_to_prototypes_distances = (
-            torch.cdist(query_features, self.prototypes) ** 2
-        )
-        pairwise_affinities = self.compute_pairwise_affinities(query_features)
-        predictions = self.bound_updates(
-            initial_scores=features_to_prototypes_distances, kernel=pairwise_affinities
-        )
-
-        return predictions
-
-    def is_transductive(self) -> bool:
+    @staticmethod
+    def is_transductive() -> bool:
         return True

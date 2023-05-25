@@ -5,12 +5,13 @@ import torch
 from torch import nn
 
 from easyfsl.datasets import SupportSetFolder
-from easyfsl.methods import TIM, Finetune, TransductiveFinetuning
+from easyfsl.methods import TIM, Finetune, TransductiveFinetuning, PTMAP
 
 ALL_FINETUNING_METHODS = [
     Finetune,
     TIM,
     TransductiveFinetuning,
+    PTMAP,
 ]
 
 
