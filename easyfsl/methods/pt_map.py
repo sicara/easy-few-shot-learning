@@ -16,12 +16,13 @@ class PTMAP(FewShotClassifier):
     At each iteration, prototypes are fine-tuned based on the soft assignments.
     This is a transductive method.
     """
+
     def __init__(
         self,
         *args,
         fine_tuning_steps: int = 10,
         fine_tuning_lr: float = 0.2,
-        lambda_regularization: float = 10.,
+        lambda_regularization: float = 10.0,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
