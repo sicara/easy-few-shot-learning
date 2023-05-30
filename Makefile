@@ -1,25 +1,25 @@
 # Checks
 
 lint:
-		pylint easyfsl
+		pylint easyfsl scripts
 
 test:
 		pytest easyfsl
 
 isort:
-		isort easyfsl
+		isort easyfsl scripts
 
 isort-check:
-		isort easyfsl --check
+		isort easyfsl scripts --check
 
 black:
-		black easyfsl
+		black easyfsl scripts
 
 black-check:
-		black easyfsl --check
+		black easyfsl scripts --check
 
 mypy:
-		mypy easyfsl
+		mypy easyfsl scripts
 
 # Install
 

@@ -1,7 +1,6 @@
 """
 General utilities
 """
-from collections import OrderedDict
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -50,31 +49,6 @@ def sliding_average(value_list: List[float], window: int) -> float:
     return np.asarray(value_list[-window:]).mean()
 
 
-def strip_prefix(state_dict: OrderedDict, prefix: str):
-    """
-    Strip a prefix from the keys of a state_dict. Can be used to address compatibility issues from
-    a loaded state_dict to a model with slightly different parameter names.
-    Example usage:
-        state_dict = torch.load("model.pth")
-        # state_dict contains keys like "module.encoder.0.weight" but the model expects keys like "encoder.0.weight"
-        state_dict = strip_prefix(state_dict, "module.")
-        model.load_state_dict(state_dict)
-    Args:
-        state_dict: pytorch state_dict, as returned by model.state_dict() or loaded via torch.load()
-            Keys are the names of the parameters and values are the parameter tensors.
-        prefix: prefix to strip from the keys of the state_dict. Usually ends with a dot.
-
-    Returns:
-        copy of the state_dict with the prefix stripped from the keys
-    """
-    return OrderedDict(
-        [
-            (k[len(prefix) :] if k.startswith(prefix) else k, v)
-            for k, v in state_dict.items()
-        ]
-    )
-
-
 def predict_embeddings(
     dataloader: DataLoader,
     model: nn.Module,
@@ -98,7 +72,7 @@ def predict_embeddings(
         ):
             if device is not None:
                 images = images.to(device)
-            all_embeddings.append(model(images).cpu())
+            all_embeddings.append(model(images).detach().cpu())
             if isinstance(class_names, torch.Tensor):
                 all_class_names += class_names.tolist()
             else:

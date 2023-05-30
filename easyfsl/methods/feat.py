@@ -4,10 +4,11 @@ from typing import Union
 import torch
 from torch import Tensor, nn
 
-from .prototypical_networks import PrototypicalNetworks
 from easyfsl.modules import MultiHeadAttention
 from easyfsl.modules.feat_resnet12 import feat_resnet12
-from easyfsl.utils import strip_prefix
+from .utils import strip_prefix
+
+from .prototypical_networks import PrototypicalNetworks
 
 
 class FEAT(PrototypicalNetworks):
