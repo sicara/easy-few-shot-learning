@@ -21,8 +21,8 @@ class Finetune(FewShotClassifier):
     def __init__(
         self,
         *args,
-        fine_tuning_steps: int = 10,
-        fine_tuning_lr: float = 1e-3,
+        fine_tuning_steps: int = 100,
+        fine_tuning_lr: float = 1e-4,
         **kwargs,
     ):
         """
