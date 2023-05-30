@@ -2,6 +2,7 @@ import math
 import torch
 from torch import nn
 
+# pylit: disable=invalid-name
 
 class ScaledDotProductAttention(nn.Module):
     """Scaled Dot-Product Attention"""
