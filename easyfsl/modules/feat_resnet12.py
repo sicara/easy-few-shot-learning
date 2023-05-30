@@ -111,7 +111,7 @@ class FEATResNet12(nn.Module):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
 
-    def _make_layer(self, block, planes, stride=1, block_size=1):
+    def _make_layer(self, block, planes, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -132,7 +132,6 @@ class FEATResNet12(nn.Module):
                 planes,
                 stride,
                 downsample,
-                block_size,
             )
         )
         self.inplanes = planes * block.expansion

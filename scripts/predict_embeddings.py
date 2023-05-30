@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 import typer
 from loguru import logger
 from torch import nn
@@ -90,9 +91,15 @@ def main(
     )
 
     embeddings_df = predict_embeddings(dataloader, model, device=device)
+    cast_embeddings_to_numpy(embeddings_df)
 
     if output_parquet is None:
-        output_parquet = Path(f"{backbone}_{dataset}_{split}.parquet.gzip")
+        output_parquet = (
+            Path("data/features")
+            / dataset
+            / split
+            / checkpoint.with_suffix(".parquet.gzip").name
+        )
     output_parquet.parent.mkdir(parents=True, exist_ok=True)
 
     embeddings_df.to_parquet(output_parquet, index=False, compression="gzip")
@@ -124,6 +131,17 @@ def build_backbone(
     backbone.eval()
 
     return backbone
+
+
+def cast_embeddings_to_numpy(embeddings_df: pd.DataFrame) -> None:
+    """
+    Cast the tensor embeddings in a DataFrame to numpy arrays, in an inplace fashion.
+    Args:
+        embeddings_df: dataframe with an "embeddings" column containing torch tensors.
+    """
+    embeddings_df["embedding"] = embeddings_df["embedding"].apply(
+        lambda embedding: embedding.detach().cpu().numpy()
+    )
 
 
 if __name__ == "__main__":

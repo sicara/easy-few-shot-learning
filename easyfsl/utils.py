@@ -72,7 +72,7 @@ def predict_embeddings(
         ):
             if device is not None:
                 images = images.to(device)
-            all_embeddings.append(model(images).cpu())
+            all_embeddings.append(model(images).detach().cpu())
             if isinstance(class_names, torch.Tensor):
                 all_class_names += class_names.tolist()
             else:
