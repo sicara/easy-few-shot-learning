@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -6,6 +7,7 @@ import typer
 from loguru import logger
 from torch import nn
 from torch.utils.data import DataLoader
+from torchvision import transforms
 
 from easyfsl.datasets import (
     CUB,
@@ -14,47 +16,22 @@ from easyfsl.datasets import (
     MiniImageNet,
     TieredImageNet,
 )
-from easyfsl.methods import (
-    BDCSPN,
-    FEAT,
-    PTMAP,
-    TIM,
-    Finetune,
-    LaplacianShot,
-    MatchingNetworks,
-    PrototypicalNetworks,
-    RelationNetworks,
-    SimpleShot,
-    TransductiveFinetuning,
-)
 from easyfsl.modules.build_from_checkpoint import feat_resnet12_from_checkpoint
 from easyfsl.utils import predict_embeddings
-
-METHODS_DICT = {
-    "bd_cspn": BDCSPN,
-    "feat": FEAT,
-    "finetune": Finetune,
-    "laplacian_shot": LaplacianShot,
-    "matching_networks": MatchingNetworks,
-    "prototypical_networks": PrototypicalNetworks,
-    "pt_map": PTMAP,
-    "relation_networks": RelationNetworks,
-    "simple_shot": SimpleShot,
-    "tim": TIM,
-    "transductive_finetuning": TransductiveFinetuning,
-}
 
 BACKBONES_DICT = {
     "feat_resnet12": feat_resnet12_from_checkpoint,
 }
+BACKBONES_CONFIGS_JSON = Path("scripts/backbones_configs.json")
 
 DATASETS_DICT = {
-    "CUB": CUB,
-    "tieredImageNet": TieredImageNet,
-    "miniImageNet": MiniImageNet,
+    "cub": CUB,
+    "tiered_imagenet": TieredImageNet,
+    "mini_imagenet": MiniImageNet,
     "fungi": DanishFungi,
 }
 DEFAULT_FUNGI_PATH = Path("data/fungi/images")
+DEFAULT_MINI_IMAGENET_PATH = Path("data/mini_imagenet/images")
 
 
 def main(
@@ -76,19 +53,23 @@ def main(
         split: Which split to use among train, val test. Some datasets only have a test split.
         device: The device to use.
         batch_size: The batch size to use.
-        num_workers: The number of workers to use. Defaults to 0 for no multiprocessing.
+        num_workers: The number of workers to use for the DataLoader. Defaults to 0 for no multiprocessing.
         output_parquet: Where to save the extracted embeddings. Defaults to
             {backbone}_{dataset}_{split}.parquet.gzip in the current directory.
     """
     model = build_backbone(backbone, checkpoint, device)
+    logger.info(f"Loaded backbone {backbone} from {checkpoint}")
 
-    initialized_dataset = get_dataset(dataset, split)
+    dataset_transform = get_dataset_transform(backbone)
+
+    initialized_dataset = get_dataset(dataset, split, dataset_transform)
     dataloader = DataLoader(
         initialized_dataset,
         batch_size=batch_size,
         num_workers=num_workers,
         shuffle=False,
     )
+    logger.info(f"Loaded dataset {dataset} ({split} split)")
 
     embeddings_df = predict_embeddings(dataloader, model, device=device)
     cast_embeddings_to_numpy(embeddings_df)
@@ -106,18 +87,6 @@ def main(
     logger.info(f"Saved embeddings to {output_parquet}")
 
 
-def get_dataset(dataset_name: str, split: str) -> FewShotDataset:
-    if dataset_name not in DATASETS_DICT:
-        raise ValueError(
-            "Unknown dataset name." f"Valid names are {DATASETS_DICT.keys()}"
-        )
-    if dataset_name == "fungi":
-        if split != "test":
-            raise ValueError("Danish Fungi only has a test set.")
-        return DanishFungi(DEFAULT_FUNGI_PATH)
-    return DATASETS_DICT[dataset_name](split=split, training=False)
-
-
 def build_backbone(
     backbone: str,
     checkpoint: Path,
@@ -125,12 +94,63 @@ def build_backbone(
 ) -> nn.Module:
     if backbone not in BACKBONES_DICT:
         raise ValueError(
-            "Unknown backbone name." f"Valid names are {BACKBONES_DICT.keys()}"
+            "Unknown backbone name. " f"Valid names are {BACKBONES_DICT.keys()}"
         )
-    backbone = BACKBONES_DICT[backbone](checkpoint, device)
-    backbone.eval()
+    model = BACKBONES_DICT[backbone](checkpoint, device)
+    model.eval()
 
-    return backbone
+    return model
+
+
+def get_dataset_transform(backbone_name: str) -> transforms.Compose:
+    with open(BACKBONES_CONFIGS_JSON, "r", encoding="utf-8") as file:
+        all_configs = json.load(file)
+    if backbone_name not in all_configs:
+        raise ValueError(
+            f"No available config for {backbone_name} in {str(BACKBONES_CONFIGS_JSON)}."
+        )
+    transform_config = all_configs[backbone_name]["transform"]
+    return transforms.Compose(
+        [
+            transforms.Resize(
+                int(transform_config["image_size"] / transform_config["crop_ratio"]),
+                interpolation=transform_config["interpolation"],
+            ),
+            transforms.CenterCrop(transform_config["image_size"]),
+            transforms.ToTensor(),
+            transforms.Normalize(transform_config["mean"], transform_config["std"]),
+        ]
+    )
+
+
+def get_dataset(
+    dataset_name: str, split: str, transform: transforms.Compose
+) -> FewShotDataset:
+    """
+    Get a dataset using the built-in constructors from EasyFSL.
+    Args:
+        dataset_name: must be one of "cub", "tiered_imagenet", "mini_imagenet", "fungi".
+        split: train, val, or test
+        transform: a callable to apply to the images.
+    Returns:
+        The requested dataset.
+    """
+    if dataset_name not in DATASETS_DICT:
+        raise ValueError(
+            "Unknown dataset name. " f"Valid names are {DATASETS_DICT.keys()}"
+        )
+    if dataset_name == "fungi":
+        if split != "test":
+            raise ValueError("Danish Fungi only has a test set.")
+        return DanishFungi(DEFAULT_FUNGI_PATH, transform=transform)
+    if dataset_name == "mini_imagenet":
+        return MiniImageNet(
+            root=DEFAULT_MINI_IMAGENET_PATH,
+            split=split,
+            training=False,
+            transform=transform,
+        )
+    return DATASETS_DICT[dataset_name](split=split, training=False, transform=transform)
 
 
 def cast_embeddings_to_numpy(embeddings_df: pd.DataFrame) -> None:

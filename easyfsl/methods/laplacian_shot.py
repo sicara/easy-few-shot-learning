@@ -70,7 +70,7 @@ class LaplacianShot(BDCSPN):
 
     def compute_upper_bound(
         self, soft_assignments: Tensor, initial_scores: Tensor, kernel: Tensor
-    ) -> Tensor:
+    ) -> float:
         """
         Compute the upper bound objective for the soft assignments following Equation (7) of the paper.
         Args:
@@ -88,7 +88,7 @@ class LaplacianShot(BDCSPN):
         )
         upper_bound = (soft_assignments * (soft_assignments + 1e-12).log() + temp).sum()
 
-        return upper_bound
+        return upper_bound.item()
 
     def bound_updates(self, initial_scores: Tensor, kernel: Tensor) -> Tensor:
         """

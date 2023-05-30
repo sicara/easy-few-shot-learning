@@ -6,9 +6,9 @@ from torch import Tensor, nn
 
 from easyfsl.modules import MultiHeadAttention
 from easyfsl.modules.feat_resnet12 import feat_resnet12
-from .utils import strip_prefix
 
 from .prototypical_networks import PrototypicalNetworks
+from .utils import strip_prefix
 
 
 class FEAT(PrototypicalNetworks):
@@ -65,6 +65,7 @@ class FEAT(PrototypicalNetworks):
         checkpoint_path: Union[Path, str],
         device: str = "cpu",
         feature_dimension: int = 640,
+        use_backbone: bool = True,
     ):
         """
         Load a FEAT model from a checkpoint of a resnet12 model as provided by the authors.
@@ -80,6 +81,8 @@ class FEAT(PrototypicalNetworks):
             device: device to load the model on
             feature_dimension: dimension of the features extracted by the backbone.
                 Should be 640 with the default Resnet12 backbone.
+            use_backbone: if False, we initialize the backbone to nn.Identity() (useful for
+                working on pre-extracted features)
         Returns:
             a FEAT model with weights loaded from the checkpoint
         Raises:
@@ -88,12 +91,15 @@ class FEAT(PrototypicalNetworks):
         """
         state_dict = torch.load(str(checkpoint_path), map_location=device)["params"]
 
-        backbone = feat_resnet12().to(device)
-        backbone_missing_keys, _ = backbone.load_state_dict(
-            strip_prefix(state_dict, "encoder."), strict=False
-        )
-        if len(backbone_missing_keys) > 0:
-            raise ValueError(f"Missing keys for backbone: {backbone_missing_keys}")
+        if use_backbone:
+            backbone = feat_resnet12().to(device)
+            backbone_missing_keys, _ = backbone.load_state_dict(
+                strip_prefix(state_dict, "encoder."), strict=False
+            )
+            if len(backbone_missing_keys) > 0:
+                raise ValueError(f"Missing keys for backbone: {backbone_missing_keys}")
+        else:
+            backbone = nn.Identity()
 
         attention_module = MultiHeadAttention(
             1,
