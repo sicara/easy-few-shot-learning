@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import torch
 from torch import Tensor
 
@@ -50,3 +52,28 @@ def k_nearest_neighbours(features: Tensor, k: int, p_norm: int = 2) -> Tensor:
     distances = torch.cdist(features, features, p_norm)
 
     return distances.topk(k, largest=False).indices[:, 1:]
+
+
+def strip_prefix(state_dict: OrderedDict, prefix: str):
+    """
+    Strip a prefix from the keys of a state_dict. Can be used to address compatibility issues from
+    a loaded state_dict to a model with slightly different parameter names.
+    Example usage:
+        state_dict = torch.load("model.pth")
+        # state_dict contains keys like "module.encoder.0.weight" but the model expects keys like "encoder.0.weight"
+        state_dict = strip_prefix(state_dict, "module.")
+        model.load_state_dict(state_dict)
+    Args:
+        state_dict: pytorch state_dict, as returned by model.state_dict() or loaded via torch.load()
+            Keys are the names of the parameters and values are the parameter tensors.
+        prefix: prefix to strip from the keys of the state_dict. Usually ends with a dot.
+
+    Returns:
+        copy of the state_dict with the prefix stripped from the keys
+    """
+    return OrderedDict(
+        [
+            (k[len(prefix) :] if k.startswith(prefix) else k, v)
+            for k, v in state_dict.items()
+        ]
+    )

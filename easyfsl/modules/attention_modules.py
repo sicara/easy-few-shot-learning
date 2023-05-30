@@ -1,8 +1,10 @@
 import math
+
 import torch
 from torch import nn
 
-# pylit: disable=invalid-name
+# pylint: disable=invalid-name,too-many-instance-attributes
+
 
 class ScaledDotProductAttention(nn.Module):
     """Scaled Dot-Product Attention"""
@@ -49,6 +51,9 @@ class MultiHeadAttention(nn.Module):
         self.flag_norm = flag_norm
 
     def forward(self, q, k, v):
+        """
+        Go through the multi-head attention module.
+        """
         sz_q, len_q, _ = q.size()
         sz_b, len_k, _ = k.size()
         sz_b, len_v, _ = v.size()

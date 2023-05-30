@@ -34,7 +34,7 @@ class FEATBasicBlock(nn.Module):
         self.maxpool = nn.MaxPool2d(stride)
         self.downsample = downsample
 
-    def forward(self, x):    # pylint: disable=invalid-name
+    def forward(self, x):  # pylint: disable=invalid-name
         """
         Pass input through the block, including an activation and maxpooling at the end.
         """
@@ -139,13 +139,11 @@ class FEATResNet12(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):    # pylint: disable=invalid-name
+    def forward(self, x):  # pylint: disable=invalid-name
         """
         Iterate over the blocks and apply them sequentially.
         """
-        x = self.layer4(
-            self.layer3(self.layer2(self.layer1(x)))
-        )
+        x = self.layer4(self.layer3(self.layer2(self.layer1(x))))
         return x.mean((-2, -1))
 
 

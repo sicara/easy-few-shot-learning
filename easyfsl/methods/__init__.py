@@ -1,4 +1,5 @@
 from .bd_cspn import BDCSPN
+from .feat import FEAT
 from .few_shot_classifier import FewShotClassifier
 from .finetune import Finetune
 from .laplacian_shot import LaplacianShot
