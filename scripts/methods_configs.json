@@ -5,27 +5,30 @@
       "fine_tuning_lr": 0.0001,
       "cross_entropy_weight": 1.0,
       "marginal_entropy_weight": 1.0,
-      "conditional_entropy_weight": 1.0
+      "conditional_entropy_weight": 1.0,
+      "temperature": 10.0
     }
   },
   "feat": {
     "resnet12_mini_imagenet": {
-      "checkpoint_path": "data/models/feat_resnet12_mini_imagenet_1_shot.pth",
+      "checkpoint_path": "data/models/feat_resnet12_mini_imagenet.pth",
       "feature_dimension": 640
     },
     "resnet12_tiered_imagenet": {
-      "checkpoint_path": "data/models/feat_resnet12_mini_imagenet_1_shot.pth",
+      "checkpoint_path": "data/models/feat_resnet12_mini_imagenet.pth",
       "feature_dimension": 640
     }
   },
   "finetune": {
     "1_shot": {
       "fine_tuning_steps": 200,
-      "fine_tuning_lr": 0.0001
+      "fine_tuning_lr": 0.0001,
+      "temperature": 1.0
     },
     "5_shot": {
       "fine_tuning_steps": 100,
-      "fine_tuning_lr": 0.0001
+      "fine_tuning_lr": 0.0001,
+      "temperature": 10.0
     }
   },
   "pt_map": {
@@ -42,7 +45,7 @@
       "lambda_regularization": 0.7
     },
     "5_shot": {
-      "fine_tuning_steps": 20,
+      "inference_steps": 20,
       "knn": 3,
       "lambda_regularization": 0.1
     }

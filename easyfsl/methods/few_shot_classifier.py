@@ -68,16 +68,17 @@ class FewShotClassifier(nn.Module):
             "All few-shot algorithms must implement a is_transductive method."
         )
 
-    def softmax_if_specified(self, output: Tensor) -> Tensor:
+    def softmax_if_specified(self, output: Tensor, temperature: float = 1.0) -> Tensor:
         """
         If the option is chosen when the classifier is initialized, we perform a softmax on the
         output in order to return soft probabilities.
         Args:
             output: output of the forward method of shape (n_query, n_classes)
+            temperature: temperature of the softmax
         Returns:
             output as it was, or output as soft probabilities, of shape (n_query, n_classes)
         """
-        return output.softmax(-1) if self.use_softmax else output
+        return (temperature * output).softmax(-1) if self.use_softmax else output
 
     def l2_distance_to_prototypes(self, samples: Tensor) -> Tensor:
         """

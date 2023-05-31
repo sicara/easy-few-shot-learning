@@ -28,6 +28,7 @@ class TransductiveFinetuning(Finetune):
         *args,
         fine_tuning_steps: int = 25,
         fine_tuning_lr: float = 5e-5,
+        temperature: float = 1.0,
         **kwargs,
     ):
         """
@@ -38,11 +39,14 @@ class TransductiveFinetuning(Finetune):
         Args:
             fine_tuning_steps: number of fine-tuning steps
             fine_tuning_lr: learning rate for fine-tuning
+            temperature: temperature applied to the logits before computing
+                softmax or cross-entropy. Higher temperature means softer predictions.
         """
         super().__init__(
             *args,
             fine_tuning_steps=fine_tuning_steps,
             fine_tuning_lr=fine_tuning_lr,
+            temperature=temperature,
             **kwargs,
         )
 
@@ -62,11 +66,12 @@ class TransductiveFinetuning(Finetune):
             optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
             for _ in range(self.fine_tuning_steps):
                 support_cross_entropy = nn.functional.cross_entropy(
-                    self.l2_distance_to_prototypes(self.support_features),
+                    self.temperature
+                    * self.l2_distance_to_prototypes(self.support_features),
                     self.support_labels,
                 )
                 query_conditional_entropy = entropy(
-                    self.l2_distance_to_prototypes(query_features)
+                    self.temperature * self.l2_distance_to_prototypes(query_features)
                 )
                 loss = support_cross_entropy + query_conditional_entropy
                 optimizer.zero_grad()
@@ -74,7 +79,7 @@ class TransductiveFinetuning(Finetune):
                 optimizer.step()
 
         return self.softmax_if_specified(
-            self.l2_distance_to_prototypes(query_features)
+            self.l2_distance_to_prototypes(query_features), temperature=self.temperature
         ).detach()
 
     @staticmethod
