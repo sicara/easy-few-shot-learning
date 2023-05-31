@@ -62,7 +62,9 @@ class LaplacianShot(BDCSPN):
         # Compute the k-nearest neighbours of each feature vector.
         # Each row is the indices of the k nearest neighbours of the corresponding feature, not including itself
         nearest_neighbours = k_nearest_neighbours(features, self.knn)
-        affinity_matrix = torch.zeros((5, 5))
+        affinity_matrix = torch.zeros((len(features), len(features))).to(
+            nearest_neighbours.device
+        )
         for vector_index, vector_nearest_neighbours in enumerate(nearest_neighbours):
             affinity_matrix[vector_index].index_fill_(0, vector_nearest_neighbours, 1)
 
@@ -82,7 +84,7 @@ class LaplacianShot(BDCSPN):
         Returns:
             upper bound objective
         """
-        pairwise = kernel.dot(soft_assignments)
+        pairwise = kernel.matmul(soft_assignments)
         temp = (initial_scores * soft_assignments) + (
             -self.lambda_regularization * pairwise * soft_assignments
         )
@@ -104,7 +106,7 @@ class LaplacianShot(BDCSPN):
         soft_assignments = (-initial_scores).softmax(dim=1)
         for i in range(self.inference_steps):
             additive = -initial_scores
-            mul_kernel = kernel.dot(soft_assignments)
+            mul_kernel = kernel.matmul(soft_assignments)
             soft_assignments = -self.lambda_regularization * mul_kernel
             additive = additive - soft_assignments
             soft_assignments = additive.softmax(dim=1)

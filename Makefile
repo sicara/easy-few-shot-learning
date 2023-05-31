@@ -41,7 +41,7 @@ NUM_WORKERS=12
 MODEL_CHECKPOINTS_DIR=data/models
 DEVICE=cuda
 
-extract-mini-imagenet-features:
+extract-mini-imagenet-features-with-resnet12:
 	python -m scripts.predict_embeddings \
 		feat_resnet12 \
 		${MODEL_CHECKPOINTS_DIR}/feat_resnet12_mini_imagenet.pth \
@@ -50,7 +50,7 @@ extract-mini-imagenet-features:
 		--num-workers=${NUM_WORKERS} \
 		--batch-size=${BATCH_SIZE}
 
-extract-features-with-backbone-trained-on-tiered-imagenet:
+extract-features-with-resnet12-trained-on-tiered-imagenet:
 	for target_dataset in cub tiered_imagenet fungi; do \
 		python -m scripts.predict_embeddings \
 			feat_resnet12 \
@@ -60,6 +60,10 @@ extract-features-with-backbone-trained-on-tiered-imagenet:
 			--num-workers=${NUM_WORKERS} \
 			--batch-size=${BATCH_SIZE}; \
 	done; \
+
+extract-all-features-with-resnet12:
+	make extract-mini-imagenet-features-with-resnet12 ; \
+	make extract-features-with-resnet12-trained-on-tiered-imagenet ; \
 
 benchmark-mini-imagenet:
 	for n_shot in 1 5; do \

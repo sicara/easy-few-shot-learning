@@ -84,10 +84,10 @@ class TIM(FewShotClassifier):
             optimizer = torch.optim.Adam([self.prototypes], lr=self.fine_tuning_lr)
 
             for _ in range(self.fine_tuning_steps):
-                support_logits = self.temperature * self.l2_distance_to_prototypes(
+                support_logits = self.temperature * self.cosine_distance_to_prototypes(
                     self.support_features
                 )
-                query_logits = self.temperature * self.l2_distance_to_prototypes(
+                query_logits = self.temperature * self.cosine_distance_to_prototypes(
                     query_features
                 )
 
@@ -119,7 +119,8 @@ class TIM(FewShotClassifier):
                 optimizer.step()
 
         return self.softmax_if_specified(
-            self.l2_distance_to_prototypes(query_features), temperature=self.temperature
+            self.cosine_distance_to_prototypes(query_features),
+            temperature=self.temperature,
         ).detach()
 
     @staticmethod

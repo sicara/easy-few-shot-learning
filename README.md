@@ -150,5 +150,48 @@ This project is very open to contributions! You can help in various ways:
 - tackle new features from the roadmap
 - fix typos, improve code quality
 
+## Benchmarks
+
+We used EasyFSL to benchmark a dozen methods. 
+Inference times are computed over 1000 tasks using pre-extracted features. They are only indicative.
+Note that the inference time for fine-tuning methods highly depends on the number of fine-tuning steps.
+
+All methods hyper-parameters are defined in [this JSON file](scripts/backbones_configs.json). 
+They were selected on miniImageNet validation set. 
+The procedure can be reproduced from [this other project](https://github.com/ebennequin/few-shot-open-set).
+We decided to use miniImageNet's hyperparameters for all benchmarks in order to highlight the adaptability of
+the different methods.
+
+### miniImageNet & tieredImageNet
+
+All methods use the same backbone: [a custom ResNet12](easyfsl/modules/feat_resnet12.py) using the trained parameters
+provided by the authors from [FEAT](https://github.com/Sha-Lab/FEAT) 
+(download: [miniImageNet](https://drive.google.com/file/d/1ixqw1l9XVxl3lh1m5VXkctw6JssahGbQ/view),
+[tieredImageNet](https://drive.google.com/file/d/1M93jdOjAn8IihICPKJg8Mb4B-eYDSZfE/view)).
+
+| Method                                                                    | Ind / Trans  | *mini*Imagenet<br/>1-shot | *mini*Imagenet<br/>5-shot | *tiered*Imagenet<br/>1-shot | *tiered*Imagenet<br/>5-shot | Time    |
+|---------------------------------------------------------------------------|--------------|---------------------------|---------------------------|-----------------------------|---------------------------|---------|
+| **[ProtoNet](easyfsl/methods/prototypical_networks.py)**                  | Inductive    | 61.5                      | 79.3                      | -                           | -                         | 10s     |
+| **[SimpleShot](easyfsl/methods/simple_shot.py)**                          | Inductive    | 65.5                      | 80.3                      | -                           | -                         | 9s      |
+| **[MatchingNet](easyfsl/methods/matching_networks.py)**                   | Inductive    | -                         | -                         | -                           | -                         | -       |
+| **[RelationNet](easyfsl/methods/relation_networks.py)**                   | Inductive    | -                         | -                         | -                           | -                         | -       |
+| **[Finetune](easyfsl/methods/finetune.py)**                               | Inductive    | 63.4                      | 80.38                     | -                           | -                         | 3mn03s  |
+| **[FEAT](easyfsl/methods/feat.py)**                                       | Inductive    | 64.7                      | 80.13                     | -                           | -                         | 3s      |
+| **[BD-CSPN](easyfsl/methods/bd_cspn.py)**                                 | Transductive | 71.7                      | 82.17                     | -                           | -                         | 10s     |
+| **[LaplacianShot](easyfsl/methods/laplacian_shot.py)**                    | Transductive | 69.6                      | 81.9                      | -                           | -                         | 12s     |
+| **[PT-MAP](easyfsl/methods/pt_map.py)**                                   | Transductive | -                         | -                         | -                           | -                         | 22mn50s |
+| **[TIM](easyfsl/methods/tim.py)**                                         | Transductive | 64.0                      | 80.4                      | -                           | -                         | 2mn48s  |
+| **[Transductive Finetuning](easyfsl/methods/transductive_finetuning.py)** | Transductive | -                         | -                         | -                           | -                         | -       |
+
+To reproduce:
+
+1. Download the [*mini*ImageNet](https://drive.google.com/file/d/1ixqw1l9XVxl3lh1m5VXkctw6JssahGbQ/view) 
+   and [tieredImageNet](https://drive.google.com/file/d/1M93jdOjAn8IihICPKJg8Mb4B-eYDSZfE/view) weights for ResNet12 
+   and save them under `data/models/feat_resnet12_mini_imagenet.pth` (resp. `tiered`).
+2. Extract all embeddings from the test sets of all datasets with `make extract-all-features-with-resnet12`.
+3. Run the evaluation script with `make benchmark-mini-imagenet`.
+
+
+
 
 
