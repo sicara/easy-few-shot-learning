@@ -42,35 +42,31 @@ MODEL_CHECKPOINTS_DIR=data/models
 DEVICE=cuda
 
 extract-mini-imagenet-features:
-	for checkpoint in feat_resnet12_mini_imagenet_1_shot feat_resnet12_mini_imagenet_pretrained; do \
-		python -m scripts.predict_embeddings \
-			feat_resnet12 \
-			${MODEL_CHECKPOINTS_DIR}/$${checkpoint}.pth \
-			mini_imagenet \
-						--device=${DEVICE} \
-			--num-workers=${NUM_WORKERS} \
-			--batch-size=${BATCH_SIZE}; \
-	done
+	python -m scripts.predict_embeddings \
+		feat_resnet12 \
+		${MODEL_CHECKPOINTS_DIR}/feat_resnet12_mini_imagenet.pth \
+		mini_imagenet \
+		--device=${DEVICE} \
+		--num-workers=${NUM_WORKERS} \
+		--batch-size=${BATCH_SIZE}
 
 extract-features-with-backbone-trained-on-tiered-imagenet:
-	for checkpoint in feat_resnet12_tiered_imagenet_1_shot feat_resnet12_tiered_imagenet_pretrained; do \
-		for target_dataset in cub tiered_imagenet fungi; do \
-			python -m scripts.predict_embeddings \
-				feat_resnet12 \
-				${MODEL_CHECKPOINTS_DIR}/$${checkpoint}.pth \
-				$${target_dataset} \
-							--device=${DEVICE} \
-				--num-workers=${NUM_WORKERS} \
-				--batch-size=${BATCH_SIZE}; \
-		done; \
-	done
+	for target_dataset in cub tiered_imagenet fungi; do \
+		python -m scripts.predict_embeddings \
+			feat_resnet12 \
+			${MODEL_CHECKPOINTS_DIR}/feat_resnet12_tiered_imagenet.pth \
+			$${target_dataset} \
+			--device=${DEVICE} \
+			--num-workers=${NUM_WORKERS} \
+			--batch-size=${BATCH_SIZE}; \
+	done; \
 
 benchmark-mini-imagenet:
 	for n_shot in 1 5; do \
 		for method in bd_cspn prototypical_networks simple_shot ; do \
 			python -m scripts.benchmark_methods \
 				$${method} \
-				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet_pretrained.parquet.gzip \
+				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
 				--n-shot=$${n_shot} \
 				--device=${DEVICE} \
 				--num-workers=${NUM_WORKERS}; \
@@ -78,7 +74,7 @@ benchmark-mini-imagenet:
 		for method in tim pt_map; do \
 			python -m scripts.benchmark_methods \
 				$${method} \
-				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet_pretrained.parquet.gzip \
+				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
 				--config="default" \
 				--n-shot=$${n_shot} \
 				--device=${DEVICE} \
@@ -87,7 +83,7 @@ benchmark-mini-imagenet:
 		for method in finetune laplacian_shot; do \
 			python -m scripts.benchmark_methods \
 				$${method} \
-				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet_pretrained.parquet.gzip \
+				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
 				--config=$${n_shot}_shot \
 				--n-shot=$${n_shot} \
 				--device=${DEVICE} \
@@ -95,7 +91,7 @@ benchmark-mini-imagenet:
 		done; \
 		python -m scripts.benchmark_methods \
 			feat \
-			data/features/mini_imagenet/test/feat_resnet12_mini_imagenet_1_shot.parquet.gzip \
+			data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
 			--config="resnet12_mini_imagenet" \
 			--n-shot=$${n_shot} \
 			--device=${DEVICE} \
