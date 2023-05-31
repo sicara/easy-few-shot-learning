@@ -1,6 +1,6 @@
 {
   "feat_resnet12": {
-    "transforms": {
+    "transform": {
       "image_size": 84,
       "crop_ratio": 1.15,
       "mean": [0.47214064400000005, 0.45330829125490196, 0.4099612805098039],
