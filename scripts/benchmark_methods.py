@@ -61,7 +61,7 @@ def main(
     Evaluate a method on a dataset of features pre-extracted by a backbone.
     Args:
         method: Few-Shot Classifier to use.
-        features: path to a Parquet file containing the features.
+        features: path to a Parquet or Pickle file containing the features.
         config: existing configuration for the method available in scripts/methods_configs.json
         n_way: number of classes per task.
         n_shot: number of support example per class.
@@ -111,6 +111,9 @@ def set_random_seed(seed: int):
 
 
 def get_dataset(features_path: Path) -> FeaturesDataset:
+    if features_path.suffix == ".pickle":
+        embeddings_dict = pd.read_pickle(features_path)
+        return FeaturesDataset.from_dict(embeddings_dict)
     embeddings_df = pd.read_parquet(features_path)
     return FeaturesDataset.from_dataframe(embeddings_df)
 

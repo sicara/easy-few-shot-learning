@@ -118,7 +118,7 @@ def get_dataset_transform(backbone_name: str) -> transforms.Compose:
     return transforms.Compose(
         [
             transforms.Resize(
-                int(transform_config["image_size"] / transform_config["crop_ratio"]),
+                int(transform_config["image_size"] * transform_config["crop_ratio"]),
                 interpolation=INTERPOLATIONS[transform_config["interpolation"]],
             ),
             transforms.CenterCrop(transform_config["image_size"]),
