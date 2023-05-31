@@ -39,7 +39,7 @@ download-cub:
 BATCH_SIZE=1024
 NUM_WORKERS=12
 MODEL_CHECKPOINTS_DIR=data/models
-DEVICE=cuda:1
+DEVICE=cuda
 
 extract-mini-imagenet-features:
 	for checkpoint in feat_resnet12_mini_imagenet_1_shot feat_resnet12_mini_imagenet_pretrained; do \

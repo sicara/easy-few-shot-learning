@@ -8,6 +8,7 @@ from loguru import logger
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from torchvision.transforms import InterpolationMode
 
 from easyfsl.datasets import (
     CUB,
@@ -23,6 +24,10 @@ BACKBONES_DICT = {
     "feat_resnet12": feat_resnet12_from_checkpoint,
 }
 BACKBONES_CONFIGS_JSON = Path("scripts/backbones_configs.json")
+INTERPOLATIONS = {
+    "bilinear": InterpolationMode.BILINEAR,
+    "bicubic": InterpolationMode.BICUBIC,
+}
 
 DATASETS_DICT = {
     "cub": CUB,
@@ -114,7 +119,7 @@ def get_dataset_transform(backbone_name: str) -> transforms.Compose:
         [
             transforms.Resize(
                 int(transform_config["image_size"] / transform_config["crop_ratio"]),
-                interpolation=transform_config["interpolation"],
+                interpolation=INTERPOLATIONS[transform_config["interpolation"]],
             ),
             transforms.CenterCrop(transform_config["image_size"]),
             transforms.ToTensor(),
