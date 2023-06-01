@@ -31,9 +31,9 @@ INTERPOLATIONS = {
 
 DATASETS_DICT = {
     "cub": CUB,
-    "tiered_imagenet": TieredImageNet,
-    "mini_imagenet": MiniImageNet,
     "fungi": DanishFungi,
+    "mini_imagenet": MiniImageNet,
+    "tiered_imagenet": TieredImageNet,
 }
 DEFAULT_FUNGI_PATH = Path("data/fungi/images")
 DEFAULT_MINI_IMAGENET_PATH = Path("data/mini_imagenet/images")
@@ -97,6 +97,15 @@ def build_backbone(
     checkpoint: Path,
     device: str,
 ) -> nn.Module:
+    """
+    Build a backbone from a checkpoint.
+    Args:
+        backbone: name of the backbone. Must be a key of BACKBONES_DICT.
+        checkpoint: path to the checkpoint
+        device: device on which to build the backbone
+    Returns:
+        The backbone, loaded from the checkpoint, and in eval mode.
+    """
     if backbone not in BACKBONES_DICT:
         raise ValueError(
             "Unknown backbone name. " f"Valid names are {BACKBONES_DICT.keys()}"
@@ -108,6 +117,14 @@ def build_backbone(
 
 
 def get_dataset_transform(backbone_name: str) -> transforms.Compose:
+    """
+    Get the transform to apply to the images before feeding them to the backbone.
+    Use the config defined for the specified backbone at scripts/backbones_configs.json.
+    Args:
+        backbone_name: must be a key in scripts/backbones_configs.json.
+    Returns:
+        A callable to apply to the images, with a resize, a center-crop, a conversion to tensor, and a normalization.
+    """
     with open(BACKBONES_CONFIGS_JSON, "r", encoding="utf-8") as file:
         all_configs = json.load(file)
     if backbone_name not in all_configs:

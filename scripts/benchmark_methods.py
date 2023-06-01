@@ -58,7 +58,7 @@ def main(
     random_seed: int = 0,
 ) -> None:
     """
-    Evaluate a method on a dataset of features pre-extracted by a backbone.
+    Evaluate a method on a dataset of features pre-extracted by a backbone. Print the average accuracy.
     Args:
         method: Few-Shot Classifier to use.
         features: path to a Parquet or Pickle file containing the features.
@@ -111,6 +111,14 @@ def set_random_seed(seed: int):
 
 
 def get_dataset(features_path: Path) -> FeaturesDataset:
+    """
+    Load a FeaturesDataset from a path to either a pickle file containing a dict mapping labels to all their embeddings,
+    or a parquet file containing a dataframe with the columns "embedding" and "label".
+    Args:
+        features_path: path to a pickle or parquet file containing the features.
+    Returns:
+        a FeaturesDataset
+    """
     if features_path.suffix == ".pickle":
         embeddings_dict = pd.read_pickle(features_path)
         return FeaturesDataset.from_dict(embeddings_dict)
