@@ -61,6 +61,11 @@ instances in the shape of few-shot classification tasks. No sweat! In EasyFSL yo
 - [FeaturesDataset](easyfsl/datasets/features_dataset.py): a dataset to handle pre-extracted features
 - [SupportSetFolder](easyfsl/datasets/support_set_folder.py): a dataset to handle support sets stored in a directory
 
+**Scripts to reproduce our benchmarks:**
+
+- `scripts/predict_embeddings.py` to extract all embeddings from a dataset with a given pre-trained backbone
+- `scripts/benchmark_methods.py` to evaluate a method on a test dataset using pre-extracted embeddings.
+
 **And also:** [some utilities](easyfsl/utils.py) that I felt I often used in my research, so I'm sharing with you.
 
 ### Datasets to test your model

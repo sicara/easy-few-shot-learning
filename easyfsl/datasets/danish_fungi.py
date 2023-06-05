@@ -20,7 +20,7 @@ class DanishFungi(FewShotDataset):
         image_size: int = 84,
         transform: Optional[Callable] = None,
         training: bool = False,
-        use_small_dataset: bool = True,
+        image_file_extension: str = ".JPG",
     ):
         """
         Args:
@@ -32,12 +32,12 @@ class DanishFungi(FewShotDataset):
                 These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
                 cropping and a random horizontal flip. Only used if transforms = None.
-            use_small_dataset: set to True if using the version of DanishFungi with 300px images
-                We need this distinction because the big dataset has .JPG extensions while the
-                small one has .jpg extensions...
+            image_file_extension: the metadata csv file and the complete dataset user ".JPG" image file extension,
+                but the version of the dataset with 300px images uses ".jpg" extensions. If using the small dataset,
+                set this to ".jpg".
         """
         self.root = Path(root)
-        self.use_small_dataset = use_small_dataset
+        self.image_file_extension = image_file_extension
         self.data = self.load_specs(Path(specs_file))
 
         self.class_names = list(self.data.drop_duplicates("label").scientific_name)
@@ -59,8 +59,10 @@ class DanishFungi(FewShotDataset):
         class_names = list(data.scientific_name.unique())
         label_mapping = {name: class_names.index(name) for name in class_names}
 
-        if self.use_small_dataset:
-            data.image_path = data.image_path.str.replace(".JPG", ".jpg")
+        if self.image_file_extension != ".JPG":
+            data.image_path = data.image_path.str.replace(
+                ".JPG", self.image_file_extension
+            )
 
         return data.assign(label=lambda df: df.scientific_name.map(label_mapping))
 
