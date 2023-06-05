@@ -72,7 +72,7 @@ def predict_embeddings(
         ):
             if device is not None:
                 images = images.to(device)
-            all_embeddings.append(model(images).cpu())
+            all_embeddings.append(model(images).detach().cpu())
             if isinstance(class_names, torch.Tensor):
                 all_class_names += class_names.tolist()
             else:
@@ -97,13 +97,11 @@ def evaluate_on_one_task(
     predictions.
     """
     model.process_support_set(support_images, support_labels)
-    return (
-        torch.max(
-            model(query_images).detach().data,
-            1,
-        )[1]
-        == query_labels
-    ).sum().item(), len(query_labels)
+    predictions = model(query_images).detach().data
+    number_of_correct_predictions = (
+        (torch.max(predictions, 1)[1] == query_labels).sum().item()
+    )
+    return number_of_correct_predictions, len(query_labels)
 
 
 def evaluate(
@@ -133,6 +131,7 @@ def evaluate(
     # no_grad() tells torch not to keep in memory the whole computational graph
     model.eval()
     with torch.no_grad():
+        # We use a tqdm context to show a progress bar in the logs
         with tqdm(
             enumerate(data_loader),
             total=len(data_loader),

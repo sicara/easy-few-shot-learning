@@ -21,14 +21,17 @@ class Finetune(FewShotClassifier):
     def __init__(
         self,
         *args,
-        fine_tuning_steps: int = 10,
-        fine_tuning_lr: float = 1e-3,
+        fine_tuning_steps: int = 200,
+        fine_tuning_lr: float = 1e-4,
+        temperature: float = 1.0,
         **kwargs,
     ):
         """
         Args:
             fine_tuning_steps: number of fine-tuning steps
             fine_tuning_lr: learning rate for fine-tuning
+            temperature: temperature applied to the logits before computing
+                softmax or cross-entropy. Higher temperature means softer predictions.
         """
         super().__init__(*args, **kwargs)
 
@@ -38,6 +41,7 @@ class Finetune(FewShotClassifier):
 
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
+        self.temperature = temperature
 
     def process_support_set(
         self,
@@ -67,13 +71,16 @@ class Finetune(FewShotClassifier):
                 support_logits = self.cosine_distance_to_prototypes(
                     self.support_features
                 )
-                loss = nn.functional.cross_entropy(support_logits, self.support_labels)
+                loss = nn.functional.cross_entropy(
+                    self.temperature * support_logits, self.support_labels
+                )
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
         return self.softmax_if_specified(
-            self.cosine_distance_to_prototypes(query_features)
+            self.cosine_distance_to_prototypes(query_features),
+            temperature=self.temperature,
         ).detach()
 
     @staticmethod

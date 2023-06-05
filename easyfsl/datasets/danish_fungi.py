@@ -20,6 +20,7 @@ class DanishFungi(FewShotDataset):
         image_size: int = 84,
         transform: Optional[Callable] = None,
         training: bool = False,
+        image_file_extension: str = ".JPG",
     ):
         """
         Args:
@@ -31,8 +32,12 @@ class DanishFungi(FewShotDataset):
                 These default transformations depend on the "training" argument.
             training: preprocessing is slightly different for a training set, adding a random
                 cropping and a random horizontal flip. Only used if transforms = None.
+            image_file_extension: the metadata csv file and the complete dataset user ".JPG" image file extension,
+                but the version of the dataset with 300px images uses ".jpg" extensions. If using the small dataset,
+                set this to ".jpg".
         """
         self.root = Path(root)
+        self.image_file_extension = image_file_extension
         self.data = self.load_specs(Path(specs_file))
 
         self.class_names = list(self.data.drop_duplicates("label").scientific_name)
@@ -41,8 +46,7 @@ class DanishFungi(FewShotDataset):
             transform if transform else default_transform(image_size, training=training)
         )
 
-    @staticmethod
-    def load_specs(specs_file: Path) -> DataFrame:
+    def load_specs(self, specs_file: Path) -> DataFrame:
         """
         Load specs from a CSV file.
         Args:
@@ -55,6 +59,11 @@ class DanishFungi(FewShotDataset):
         class_names = list(data.scientific_name.unique())
         label_mapping = {name: class_names.index(name) for name in class_names}
 
+        if self.image_file_extension != ".JPG":
+            data.image_path = data.image_path.str.replace(
+                ".JPG", self.image_file_extension
+            )
+
         return data.assign(label=lambda df: df.scientific_name.map(label_mapping))
 
     def __getitem__(self, item: int) -> Tuple[Tensor, int]:
@@ -64,7 +73,7 @@ class DanishFungi(FewShotDataset):
             item: sample's integer id
         Returns:
             data sample in the form of a tuple (image, label), where label is an integer.
-            The type of the image object depends of the output type of self.transform.
+            The type of the image object depends on the output type of self.transform.
         """
         img = self.transform(
             Image.open(self.root / self.data.image_path[item]).convert("RGB")

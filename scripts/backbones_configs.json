@@ -1,0 +1,11 @@
+{
+  "feat_resnet12": {
+    "transform": {
+      "image_size": 84,
+      "crop_ratio": 1.15,
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225],
+      "interpolation": "bilinear"
+    }
+  }
+}

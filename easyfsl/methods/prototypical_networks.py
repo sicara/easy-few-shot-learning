@@ -3,7 +3,6 @@ See original implementation (quite far from this one)
 at https://github.com/jakesnell/prototypical-networks
 """
 
-import torch
 from torch import Tensor
 
 from .few_shot_classifier import FewShotClassifier
@@ -49,10 +48,7 @@ class PrototypicalNetworks(FewShotClassifier):
         self._raise_error_if_features_are_multi_dimensional(query_features)
 
         # Compute the euclidean distance from queries to prototypes
-        dists = torch.cdist(query_features, self.prototypes)
-
-        # Use it to compute classification scores
-        scores = -dists
+        scores = self.l2_distance_to_prototypes(query_features)
 
         return self.softmax_if_specified(scores)
 
