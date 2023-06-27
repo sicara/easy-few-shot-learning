@@ -132,6 +132,7 @@ dmypy.json
 .pyre/
 
 # data
+data/features
 data/**/images
 data/omniglot-py
 *.tgz
