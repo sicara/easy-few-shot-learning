@@ -30,13 +30,6 @@ class PTMAP(FewShotClassifier):
         self.fine_tuning_lr = fine_tuning_lr
         self.lambda_regularization = lambda_regularization
 
-    def process_support_set(
-        self,
-        support_images: Tensor,
-        support_labels: Tensor,
-    ):
-        self.compute_prototypes_and_store_support_set(support_images, support_labels)
-
     def forward(
         self,
         query_images: Tensor,
@@ -44,7 +37,7 @@ class PTMAP(FewShotClassifier):
         """
         Predict query soft assignments following Algorithm 1 of the paper.
         """
-        query_features = self.backbone(query_images)
+        query_features = self.compute_features(query_images)
 
         support_assignments = nn.functional.one_hot(
             self.support_labels, len(self.prototypes)

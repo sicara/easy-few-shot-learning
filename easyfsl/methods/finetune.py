@@ -43,16 +43,6 @@ class Finetune(FewShotClassifier):
         self.fine_tuning_lr = fine_tuning_lr
         self.temperature = temperature
 
-    def process_support_set(
-        self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
-    ):
-        """
-        Overrides process_support_set of FewShotClassifier.
-        """
-        self.compute_prototypes_and_store_support_set(support_images, support_labels)
-
     def forward(
         self,
         query_images: Tensor,
@@ -62,7 +52,7 @@ class Finetune(FewShotClassifier):
         Fine-tune prototypes based on support classification error.
         Then classify w.r.t. to cosine distance to prototypes.
         """
-        query_features = self.backbone.forward(query_images)
+        query_features = self.compute_features(query_images)
 
         with torch.enable_grad():
             self.prototypes.requires_grad_()
