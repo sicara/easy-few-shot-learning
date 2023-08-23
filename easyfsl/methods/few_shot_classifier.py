@@ -16,7 +16,7 @@ class FewShotClassifier(nn.Module):
         self,
         backbone: Optional[nn.Module] = None,
         use_softmax: bool = False,
-        feature_centering: Tensor = None,
+        feature_centering: Optional[Tensor] = None,
     ):
         """
         Initialize the Few-Shot Classifier
