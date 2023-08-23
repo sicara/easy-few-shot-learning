@@ -6,7 +6,12 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
 from easyfsl.methods.utils import compute_prototypes, entropy
-from easyfsl.utils import plot_images, predict_embeddings, sliding_average
+from easyfsl.utils import (
+    plot_images,
+    predict_embeddings,
+    sliding_average,
+    compute_average_features_from_images,
+)
 
 TO_PIL_IMAGE = transforms.ToPILImage()
 
@@ -234,3 +239,82 @@ class TestPredictEmbeddings:
     ):
         output_dataframe = predict_embeddings(dataloader, nn.Identity())
         pd.testing.assert_frame_equal(output_dataframe, expected_dataframe)
+
+
+class TestComputeAverageFeaturesFromImages:
+    cases_grid = [
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                        ],
+                        dtype=torch.float64,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=3,
+            ),
+            torch.tensor([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=torch.float64),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+                            [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                            [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                        ],
+                        dtype=torch.float64,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=2,
+            ),
+            torch.tensor([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=torch.float64),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [0.0, 0.0, 0.0],
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                        ],
+                        dtype=torch.float32,
+                    ),
+                    ["class_1", "class_2", "class_2"],
+                ),
+                batch_size=2,
+            ),
+            torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32),
+        ),
+        (
+            DataLoader(
+                DummyDataset(
+                    torch.tensor(
+                        [
+                            [0.0, 0.0, 0.0],
+                            [1.0, 1.0, 1.0],
+                            [2.0, 2.0, 2.0],
+                        ],
+                        dtype=torch.float32,
+                    ),
+                    [1, 2, 2],
+                ),
+                batch_size=2,
+            ),
+            torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32),
+        ),
+    ]
+
+    @staticmethod
+    @pytest.mark.parametrize("dataloader, expected_average", cases_grid)
+    def test_returns_expected_average(dataloader, expected_average):
+        output_tensor = compute_average_features_from_images(dataloader, nn.Identity())
+        torch.testing.assert_allclose(output_tensor, expected_average)

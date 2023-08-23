@@ -161,25 +161,22 @@ def evaluate(
 
     return correct_predictions / total_predictions
 
-def compute_feature_mean(
-    dataloader: DataLoader, 
-    model: nn.Module, 
-    device: str = "cuda"):
+
+def compute_average_features_from_images(
+    dataloader: DataLoader,
+    model: nn.Module,
+    device: Optional[str] = None,
+):
     """
-    Compute the mean of the support features.
+    Compute the average features vector from all images in a DataLoader.
     Assumes the images are always first element of the batch.
     Returns:
         Tensor: shape (1, feature_dimension)
     """
-    model.to(device)
-    model.eval()
-    all_embeddings = []
-    with torch.no_grad():
-        for batch in tqdm(
-            dataloader, unit="batch", desc="Compute feature mean"
-        ):
-            images = batch[0].to(device)
-            all_embeddings.append(model(images).detach().cpu())
-
-    concatenated_embeddings = torch.cat(all_embeddings)
-    return concatenated_embeddings.mean(dim=0).to(device)
+    all_embeddings = torch.stack(
+        predict_embeddings(dataloader, model, device)["embedding"].to_list()
+    )
+    average_features = all_embeddings.mean(dim=0)
+    if device is not None:
+        average_features = average_features.to(device)
+    return average_features
