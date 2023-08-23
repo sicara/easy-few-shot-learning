@@ -7,10 +7,10 @@ from torchvision import transforms
 
 from easyfsl.methods.utils import compute_prototypes, entropy
 from easyfsl.utils import (
+    compute_average_features_from_images,
     plot_images,
     predict_embeddings,
     sliding_average,
-    compute_average_features_from_images,
 )
 
 TO_PIL_IMAGE = transforms.ToPILImage()

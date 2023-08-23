@@ -17,6 +17,7 @@ class FewShotClassifier(nn.Module):
         backbone: Optional[nn.Module] = None,
         use_softmax: bool = False,
         feature_centering: Optional[Tensor] = None,
+        feature_normalization: Optional[float] = None,
     ):
         """
         Initialize the Few-Shot Classifier
@@ -25,6 +26,11 @@ class FewShotClassifier(nn.Module):
                 appropriate shape (depending on the method).
                 If None is passed, the backbone will be initialized as nn.Identity().
             use_softmax: whether to return predictions as soft probabilities
+            feature_centering: a features vector on which to center all computed features.
+                If None is passed, no centering is performed.
+            feature_normalization: a value by which to normalize all computed features after centering.
+                It is used as the p argument in torch.nn.functional.normalize().
+                If None is passed, no normalization is performed.
         """
         super().__init__()
 
@@ -38,6 +44,7 @@ class FewShotClassifier(nn.Module):
         self.feature_centering = (
             feature_centering if feature_centering is not None else torch.tensor(0)
         )
+        self.feature_normalization = feature_normalization
 
     @abstractmethod
     def forward(
@@ -77,14 +84,19 @@ class FewShotClassifier(nn.Module):
 
     def compute_features(self, images: Tensor) -> Tensor:
         """
-        Compute features from images and perform centering.
+        Compute features from images and perform centering and normalization.
         Args:
             images: images of shape (n_images, **image_shape)
         Returns:
             features of shape (n_images, feature_dimension)
         """
         original_features = self.backbone(images)
-        return original_features - self.feature_centering
+        centered_features = original_features - self.feature_centering
+        if self.feature_normalization is not None:
+            return nn.functional.normalize(
+                centered_features, p=self.feature_normalization, dim=1
+            )
+        return centered_features
 
     def softmax_if_specified(self, output: Tensor, temperature: float = 1.0) -> Tensor:
         """
