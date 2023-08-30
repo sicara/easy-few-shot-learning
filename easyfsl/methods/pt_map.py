@@ -1,6 +1,8 @@
 import torch
 from torch import Tensor, nn
 
+from easyfsl.methods.utils import power_transform
+
 from .few_shot_classifier import FewShotClassifier
 
 MAXIMUM_SINKHORN_ITERATIONS = 1000
@@ -23,12 +25,14 @@ class PTMAP(FewShotClassifier):
         fine_tuning_steps: int = 10,
         fine_tuning_lr: float = 0.2,
         lambda_regularization: float = 10.0,
+        power_factor: float = 0.5,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.fine_tuning_steps = fine_tuning_steps
         self.fine_tuning_lr = fine_tuning_lr
         self.lambda_regularization = lambda_regularization
+        self.power_factor = power_factor
 
     def forward(
         self,
@@ -42,9 +46,9 @@ class PTMAP(FewShotClassifier):
         support_assignments = nn.functional.one_hot(
             self.support_labels, len(self.prototypes)
         )
-        all_features = torch.cat([self.support_features, query_features], 0)
         for _ in range(self.fine_tuning_steps):
             query_soft_assignments = self.compute_soft_assignments(query_features)
+            all_features = torch.cat([self.support_features, query_features], 0)
             all_assignments = torch.cat(
                 [support_assignments, query_soft_assignments], dim=0
             )
@@ -52,6 +56,17 @@ class PTMAP(FewShotClassifier):
             self.update_prototypes(all_features, all_assignments)
 
         return self.compute_soft_assignments(query_features)
+
+    def compute_features(self, images: Tensor) -> Tensor:
+        """
+        Apply power transform on features following Equation (1) in the paper.
+        Args:
+            images: images of shape (n_images, **image_shape)
+        Returns:
+            features of shape (n_images, feature_dimension) with power-transform.
+        """
+        features = super().compute_features(images)
+        return power_transform(features, self.power_factor)
 
     def compute_soft_assignments(self, query_features: Tensor) -> Tensor:
         """
