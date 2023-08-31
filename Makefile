@@ -138,3 +138,14 @@ benchmark-tiered-imagenet:
 			--device=${DEVICE} \
 			--num-workers=${NUM_WORKERS}; \
 	done
+
+# Hyperparameter search
+extract-mini-imagenet-val-features-with-resnet12:
+	python -m scripts.predict_embeddings \
+		feat_resnet12 \
+		${MODEL_CHECKPOINTS_DIR}/feat_resnet12_mini_imagenet.pth \
+		mini_imagenet \
+		--split=val \
+		--device=${DEVICE} \
+		--num-workers=${NUM_WORKERS} \
+		--batch-size=${BATCH_SIZE}
