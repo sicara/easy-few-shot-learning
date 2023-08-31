@@ -149,3 +149,13 @@ extract-mini-imagenet-val-features-with-resnet12:
 		--device=${DEVICE} \
 		--num-workers=${NUM_WORKERS} \
 		--batch-size=${BATCH_SIZE}
+
+hyperparameter-search:
+	for method in tim finetune pt_map laplacian_shot transductive_finetuning; do \
+		python -m scripts.hyperparameter_search \
+			$${method} \
+			data/features/mini_imagenet/val/feat_resnet12_mini_imagenet.parquet.gzip \
+			--n-shot=5 \
+			--device=${DEVICE} \
+			--num-workers=${NUM_WORKERS}; \
+	done;
