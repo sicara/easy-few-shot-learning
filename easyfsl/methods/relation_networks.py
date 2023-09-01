@@ -74,7 +74,7 @@ class RelationNetworks(FewShotClassifier):
         Extract feature maps from the support set and store class prototypes.
         """
 
-        support_features = self.backbone(support_images)
+        support_features = self.compute_features(support_images)
         self._validate_features_shape(support_features)
         self.prototypes = compute_prototypes(support_features, support_labels)
 
@@ -86,7 +86,7 @@ class RelationNetworks(FewShotClassifier):
         score. Finally, the classification vector of the query is its relation score to each class
         prototype.
         """
-        query_features = self.backbone(query_images)
+        query_features = self.compute_features(query_images)
         self._validate_features_shape(query_features)
 
         # For each pair (query, prototype), we compute the concatenation of their feature maps

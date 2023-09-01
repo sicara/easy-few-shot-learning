@@ -54,16 +54,6 @@ class TIM(FewShotClassifier):
         self.conditional_entropy_weight = conditional_entropy_weight
         self.temperature = temperature
 
-    def process_support_set(
-        self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
-    ):
-        """
-        Overrides process_support_set of FewShotClassifier.
-        """
-        self.compute_prototypes_and_store_support_set(support_images, support_labels)
-
     def forward(
         self,
         query_images: Tensor,
@@ -74,7 +64,7 @@ class TIM(FewShotClassifier):
         query features and their label predictions.
         Then classify w.r.t. to euclidean distance to prototypes.
         """
-        query_features = self.backbone.forward(query_images)
+        query_features = self.compute_features(query_images)
 
         num_classes = self.support_labels.unique().size(0)
         support_labels_one_hot = nn.functional.one_hot(self.support_labels, num_classes)

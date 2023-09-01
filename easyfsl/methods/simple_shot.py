@@ -1,9 +1,9 @@
 from torch import Tensor
 
-from .prototypical_networks import PrototypicalNetworks
+from .few_shot_classifier import FewShotClassifier
 
 
-class SimpleShot(PrototypicalNetworks):
+class SimpleShot(FewShotClassifier):
     """
     Yan Wang, Wei-Lun Chao, Kilian Q. Weinberger, and Laurens van der Maaten.
     "SimpleShot: Revisiting Nearest-Neighbor Classification for Few-Shot Learning" (2019)
@@ -23,9 +23,13 @@ class SimpleShot(PrototypicalNetworks):
         Returns:
             a prediction of classification scores for query images of shape (n_query, n_classes)
         """
-        query_features = self.backbone(query_images)
+        query_features = self.compute_features(query_images)
         self._raise_error_if_features_are_multi_dimensional(query_features)
 
         scores = self.cosine_distance_to_prototypes(query_features)
 
         return self.softmax_if_specified(scores)
+
+    @staticmethod
+    def is_transductive() -> bool:
+        return False

@@ -15,16 +15,6 @@ class BDCSPN(FewShotClassifier):
     This is a transductive method.
     """
 
-    def process_support_set(
-        self,
-        support_images: Tensor,
-        support_labels: Tensor,
-    ):
-        """
-        Overrides process_support_set of FewShotClassifier.
-        """
-        self.compute_prototypes_and_store_support_set(support_images, support_labels)
-
     def rectify_prototypes(self, query_features: Tensor):
         """
         Updates prototypes with label propagation and feature shifting.
@@ -72,7 +62,7 @@ class BDCSPN(FewShotClassifier):
         Update prototypes using query images, then classify query images based
         on their cosine distance to updated prototypes.
         """
-        query_features = self.backbone.forward(query_images)
+        query_features = self.compute_features(query_images)
 
         self.rectify_prototypes(
             query_features=query_features,

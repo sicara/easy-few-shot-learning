@@ -35,7 +35,9 @@
     "default": {
       "fine_tuning_steps": 10,
       "fine_tuning_lr": 0.2,
-      "lambda_regularization": 10
+      "lambda_regularization": 10,
+      "power_factor": 0.5,
+      "feature_normalization": 2
     }
   },
   "laplacian_shot": {
