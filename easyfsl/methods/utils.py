@@ -54,6 +54,19 @@ def k_nearest_neighbours(features: Tensor, k: int, p_norm: int = 2) -> Tensor:
     return distances.topk(k, largest=False).indices[:, 1:]
 
 
+def power_transform(features: Tensor, power_factor: float) -> Tensor:
+    """
+    Apply power transform to features.
+    Args:
+        features: input features of shape (n_features, feature_dimension)
+        power_factor: power to apply to features
+
+    Returns:
+        Tensor: shape (n_features, feature_dimension), power transformed features.
+    """
+    return (features.relu() + 1e-6).pow(power_factor)
+
+
 def strip_prefix(state_dict: OrderedDict, prefix: str):
     """
     Strip a prefix from the keys of a state_dict. Can be used to address compatibility issues from

@@ -36,7 +36,7 @@ class LaplacianShot(BDCSPN):
         self,
         query_images: Tensor,
     ) -> Tensor:
-        query_features = self.backbone(query_images)
+        query_features = self.compute_features(query_images)
         self.rectify_prototypes(query_features=query_features)
 
         features_to_prototypes_distances = (

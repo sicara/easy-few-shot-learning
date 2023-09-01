@@ -84,7 +84,7 @@ class MatchingNetworks(FewShotClassifier):
             support_images: images of the support set of shape (n_support, **image_shape)
             support_labels: labels of support set images of shape (n_support, )
         """
-        support_features = self.backbone(support_images)
+        support_features = self.compute_features(support_images)
         self._validate_features_shape(support_features)
         self.contextualized_support_features = self.encode_support_features(
             support_features
@@ -105,11 +105,9 @@ class MatchingNetworks(FewShotClassifier):
         """
 
         # Refine query features using the context of the whole support set
-        query_features = self.backbone(query_images)
+        query_features = self.compute_features(query_images)
         self._validate_features_shape(query_features)
-        contextualized_query_features = self.encode_query_features(
-            self.backbone(query_images)
-        )
+        contextualized_query_features = self.encode_query_features(query_features)
 
         # Compute the matrix of cosine similarities between all query images
         # and normalized support images

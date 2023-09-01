@@ -59,7 +59,7 @@ class TransductiveFinetuning(Finetune):
         Fine-tune model's parameters based on support classification error and
         query classification entropy.
         """
-        query_features = self.backbone.forward(query_images)
+        query_features = self.compute_features(query_images)
 
         with torch.enable_grad():
             self.prototypes.requires_grad_()

@@ -167,7 +167,7 @@ class TestFinetuningMethodsCanProcessSupportSetFolder:
         ),
         list(
             product(
-                ALL_FINETUNING_METHODS,
+                ALL_FINETUNING_METHODS[:3],
                 [
                     (
                         "easyfsl/tests/datasets/resources/unbalanced_support_set",
@@ -176,6 +176,21 @@ class TestFinetuningMethodsCanProcessSupportSetFolder:
                     (
                         "easyfsl/tests/datasets/resources/balanced_support_set",
                         [-0.0987, 0.2805, -0.3582],
+                    ),
+                ],
+            )
+        )
+        + list(
+            product(
+                [PTMAP],
+                [
+                    (
+                        "easyfsl/tests/datasets/resources/unbalanced_support_set",
+                        [0.1311, 0.0010, 0.1176],
+                    ),
+                    (
+                        "easyfsl/tests/datasets/resources/balanced_support_set",
+                        [0.1311, 0.3910, 0.2925],
                     ),
                 ],
             )
