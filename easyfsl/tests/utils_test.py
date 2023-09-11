@@ -317,4 +317,4 @@ class TestComputeAverageFeaturesFromImages:
     @pytest.mark.parametrize("dataloader, expected_average", cases_grid)
     def test_returns_expected_average(dataloader, expected_average):
         output_tensor = compute_average_features_from_images(dataloader, nn.Identity())
-        torch.testing.assert_allclose(output_tensor, expected_average)
+        torch.testing.assert_close(output_tensor, expected_average)

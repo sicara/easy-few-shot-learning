@@ -66,6 +66,7 @@ class FEAT(PrototypicalNetworks):
         device: str = "cpu",
         feature_dimension: int = 640,
         use_backbone: bool = True,
+        **kwargs,
     ):
         """
         Load a FEAT model from a checkpoint of a resnet12 model as provided by the authors.
@@ -115,4 +116,4 @@ class FEAT(PrototypicalNetworks):
                 f"Missing keys for attention module: {attention_missing_keys}"
             )
 
-        return cls(backbone, attention_module=attention_module).to(device)
+        return cls(backbone, attention_module=attention_module, **kwargs).to(device)
