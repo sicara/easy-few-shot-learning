@@ -2,11 +2,12 @@
   "tim": {
     "default": {
       "fine_tuning_steps": 50,
-      "fine_tuning_lr": 0.0001,
+      "fine_tuning_lr": 0.001,
       "cross_entropy_weight": 1.0,
       "marginal_entropy_weight": 1.0,
-      "conditional_entropy_weight": 1.0,
-      "temperature": 10.0
+      "conditional_entropy_weight": 0.5,
+      "temperature": 10.0,
+      "feature_normalization": 2
     }
   },
   "feat": {
@@ -20,36 +21,51 @@
     }
   },
   "finetune": {
-    "1_shot": {
-      "fine_tuning_steps": 200,
+    "default": {
+      "fine_tuning_steps": 50,
       "fine_tuning_lr": 0.0001,
-      "temperature": 1.0
-    },
-    "5_shot": {
-      "fine_tuning_steps": 100,
-      "fine_tuning_lr": 0.0001,
-      "temperature": 10.0
+      "temperature": 10.0,
+      "feature_normalization": 2
     }
   },
   "pt_map": {
     "default": {
-      "fine_tuning_steps": 10,
-      "fine_tuning_lr": 0.2,
+      "fine_tuning_steps": 30,
+      "fine_tuning_lr": 0.3,
       "lambda_regularization": 10,
       "power_factor": 0.5,
       "feature_normalization": 2
     }
   },
+  "transductive_finetuning": {
+    "default": {
+      "fine_tuning_steps": 10,
+      "fine_tuning_lr": 0.0001,
+      "temperature": 10.0,
+      "feature_normalization": 2
+    }
+  },
   "laplacian_shot": {
-    "1_shot": {
-      "inference_steps": 20,
+    "default": {
+      "inference_steps": 10,
       "knn": 3,
-      "lambda_regularization": 0.7
-    },
-    "5_shot": {
-      "inference_steps": 20,
-      "knn": 3,
-      "lambda_regularization": 0.1
+      "lambda_regularization": 0.1,
+      "feature_normalization": 2
+    }
+  },
+  "bd_cspn": {
+    "default": {
+      "feature_normalization": 2
+    }
+  },
+  "prototypical_networks": {
+    "default": {
+      "feature_normalization": 2
+    }
+  },
+  "simple_shot": {
+    "default": {
+      "feature_normalization": 2
     }
   }
 }

@@ -67,28 +67,11 @@ extract-all-features-with-resnet12:
 
 benchmark-mini-imagenet:
 	for n_shot in 1 5; do \
-		for method in bd_cspn prototypical_networks simple_shot ; do \
-			python -m scripts.benchmark_methods \
-				$${method} \
-				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
-				--n-shot=$${n_shot} \
-				--device=${DEVICE} \
-				--num-workers=${NUM_WORKERS}; \
-		done; \
-		for method in tim; do \
+		for method in bd_cspn prototypical_networks simple_shot tim finetune laplacian_shot pt_map transductive_finetuning; do \
 			python -m scripts.benchmark_methods \
 				$${method} \
 				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
 				--config="default" \
-				--n-shot=$${n_shot} \
-				--device=${DEVICE} \
-				--num-workers=${NUM_WORKERS}; \
-		done; \
-		for method in finetune laplacian_shot; do \
-			python -m scripts.benchmark_methods \
-				$${method} \
-				data/features/mini_imagenet/test/feat_resnet12_mini_imagenet.parquet.gzip \
-				--config=$${n_shot}_shot \
 				--n-shot=$${n_shot} \
 				--device=${DEVICE} \
 				--num-workers=${NUM_WORKERS}; \
@@ -104,28 +87,11 @@ benchmark-mini-imagenet:
 
 benchmark-tiered-imagenet:
 	for n_shot in 1 5; do \
-		for method in bd_cspn prototypical_networks simple_shot ; do \
-			python -m scripts.benchmark_methods \
-				$${method} \
-				data/features/tiered_imagenet/test/feat_resnet12_tiered_imagenet.parquet.gzip \
-				--n-shot=$${n_shot} \
-				--device=${DEVICE} \
-				--num-workers=${NUM_WORKERS}; \
-		done; \
-		for method in tim; do \
+		for method in bd_cspn prototypical_networks simple_shot tim finetune laplacian_shot pt_map transductive_finetuning; do \
 			python -m scripts.benchmark_methods \
 				$${method} \
 				data/features/tiered_imagenet/test/feat_resnet12_tiered_imagenet.parquet.gzip \
 				--config="default" \
-				--n-shot=$${n_shot} \
-				--device=${DEVICE} \
-				--num-workers=${NUM_WORKERS}; \
-		done; \
-		for method in finetune laplacian_shot; do \
-			python -m scripts.benchmark_methods \
-				$${method} \
-				data/features/tiered_imagenet/test/feat_resnet12_tiered_imagenet.parquet.gzip \
-				--config=$${n_shot}_shot \
 				--n-shot=$${n_shot} \
 				--device=${DEVICE} \
 				--num-workers=${NUM_WORKERS}; \
