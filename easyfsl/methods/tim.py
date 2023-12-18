@@ -67,7 +67,9 @@ class TIM(FewShotClassifier):
         query_features = self.compute_features(query_images)
 
         num_classes = self.support_labels.unique().size(0)
-        support_labels_one_hot = nn.functional.one_hot(self.support_labels, num_classes)
+        support_labels_one_hot = nn.functional.one_hot(  # pylint: disable=not-callable
+            self.support_labels, num_classes
+        )
 
         with torch.enable_grad():
             self.prototypes.requires_grad_()
