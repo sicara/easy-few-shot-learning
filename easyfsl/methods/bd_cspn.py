@@ -4,7 +4,6 @@ from .few_shot_classifier import FewShotClassifier
 
 
 class BDCSPN(FewShotClassifier):
-
     """
     Jinlu Liu, Liang Song, Yongqiang Qin
     "Prototype Rectification for Few-Shot Learning" (ECCV 2020)
@@ -15,7 +14,9 @@ class BDCSPN(FewShotClassifier):
     This is a transductive method.
     """
 
-    def rectify_prototypes(self, query_features: Tensor):
+    def rectify_prototypes(
+        self, query_features: Tensor
+    ):  # pylint: disable=not-callable
         """
         Updates prototypes with label propagation and feature shifting.
         Args:

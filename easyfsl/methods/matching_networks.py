@@ -2,6 +2,7 @@
 See original implementation at
 https://github.com/facebookresearch/low-shot-shrink-hallucinate
 """
+
 from typing import Optional
 
 import torch
@@ -90,7 +91,11 @@ class MatchingNetworks(FewShotClassifier):
             support_features
         )
 
-        self.one_hot_support_labels = nn.functional.one_hot(support_labels).float()
+        self.one_hot_support_labels = (
+            nn.functional.one_hot(  # pylint: disable=not-callable
+                support_labels
+            ).float()
+        )
 
     def forward(self, query_images: Tensor) -> Tensor:
         """

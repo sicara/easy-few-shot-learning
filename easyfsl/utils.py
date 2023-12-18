@@ -1,6 +1,7 @@
 """
 General utilities
 """
+
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -98,7 +99,7 @@ def evaluate_on_one_task(
     """
     model.process_support_set(support_images, support_labels)
     predictions = model(query_images).detach().data
-    number_of_correct_predictions = (
+    number_of_correct_predictions = int(
         (torch.max(predictions, 1)[1] == query_labels).sum().item()
     )
     return number_of_correct_predictions, len(query_labels)
